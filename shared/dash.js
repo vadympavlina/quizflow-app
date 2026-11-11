@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 // shared/dash.js — дашборд викладача (лише index.html).
-// Два рівноправні режими: ігри наживо (rooms + gameHistory) і тести за
-// посиланнями (links + attempts). Дані тестів — з app.js/features.js
+// Швидкі дії: запуск гри й посилання в один клік, останні тести, активні
+// посилання, останні ігри. Без таблиць статистики. Дані тестів — з app.js/features.js
 // (window.attempts / links / tests), ігри — власні слухачі тут.
 // ═══════════════════════════════════════════════════════════════════════
 import { watchRooms, liveRooms, roomTarget, roomState, IN_GAME } from "./rooms.js?v=1";
@@ -78,7 +78,7 @@ document.addEventListener("qf:live", schedule);
 function render(){
   if (!$("sec-dashboard")) return;
   const A = window.attempts || [], L = window.links || [], T = window.tests || [];
-  const now = Date.now(), wk = now - 7 * DAY, pwk = now - 14 * DAY;
+  const now = Date.now();
   const games = D.games || [];
 
   // Шапка
@@ -92,21 +92,19 @@ function render(){
     gToday ? `${gToday} ${plural(gToday, ["гра", "гри", "ігор"])} сьогодні` : "",
     aToday ? `${aToday} ${plural(aToday, ["спроба", "спроби", "спроб"])} сьогодні` : ""].filter(Boolean).join(" · ");
 
-  // Герой: дві дії
+  // Підписи швидких дій: що було востаннє, що чекає
   const lastG = games[0];
-  $("dx-game-meta").innerHTML = lastG
-    ? `Остання гра: <b>${esc(lastG.title)}</b> · ${esc(fmtDay(lastG.at))}`
-    : "Ви ще не проводили ігор — спробуйте на наступному уроці";
+  $("dx-q-game").textContent = lastG ? `Остання: ${lastG.title}` : "Вікторина для класу";
   const openLinks = L.filter(l => qf().isOpenState?.(qf().linkState?.(l, now)));
+  $("dx-q-link").textContent = openLinks.length ? `${openLinks.length} ${plural(openLinks.length, ["активне", "активні", "активних"])} зараз` : "Для студентів";
   const pend = A.filter(a => a.status === "pending_review").length;
-  $("dx-test-meta").innerHTML = openLinks.length
-    ? `<b>${openLinks.length}</b> ${plural(openLinks.length, ["активне посилання", "активні посилання", "активних посилань"])}${pend ? ` · <b>${pend}</b> на перевірці` : ""}`
-    : "Активних посилань немає";
+  $("dx-q-revs").textContent = pend ? "Оцініть відкриті питання" : "Усе перевірено";
+  const nb = $("dx-q-revn"); nb.hidden = !pend; nb.textContent = pend;
 
   renderNow(A, L, now);
-  renderKpis(A, games, now, wk, pwk);
-  renderGames(games);
-  renderTests(A, L, T, now);
+  renderTests(A, L, T, games, now);
+  renderLinks(A, L, T, now);
+  renderGames(games, T);
   renderStart(A, L, T, games);
 }
 
@@ -131,11 +129,6 @@ function renderNow(A, L, now){
       <span class="dx-now-b"><b>${online.length} ${plural(online.length, ["проходить", "проходять", "проходять"])} тест зараз</b><small>${tt ? esc(tt) : `${tIds.length} ${plural(tIds.length, ["тест", "тести", "тестів"])}`}</small></span>
       <span class="dx-now-go">${svg(IC.chev, 14, 2.5)}</span></a>`);
   }
-  const pend = A.filter(a => a.status === "pending_review").length;
-  if (pend) items.push(`<a class="dx-now-it warn" href="attempts?status=pending_review">
-      <span class="dx-now-ic">${svg(IC.clock, 15)}</span>
-      <span class="dx-now-b"><b>${pend} на перевірці</b><small>Оцініть відкриті питання</small></span>
-      <span class="dx-now-go">${svg(IC.chev, 14, 2.5)}</span></a>`);
   const susp = qf().suspNewCount?.() || 0;
   if (susp) items.push(`<a class="dx-now-it bad" href="suspicious">
       <span class="dx-now-ic">${svg(IC.flag, 15)}</span>
@@ -145,97 +138,65 @@ function renderNow(A, L, now){
   box.innerHTML = items.length ? `<div class="dx-sec-l">Зараз</div><div class="dx-now-list">${items.join("")}</div>` : "";
 }
 
-// Тиждень: і ігри, і тести
-function renderKpis(A, games, now, wk, pwk){
-  const box = $("dx-kpis"); if (!box) return;
-  // Новий викладач без жодних даних — рядок нулів лише заважає
-  box.hidden = !games.length && !A.length;
-  if (box.hidden) return;
-  const inWk = (t, from, to = now) => t >= from && t < to;
-  const gW = games.filter(g => inWk(g.at, wk)), gP = games.filter(g => inWk(g.at, pwk, wk));
-  const players = gW.reduce((s, g) => s + g.n, 0), playersP = gP.reduce((s, g) => s + g.n, 0);
-  const accs = gW.map(g => g.acc).filter(x => x != null);
-  const acc = accs.length ? Math.round(accs.reduce((s, x) => s + x, 0) / accs.length) : null;
-  const aW = A.filter(a => inWk(a.createdAt || 0, wk)), aP = A.filter(a => inWk(a.createdAt || 0, pwk, wk));
-  const gr = aW.filter(a => a.status === "completed" && a.grade12 != null).map(a => +a.grade12);
-  const avg = gr.length ? gr.reduce((s, x) => s + x, 0) / gr.length : null;
-  const delta = (c, p) => {
-    if (!c && !p) return "";
-    const d = c - p;
-    return `<span class="dx-d ${d > 0 ? "up" : d < 0 ? "down" : ""}">${d > 0 ? "+" + d : d < 0 ? "−" + Math.abs(d) : "="}</span>`;
-  };
-  const tile = (cls, ic, label, v, sub, href) => `<a class="dx-kpi ${cls}" href="${href}">
-      <span class="dx-kpi-ic">${svg(ic, 16)}</span>
-      <span class="dx-kpi-l">${label}</span>
-      <span class="dx-kpi-v">${v}</span>
-      <span class="dx-kpi-s">${sub}</span></a>`;
-  box.innerHTML = `<div class="dx-sec-l">Останні 7 днів</div><div class="dx-kpi-row">` +
-    tile("g", IC.play, "Ігор проведено", gW.length, `${delta(gW.length, gP.length)} проти минулого тижня`, "game-history") +
-    tile("g", IC.users, "Гравців", players, `${delta(players, playersP)} ${gW.length ? `≈ ${Math.round(players / gW.length)} на гру` : "у іграх"}`, "game-history") +
-    tile("g", IC.target, "Точність у іграх", acc != null ? acc + "<small>%</small>" : "—", acc != null ? "правильних відповідей" : "ще немає даних", "game-history") +
-    tile("t", IC.pulse, "Спроб тестів", aW.length, `${delta(aW.length, aP.length)} проти минулого тижня`, "attempts") +
-    tile("t", IC.chart, "Середня оцінка", avg != null ? avg.toFixed(1) + "<small>/12</small>" : "—", gr.length ? `${gr.length} ${plural(gr.length, ["оцінка", "оцінки", "оцінок"])}` : "ще немає оцінок", "analytics") +
-  `</div>`;
-}
+const timeAgoShort = t => fmtDay(t);
+const btn = (cls, act, id, label, icon, title = "") => `<button type="button" class="dx-qb ${cls}" data-dxa="${act}" data-id="${esc(id)}"${title ? ` title="${esc(title)}" aria-label="${esc(title)}"` : ""}>${icon ? svg(icon, 13, 2.2) : ""}${label}</button>`;
+const IC2 = { edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>', redo: '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>', list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>' };
 
-function renderGames(games){
-  const box = $("dx-games"); if (!box) return;
-  if (D.games === null){ box.innerHTML = `<div class="dx-skel"></div><div class="dx-skel"></div><div class="dx-skel"></div>`; return; }
-  const cnt = $("dx-games-cnt"); if (cnt) cnt.textContent = games.length ? `${games.length} ${plural(games.length, ["гра", "гри", "ігор"])} усього` : "";
-  if (!games.length){
-    box.innerHTML = `<div class="dx-empty">
-      <span class="dx-empty-ic g">${svg(IC.play, 22)}</span>
-      <b>Ще не було жодної гри</b>
-      <span>Гра наживо — це вікторина на час для всього класу. Учні заходять з телефонів за кодом, а ви показуєте питання на екрані.</span>
-      <button type="button" class="dx-btn g" data-dx="game">${svg(IC.play, 13)}Провести першу гру</button></div>`;
+// «Ваші тести»: з чим ви працювали останнім — одразу «Гра» і «Посилання»
+function renderTests(A, L, T, games, now){
+  const box = $("dx-tests"); if (!box) return;
+  const live = T.filter(t => t.status !== "archived" && (t.questions || []).length);
+  const last = new Map(), bump = (id, at) => { if (id && at > (last.get(id) || 0)) last.set(id, at); };
+  games.forEach(g => bump(g.testId, g.at)); L.forEach(l => bump(l.testId, toMs(l.createdAt))); A.forEach(a => bump(a.testId, toMs(a.createdAt)));
+  const list = live.map(t => ({ t, at: Math.max(last.get(t.id) || 0, toMs(t.updatedAt), toMs(t.createdAt)) })).sort((a, b) => b.at - a.at).slice(0, 6);
+  const cnt = $("dx-tests-cnt"); if (cnt) cnt.textContent = live.length ? `${live.length}` : "";
+  if (!live.length){
+    box.innerHTML = `<div class="dx-empty"><span class="dx-empty-ic">${svg(IC.file, 22)}</span><b>Ще немає тестів</b><span>Створіть перший тест: з нього можна зробити і гру, і посилання для студентів.</span><button type="button" class="dx-btn p" data-dx="new">${svg(IC.plus, 13, 2.4)}Новий тест</button></div>`;
     return;
   }
-  box.innerHTML = games.slice(0, 5).map(g => {
-    const c = colorFor(g.testId || g.title);
-    return `<a class="dx-row" href="game-history">
-      <span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(g.title))}</span>
-      <span class="dx-row-b"><b>${esc(g.title)}</b><small>${esc(fmtDay(g.at))} · ${g.n} ${plural(g.n, ["гравець", "гравці", "гравців"])}${g.qc ? ` · ${g.qc} ${plural(g.qc, ["питання", "питання", "питань"])}` : ""}</small></span>
-      ${g.top ? `<span class="dx-win" title="Переможець">${svg(IC.trophy, 13)}<b>${esc(g.top.nick)}</b><small>${g.top.score.toLocaleString("uk-UA")}</small></span>` : ""}
-      ${g.acc != null ? `<span class="dx-acc" title="Точність відповідей"><span class="tr"><i style="width:${g.acc}%;background:${g.acc >= 70 ? "#16A34A" : g.acc >= 40 ? "#F59E0B" : "#DC2626"}"></i></span><small>${g.acc}%</small></span>` : `<span class="dx-acc"></span>`}
-    </a>`;
-  }).join("");
+  box.innerHTML = list.map(({ t, at }) => {
+    const c = colorFor(t.id), qn = (t.questions || []).length;
+    const used = last.get(t.id) ? `використано ${fmtDay(last.get(t.id))}` : "ще не використано";
+    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(t.title))}</span>
+      <span class="dx-row-b"><b>${esc(t.title || "Без назви")}</b><small>${qn} ${plural(qn, ["питання", "питання", "питань"])} · ${esc(used)}</small></span>
+      <span class="dx-qa">${btn("g", "game", t.id, "Гра", IC.play)}${btn("", "link", t.id, "Посилання", IC.link)}${btn("ic", "edit", t.id, "", IC2.edit, "Редагувати")}</span></div>`;
+  }).join("") + `<div class="dx-all"><a class="go" href="tests">Усі тести${svg(IC.chev, 12, 2.5)}</a></div>`;
 }
 
-function renderTests(A, L, T, now){
-  const box = $("dx-tests"); if (!box) return;
+// Активні посилання: скопіювати одним натисканням
+function renderLinks(A, L, T, now){
+  const box = $("dx-links"); if (!box) return;
   const st = qf().linkState || (() => "active");
   const cntBy = new Map(); A.forEach(a => { if (a.linkId) cntBy.set(a.linkId, (cntBy.get(a.linkId) || 0) + 1); });
   const open = L.filter(l => qf().isOpenState?.(st(l, now)))
-    .sort((a, b) => (a.closeAt || Infinity) - (b.closeAt || Infinity) || (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 3);
-  const lnk = open.map(l => {
-    const t = T.find(x => x.id === l.testId), n = cntBy.get(l.id) || 0, max = qf().lnkMax?.(l) || 0;
-    const s = st(l, now);
+    .sort((a, b) => (a.closeAt || Infinity) - (b.closeAt || Infinity) || (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 4);
+  if (!open.length){
+    box.innerHTML = `<div class="dx-mini-empty">Немає активних посилань · <button type="button" data-dx="test">створити</button></div>`;
+    return;
+  }
+  box.innerHTML = open.map(l => {
+    const t = T.find(x => x.id === l.testId), n = cntBy.get(l.id) || 0, max = qf().lnkMax?.(l) || 0, s = st(l, now);
     const when = s === "scheduled" ? `відкриється ${fmtDay(l.openAt)}` : l.closeAt ? `до ${fmtDay(l.closeAt)}` : "без терміну";
     const soon = l.closeAt && l.closeAt - now < DAY && s !== "scheduled";
-    return `<a class="dx-lnk" href="links">
-      <span class="dx-row-b"><b>${esc(t?.title || "Тест видалено")}</b><small>${l.group ? `${esc(l.group)} · ` : ""}<span class="${soon ? "soon" : ""}">${esc(when)}</span></small></span>
-      <span class="dx-lnk-n"><b>${n}</b>${max ? `<small>/${max}</small>` : ""}<small> ${plural(n, ["спроба", "спроби", "спроб"])}</small></span>
-      ${max ? `<span class="dx-bar"><i style="width:${Math.min(100, Math.round(n / max * 100))}%"></i></span>` : ""}
-    </a>`;
+    return `<div class="dx-qr"><span class="dx-row-b"><b>${esc(t?.title || "Тест видалено")}</b><small>${l.group ? `${esc(l.group)} · ` : ""}<span class="${soon ? "soon" : ""}">${esc(when)}</span> · ${n}${max ? `/${max}` : ""} ${plural(n, ["спроба", "спроби", "спроб"])}</small></span>
+      <span class="dx-qa">${btn("", "copy", l.id, "Копіювати", IC2.copy)}${btn("ic", "results", l.id, "", IC2.list, "Результати")}</span></div>`;
   }).join("");
-  const recent = A.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
-  const act = recent.map(a => {
-    const t = T.find(x => x.id === a.testId);
-    const who = `${a.surname || ""} ${a.name || ""}`.trim() || "Студент";
-    const badge = a.status === "in_progress" ? `<span class="dx-b live"><i></i>проходить</span>`
-      : a.status === "pending_review" ? `<span class="dx-b warn">перевірити</span>`
-      : a.grade12 != null ? `<span class="dx-b ${gradeTone(+a.grade12)}"><b>${+a.grade12}</b>/12</span>` : `<span class="dx-b">—</span>`;
-    const flag = qf().isSusp?.(a) ? `<span class="dx-flag" title="Підозріла активність">${svg(IC.flag, 12)}</span>` : "";
-    return `<button type="button" class="dx-act" data-att="${esc(a.id)}">
-      <span class="dx-ava" style="background:${colorFor(who)}">${esc(abbr(who))}</span>
-      <span class="dx-row-b"><b>${esc(who)}${flag}</b><small>${esc(t?.title || "Тест видалено")}${a.group ? ` · ${esc(a.group)}` : ""} · ${esc(qf().timeAgo ? qf().timeAgo(a.createdAt) : "")}</small></span>
-      ${badge}</button>`;
+}
+
+// Останні ігри: «Ще раз» — той самий тест одним вікном
+function renderGames(games, T){
+  const box = $("dx-games"); if (!box) return;
+  if (D.games === null){ box.innerHTML = `<div class="dx-skel"></div><div class="dx-skel"></div>`; return; }
+  if (!games.length){
+    box.innerHTML = `<div class="dx-mini-empty">Ще не було жодної гри · <button type="button" data-dx="game">провести першу</button></div>`;
+    return;
+  }
+  box.innerHTML = games.slice(0, 4).map(g => {
+    const c = colorFor(g.testId || g.title), exists = T.some(t => t.id === g.testId && (t.questions || []).length);
+    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(g.title))}</span>
+      <span class="dx-row-b"><b>${esc(g.title)}</b><small>${esc(fmtDay(g.at))} · ${g.n} ${plural(g.n, ["гравець", "гравці", "гравців"])}${g.top ? ` · переміг ${esc(g.top.nick)}` : ""}</small></span>
+      <span class="dx-qa">${exists ? btn("g", "game", g.testId, "Ще раз", IC2.redo) : ""}</span></div>`;
   }).join("");
-  box.innerHTML = `
-    <div class="dx-sub-h"><span>Активні посилання</span><a href="links">Усі${svg(IC.chev, 12, 2.5)}</a></div>
-    ${lnk || `<div class="dx-mini-empty">Немає активних посилань · <button type="button" data-dx="test">створити</button></div>`}
-    <div class="dx-sub-h"><span>Остання активність</span><a href="attempts">Усі спроби${svg(IC.chev, 12, 2.5)}</a></div>
-    ${act || `<div class="dx-mini-empty">Щойно студенти пройдуть тест, результати з'являться тут</div>`}`;
 }
 
 // «Почніть роботу» — поки новий викладач не спробував обидва режими
@@ -247,7 +208,8 @@ function renderStart(A, L, T, games){
     { done: L.length > 0, t: "Надішліть тест за посиланням", s: "Самостійна чи контрольна у зручний час", act: "test", btn: "Надіслати" },
   ];
   const n = steps.filter(x => x.done).length;
-  if (D.games === null || n === steps.length){ box.hidden = true; return; }
+  // Лише поки немає жодного тесту: далі всі дії вже на плитках зверху
+  if (D.games === null || n === steps.length || T.some(t => t.status !== "archived" && (t.questions || []).length)){ box.hidden = true; return; }
   const next = steps.findIndex(x => !x.done);
   box.hidden = false;
   box.innerHTML = `<div class="dx-start-h"><b>Почніть роботу з QuizFlow</b><span>${n} з ${steps.length}</span><span class="dx-bar"><i style="width:${Math.round(n / steps.length * 100)}%"></i></span></div>
@@ -288,7 +250,7 @@ function openPicker(){
   };
 }
 function closePicker(){ const d = $("dx-pick"); if (!d || d.hidden) return; d.classList.remove("on"); setTimeout(() => { d.hidden = true; }, 160); }
-function launch(tid){ closePicker(); if (window.qfCan && !window.qfCan("games")) return; window.open(`live/setup?testId=${encodeURIComponent(tid)}`, "_blank", "noopener"); }
+function launch(tid){ closePicker(); window.G?.gameModal?.(tid); }
 
 // ─── Делеговані дії ───────────────────────────────────────────────────
 document.addEventListener("click", e => {
@@ -298,6 +260,17 @@ document.addEventListener("click", e => {
   if (act === "new") { closePicker(); return window.G?.openTestInFolder?.(null); }
   if (act === "pick-close" || e.target.id === "dx-pick") return closePicker();
   const it = e.target.closest(".dx-pick-it"); if (it) return launch(it.dataset.tid);
+  const qa = e.target.closest("[data-dxa]");
+  if (qa){
+    const id = qa.dataset.id, G = window.G;
+    switch (qa.dataset.dxa){
+      case "game": return G?.gameModal?.(id);
+      case "link": return G?.qLink?.(id);
+      case "edit": location.href = `constructor?id=${encodeURIComponent(id)}`; return;
+      case "copy": return G?.copyLink?.(id, qa);
+      case "results": return G?.linkResults?.(id);
+    }
+  }
   const att = e.target.closest(".dx-act[data-att]"); if (att) return window.G?.viewAtt?.(att.dataset.att);
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("dx-pick")?.hidden) { e.stopPropagation(); closePicker(); } }, true);
