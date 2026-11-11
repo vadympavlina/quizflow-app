@@ -110,7 +110,11 @@
   .question-text img{max-width:100%;max-height:34vh;border-radius:14px;display:block;margin:14px auto 0}
   .question-text p{margin:0}
 
-  .answers{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;margin:0 auto}
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;margin:0 auto;width:100%}
+  @media (min-width:900px){
+    .stage{display:flex;flex-direction:column;min-height:calc(100vh - 92px)}
+    .stage:not(.revealed) .answers:not([hidden]){flex:1 1 auto;grid-auto-rows:1fr;max-height:min(58vh,640px);margin-bottom:24px}
+  }
   .ans{
     position:relative;display:flex;align-items:center;gap:20px;padding:26px 30px;min-height:108px;
     border-radius:22px;font-weight:800;font-size:clamp(20px,2vw,30px);letter-spacing:-.015em;
@@ -118,6 +122,7 @@
     overflow:hidden;transition:opacity .4s, transform .4s, filter .4s;isolation:isolate;
   }
   .ans .fill{position:absolute;inset:0 auto 0 0;width:0;background:rgba(255,255,255,.16);z-index:-1;transition:width .9s cubic-bezier(.22,1,.36,1)}
+  @media (min-width:1600px){.ans .letter{width:68px!important;height:68px!important;font-size:28px!important;border-radius:18px!important}.ans .count{font-size:40px}}
   .ans .letter{width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,.3);display:grid;place-items:center;font-family:"Geist Mono",monospace;font-size:22px;flex:0 0 auto;border:1px solid rgba(255,255,255,.2)}
   .ans .txt{flex:1;min-width:0;overflow-wrap:break-word;hyphens:auto;line-height:1.22}
   .answers.many .ans{padding:18px 24px;min-height:88px}
@@ -134,13 +139,14 @@
   .ans.correct{box-shadow:0 12px 30px rgba(0,0,0,.3), inset 0 0 0 4px rgba(255,255,255,.95)}
   .ans.correct .letter{background:#fff;border-color:#fff;color:transparent;position:relative}
   .ans.correct .letter::after{content:"";position:absolute;inset:0;margin:auto;width:62%;height:62%;background:#059669;-webkit-mask:var(--chk) center/contain no-repeat;mask:var(--chk) center/contain no-repeat}
-  .ans.dim{opacity:.36;filter:saturate(.55);transform:scale(.985)}
+  .ans.dim{opacity:.5;filter:saturate(.5);transform:scale(.985)}
+  .ans.dim .count{opacity:1;background:rgba(0,0,0,.45)}
   .key-line{display:none;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 12px;margin:24px auto 0;max-width:1400px}
   .revealed .key-line{display:flex}
   .key-line .kl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#A7F3D0}
-  .kchip{display:inline-flex;align-items:center;gap:9px;padding:6px 16px 6px 7px;border-radius:999px;background:rgba(16,185,129,.2);border:1px solid rgba(52,211,153,.55);font-weight:800;font-size:17px;max-width:min(460px,100%)}
+  .kchip{display:inline-flex;align-items:center;gap:9px;padding:6px 16px 6px 7px;border-radius:22px;background:rgba(16,185,129,.2);border:1px solid rgba(52,211,153,.55);font-weight:800;font-size:17px;max-width:min(720px,100%)}
   .kchip b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#34D399;color:#064E3B;font:800 13px "Geist Mono",monospace;flex:0 0 auto}
-  .kchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kchip span{overflow-wrap:anywhere;line-height:1.25}
   .kchip.v{padding:6px 16px}
 
   .text-wait-hint{max-width:640px;margin:0 auto;text-align:center;padding:40px 32px;border:2px dashed rgba(255,255,255,.18);border-radius:22px;color:#B8C0E6;font-size:17px;font-weight:600;line-height:1.6}
@@ -148,7 +154,7 @@
   .revealed .text-wait-hint{display:none}
 
   /* ── Розкриття ── */
-  .reveal-grid{display:none;grid-template-columns:1fr 380px;gap:22px;max-width:1400px;margin:28px auto 0;align-items:start}
+  .reveal-grid{display:none;grid-template-columns:1fr 380px;gap:22px;max-width:1400px;margin:28px auto 0;align-items:start;width:100%}
   .revealed .reveal-grid{display:grid}
   .reveal-grid.no-grading{grid-template-columns:1fr}
   .reveal-grid.no-grading .grading{display:none}
@@ -254,7 +260,7 @@
   <div class="question-text qf-rich" id="q-text"></div>
   <div class="answers" id="answers-grid"></div>
   <div class="key-line" id="key-line"></div>
-  <div class="text-wait-hint" id="text-wait-hint" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Учні вводять власну відповідь<br><b>Скільки вже відповіли, видно внизу</b></div>
+  <div class="text-wait-hint" id="text-wait-hint" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Учні вводять відповідь на телефонах<br><b>Результати з'являться після розкриття</b></div>
 
   <div class="reveal-grid" id="reveal-grid">
     <div class="panel grading" id="grading"></div>
@@ -530,7 +536,7 @@ function refit() {
   const qShare = isFreeform(questions[shownQ]) ? 0.34 : nOpts >= 5 ? 0.2 : 0.25;
   fitText(qt, { max: innerWidth < 640 ? 32 : 64, min: 20, maxHeight: innerHeight * qShare + imgH });
   fitGroup(document.querySelectorAll("#answers-grid .ans .txt"), {
-    max: innerWidth < 760 ? 22 : 32, min: 14, maxHeight: Math.max(60, innerHeight * (nOpts >= 5 ? 0.075 : 0.1)),
+    max: innerWidth < 760 ? 22 : innerWidth >= 1600 ? 46 : 32, min: 14, maxHeight: Math.max(60, innerHeight * (nOpts >= 5 ? 0.075 : 0.1)),
   });
 }
 onRefit(refit, $("q-text"));
