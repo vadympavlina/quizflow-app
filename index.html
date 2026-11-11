@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="shared/styles.css?v=49">
 <link rel="modulepreload" href="shared/app.js?v=33">
 <link rel="modulepreload" href="shared/features.js?v=46">
-<link rel="modulepreload" href="shared/dash.js?v=4">
+<link rel="modulepreload" href="shared/dash.js?v=5">
 <style>
 /* ═══ Дашборд: ігри наживо + тести (shared/dash.js) ═══ */
 #sec-dashboard{
@@ -55,24 +55,6 @@
 .dx-btn.g{background:var(--game);border-color:var(--game);color:#fff}
 .dx-btn.g:hover{background:#5B21B6;color:#fff}
 
-/* Дві головні дії */
-.dx-hero{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.dx-mode{position:relative;overflow:hidden;border-radius:20px;padding:22px 24px;color:#fff;display:flex;flex-direction:column;gap:10px;min-height:170px}
-.dx-mode.game{background:radial-gradient(120% 140% at 100% 0%,#A78BFA 0%,rgba(167,139,250,0) 55%),linear-gradient(135deg,#4C1D95,#6D28D9 60%,#7C3AED)}
-.dx-mode.test{background:radial-gradient(120% 140% at 100% 0%,#60A5FA 0%,rgba(96,165,250,0) 55%),linear-gradient(135deg,#172554,#1E3A8A 60%,#2563EB)}
-.dx-mode::after{content:"";position:absolute;right:-40px;bottom:-60px;width:220px;height:220px;border-radius:50%;border:34px solid rgba(255,255,255,.07)}
-.dx-mode-top{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
-.dx-mode-ic{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.16);display:grid;place-items:center}
-.dx-mode-k{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
-.dx-mode h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.015em;position:relative;z-index:1}
-.dx-mode p{margin:0;font-size:13.5px;line-height:1.55;opacity:.85;max-width:420px;position:relative;z-index:1}
-.dx-mode-foot{margin-top:auto;padding-top:6px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;position:relative;z-index:1}
-.dx-mode-cta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:11px;border:0;background:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .15s,box-shadow .15s}
-.dx-mode.game .dx-mode-cta{color:var(--game)}
-.dx-mode.test .dx-mode-cta{color:var(--test)}
-.dx-mode-cta:hover{transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(0,0,0,.45)}
-.dx-mode-meta{font-size:12.5px;opacity:.8}
-.dx-mode-meta b{font-weight:800;opacity:1}
 
 /* Підписи секцій */
 .dx-sec-l{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-400);margin-bottom:10px}
@@ -97,20 +79,40 @@
 .dx-now-it:hover .dx-now-go{background:var(--nav-600);color:#fff}
 .dx-now-it.game:hover .dx-now-go{background:var(--game)}
 
-/* KPI тижня */
-.dx-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.dx-kpi{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);position:relative;transition:border-color .15s,transform .15s}
-.dx-kpi:hover{border-color:var(--line-strong);transform:translateY(-1px)}
-.dx-kpi-ic{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:9px;display:grid;place-items:center}
-.dx-kpi.g .dx-kpi-ic{background:var(--game-soft);color:var(--game)}
-.dx-kpi.t .dx-kpi-ic{background:var(--test-soft);color:var(--test)}
-.dx-kpi-l{font-size:11.5px;font-weight:700;color:var(--ink-500)}
-.dx-kpi-v{font-family:'Geist Mono',monospace;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
-.dx-kpi-v small{font-size:13px;color:var(--ink-400);font-weight:600}
-.dx-kpi-s{font-size:11.5px;color:var(--ink-400)}
-.dx-d{font-family:'Geist Mono',monospace;font-weight:800;color:var(--ink-500)}
-.dx-d.up{color:#15803D}
-.dx-d.down{color:#B91C1C}
+
+/* Швидкі дії */
+.dx-q{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.dx-qi{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;min-height:112px;border-radius:16px;background:#fff;border:1px solid var(--line);color:var(--ink-900);text-decoration:none;font:inherit;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.dx-qi:hover{transform:translateY(-2px);border-color:var(--line-strong);box-shadow:0 14px 28px -18px rgba(11,20,55,.4)}
+.dx-qi:focus-visible{outline:3px solid var(--nav-accent);outline-offset:2px}
+.dx-qi-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#EEF2FB;color:var(--nav-600)}
+.dx-qi b{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+.dx-qi small{display:block;margin-top:2px;font-size:12px;font-weight:500;color:var(--ink-500);line-height:1.35}
+.dx-qi.game{background:var(--game);border-color:var(--game);color:#fff}
+.dx-qi.game .dx-qi-ic{background:rgba(255,255,255,.18);color:#fff}
+.dx-qi.game small{color:rgba(255,255,255,.78)}
+.dx-qi.game:hover{background:#5B21B6;border-color:#5B21B6}
+.dx-qi.link{background:var(--nav-600);border-color:var(--nav-600);color:#fff}
+.dx-qi.link .dx-qi-ic{background:rgba(255,255,255,.18);color:#fff}
+.dx-qi.link small{color:rgba(255,255,255,.78)}
+.dx-qi.link:hover{background:#1E40AF;border-color:#1E40AF}
+.dx-qi .dx-n{position:absolute;top:12px;right:12px;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:#F59E0B;color:#fff;font:800 12px 'Geist Mono',monospace;display:grid;place-items:center}
+.dx-qi .dx-n.bad{background:#DC2626}
+/* Списки з діями */
+.dx-ql{display:flex;flex-direction:column}
+.dx-qr{display:flex;align-items:center;gap:12px;padding:10px 18px;border-top:1px solid var(--line)}
+.dx-qr:first-child{border-top:0}
+.dx-qr .dx-row-b{flex:1;min-width:0}
+.dx-qa{display:flex;gap:6px;flex:0 0 auto}
+.dx-qb{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-700);font:700 12.5px 'Manrope',sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap;transition:border-color .15s,background .15s,color .15s}
+.dx-qb:hover{border-color:var(--nav-accent);color:var(--nav-600)}
+.dx-qb.g{background:var(--game);border-color:var(--game);color:#fff}
+.dx-qb.g:hover{background:#5B21B6;border-color:#5B21B6;color:#fff}
+.dx-qb.ic{width:34px;padding:0}
+.dx-qb:focus-visible{outline:3px solid var(--nav-accent);outline-offset:2px}
+.dx-qb svg{flex:0 0 auto}
+.dx-all{display:flex;justify-content:center;padding:10px 18px 14px;border-top:1px solid var(--line)}
+.dx-all .go{display:inline-flex;align-items:center;gap:4px;min-height:32px;font-size:12.5px;font-weight:700;color:var(--nav-600);text-decoration:none}
 
 /* Дві колонки: ігри | тести */
 .dx-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
@@ -218,7 +220,7 @@
 .dx-pick-go{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;color:#6D28D9;background:#F3EEFF;opacity:0;transition:opacity .12s}
 .dx-pick-it:hover .dx-pick-go,.dx-pick-it.kb .dx-pick-go{opacity:1}
 
-@media (max-width:1180px){.dx-kpi-row{grid-template-columns:repeat(3,1fr)}.dx-cols{grid-template-columns:1fr}}
+@media (max-width:1180px){.dx-cols{grid-template-columns:1fr}.dx-q{grid-template-columns:repeat(3,1fr)}}
 /* Телефон і планшет */
 @media (max-width:1023px){
   .dx-head h1{font-size:24px}
@@ -226,19 +228,19 @@
   .dx-pick-go{opacity:1}
 }
 @media (max-width:720px){
-  .dx-hero{grid-template-columns:1fr;gap:12px}
-  .dx-mode{min-height:0;padding:20px}
-  .dx-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .dx-kpi{padding:12px 14px}
-  .dx-kpi-l{padding-right:30px}
+  .dx-q{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .dx-qi{min-height:96px;padding:14px}
+  .dx-qr{flex-wrap:wrap;padding:12px 14px}
+  .dx-qr .dx-qa{width:100%}
+  .dx-qr .dx-qa .dx-qb{flex:1;height:40px}
+  .dx-qr .dx-qa .dx-qb.ic{flex:0 0 44px}
   .dx-now-list{grid-template-columns:1fr}
 }
 /* ── Телефон: читабельність і зручні для пальця цілі (аудит WCAG 2.1 AA) ── */
 @media (max-width:1023px){
   .dx-card-h .go{min-height:36px;padding:0 4px;font-size:13px}
   .dx-row-b small,.dx-now-b small{font-size:12.5px}
-  .dx-kpi-l,.dx-kpi-s{font-size:12.5px}
-  .dx-mode-k,.dx-sec-l{font-size:11.5px}
+  .dx-sec-l{font-size:11.5px}
   .dx-win small,.dx-acc small{font-size:12px}
   #sec-dashboard .dn-date{font-size:12px}
   a.go,.dx-sub-h a{min-height:36px;padding:0 4px;font-size:13px}
@@ -266,10 +268,6 @@
         <p id="dx-sub"></p>
       </div>
       <div class="dx-head-r">
-        <a class="dx-btn" data-qtb href="live" target="_blank" rel="noopener" title="Хто зараз проходить тести — у новій вкладці">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          Моніторинг
-        </a>
         <button type="button" class="dx-btn" data-dx="new" data-qtb="primary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Новий тест
@@ -277,76 +275,77 @@
       </div>
     </header>
 
-    <!-- Два режими роботи -->
-    <section class="dx-hero">
-      <div class="dx-mode game">
-        <div class="dx-mode-top">
-          <span class="dx-mode-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
-          <span class="dx-mode-k">Гра наживо</span>
-        </div>
-        <h2>Вікторина для всього класу</h2>
-        <p>Питання на вашому екрані, учні відповідають з телефонів за кодом. Бали за швидкість, таблиця лідерів і подіум.</p>
-        <div class="dx-mode-foot">
-          <button type="button" class="dx-mode-cta" data-dx="game">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-            Запустити гру
-          </button>
-          <span class="dx-mode-meta" id="dx-game-meta"></span>
-        </div>
-      </div>
-      <div class="dx-mode test">
-        <div class="dx-mode-top">
-          <span class="dx-mode-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
-          <span class="dx-mode-k">Тест за посиланням</span>
-        </div>
-        <h2>Самостійна чи контрольна</h2>
-        <p>Студенти проходять тест у зручний час, оцінки 1–12 рахуються автоматично й потрапляють у журнал.</p>
-        <div class="dx-mode-foot">
-          <button type="button" class="dx-mode-cta" data-dx="test">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Надіслати тест
-          </button>
-          <span class="dx-mode-meta" id="dx-test-meta"></span>
-        </div>
-      </div>
+    <!-- Швидкі дії -->
+    <section class="dx-q" id="dx-q" aria-label="Швидкі дії">
+      <button type="button" class="dx-qi game" data-dx="game">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg></span>
+        <span><b>Запустити гру</b><small id="dx-q-game">Вікторина для класу</small></span>
+      </button>
+      <button type="button" class="dx-qi link" data-dx="test">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+        <span><b>Посилання на тест</b><small id="dx-q-link">Для студентів</small></span>
+      </button>
+      <a class="dx-qi" href="tests">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span><b>Усі тести</b><small id="dx-q-tests">Бібліотека й папки</small></span>
+      </a>
+      <a class="dx-qi" href="attempts?status=pending_review" id="dx-q-rev">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span>
+        <span><b>Перевірити роботи</b><small id="dx-q-revs">Усе перевірено</small></span>
+        <span class="dx-n" id="dx-q-revn" hidden></span>
+      </a>
+      <a class="dx-qi" href="gradebook">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+        <span><b>Журнал</b><small>Оцінки по групах</small></span>
+      </a>
+      <a class="dx-qi" href="live" target="_blank" rel="noopener">
+        <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+        <span><b>Моніторинг</b><small>Хто проходить зараз</small></span>
+      </a>
     </section>
 
     <section class="dx-start" id="dx-start" hidden></section>
 
     <section class="dx-now" id="dx-now" hidden></section>
 
-    <section id="dx-kpis"></section>
-
     <div class="dx-cols">
       <div class="dx-col">
-      <section class="dx-card g">
-        <div class="dx-card-h">
-          <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
-          <h3>Ігри наживо</h3><span class="meta" id="dx-games-cnt"></span>
-          <a class="go" href="game-history">Історія ігор<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
-        </div>
-        <div class="dx-card-b" id="dx-games"><div class="dx-skel"></div><div class="dx-skel"></div><div class="dx-skel"></div></div>
-      </section>
-      <section id="dash-news-block" class="d-news">
-        <div class="d-news-h">
-          <div class="d-news-title">
-            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 9h6M7 13h6M7 17h4"/><path d="M17 8h3v9a2 2 0 0 1-2 2"/></svg></span>
-            Новини QuizFlow <span id="dash-news-badge" class="d-news-badge">0</span>
+        <section class="dx-card t">
+          <div class="dx-card-h">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+            <h3>Ваші тести</h3><span class="meta" id="dx-tests-cnt"></span>
+            <a class="go" href="tests">Усі тести<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
           </div>
-          <a class="go" href="news">Усі<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
-        </div>
-        <div id="dash-news-items" class="d-news-items"></div>
-      </section>
+          <div class="dx-ql" id="dx-tests"><div class="dx-skel"></div><div class="dx-skel"></div><div class="dx-skel"></div></div>
+        </section>
+        <section id="dash-news-block" class="d-news">
+          <div class="d-news-h">
+            <div class="d-news-title">
+              <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M17 8h3v9a2 2 0 01-2 2H7"/></svg></span>
+              Новини QuizFlow <span id="dash-news-badge" class="d-news-badge">0</span>
+            </div>
+            <a class="go" href="news">Усі<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+          </div>
+          <div id="dash-news-items" class="d-news-items"></div>
+        </section>
       </div>
       <div class="dx-col">
-      <section class="dx-card t">
-        <div class="dx-card-h">
-          <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
-          <h3>Тести</h3>
-          <a class="go" href="analytics">Аналітика<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
-        </div>
-        <div class="dx-card-b" id="dx-tests"><div class="dx-skel"></div><div class="dx-skel"></div><div class="dx-skel"></div></div>
-      </section>
+        <section class="dx-card g">
+          <div class="dx-card-h">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+            <h3>Активні посилання</h3>
+            <a class="go" href="links">Усі<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+          </div>
+          <div class="dx-ql" id="dx-links"></div>
+        </section>
+        <section class="dx-card g">
+          <div class="dx-card-h">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
+            <h3>Останні ігри</h3>
+            <a class="go" href="game-history">Історія<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+          </div>
+          <div class="dx-ql" id="dx-games"></div>
+        </section>
       </div>
     </div>
   </div>
@@ -400,7 +399,7 @@ await featuresP;
 await window.initFeatures();
 
 if (window.renderAll) window.renderAll();
-await import("./shared/dash.js?v=4");
+await import("./shared/dash.js?v=5");
 
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
