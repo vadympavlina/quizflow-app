@@ -178,11 +178,27 @@ export const OPT_LETTERS = ["A","B","C","D","E","F"];
 export const isFreeform = (q) => q?.type === "text" || q?.type === "number";
 
 export const TYPE_LABELS = {
-  single: { cls:"single", label:"Одна правильна" },
-  multi:  { cls:"multi",  label:"Кілька правильних" },
-  text:   { cls:"text",   label:"Текстова відповідь" },
-  number: { cls:"number", label:"Числова відповідь" },
+  single: { cls:"single", label:"Одна правильна відповідь" },
+  multi:  { cls:"multi",  label:"Кілька правильних відповідей" },
+  text:   { cls:"text",   label:"Впишіть відповідь" },
+  number: { cls:"number", label:"Введіть число" },
 };
+// Значок типу питання (контурний SVG, колір від тексту)
+const TYPE_ICONS = {
+  single: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none"/>',
+  multi:  '<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><path d="M5.3 7.3l1.6 1.6 2.4-3"/><rect x="13" y="13" width="7.5" height="7.5" rx="2"/><path d="M14.8 16.8l1.6 1.6 2.4-3"/><path d="M14 6.5h6.5M3.5 17h6.5"/>',
+  text:   '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
+  number: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
+};
+// Виразний ярлик типу питання: значок + підпис. Стилі .tchip — у сторінках гри.
+export const typeChip = (type, extraCls = "") => {
+  const t = TYPE_LABELS[type] || TYPE_LABELS.single;
+  return `<span class="tchip ${t.cls} ${extraCls}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TYPE_ICONS[t.cls] || TYPE_ICONS.single}</svg><span>${t.label}</span></span>`;
+};
+// Усі допустимі текстові відповіді в тому вигляді, як їх написав викладач (для показу)
+export const textAnswers = (correct, type) => type === "number"
+  ? (String(correct ?? "").trim() ? [String(correct).trim()] : [])
+  : String(correct ?? "").split(/\s*(?:або|or|\||\/|,)\s*/i).map(x => x.trim()).filter(Boolean);
 
 const normText = (s) => String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[’ʼ`]/g, "'");
 // Правильних відповідей у текстовому питанні може бути кілька: «Київ / м. Київ», «HTML, або HyperText…».
