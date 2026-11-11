@@ -76,3 +76,31 @@ test.describe("телефон", () => {
     expect(errors).toEqual([]);
   });
 });
+
+test("швидка гра: кнопка «Гра» відкриває вікно, створює кімнату з обраними налаштуваннями й веде в лоббі", async ({ page, errors }) => {
+  await seed(page, rich(Date.now()), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(1500);
+  await page.locator(".t-lb.live").first().click();
+  await expect(page.locator("#m-game.on")).toBeVisible();
+  await page.locator('#gm-time button[data-t="30"]').click();
+  await page.locator('#gm-score button[data-v="correct"]').click();
+  await page.click("#gm-go");
+  await page.waitForURL(/live\/lobby\?code=\d{8}/);
+  const db = await page.evaluate(() => JSON.parse(localStorage.getItem("mockdb") || "{}"));
+  const rooms = Object.values(db.rooms || {});
+  expect(rooms).toHaveLength(1);
+  expect([rooms[0].timePerQ, rooms[0].scoring, rooms[0].status]).toEqual([30, "correct", "lobby"]);
+  expect(JSON.stringify(rooms[0].questions)).not.toContain("correct");     // правильних відповідей у публічній кімнаті немає
+  expect(Object.values(db.teachers.t1.liveRooms)[0].key).toBeTruthy();   // ключ — у приватній гілці викладача
+  expect(errors.filter(e => !/lobby|bad params/.test(e))).toEqual([]);
+});
+
+test("швидка гра: налаштування запам'ятовуються для наступної гри", async ({ page }) => {
+  await seed(page, rich(Date.now()), "t1");
+  await page.addInitScript(() => localStorage.setItem("qf-live-setup", JSON.stringify({ time: 45, scoring: "correct", shuffle: false })));
+  await page.goto("/tests"); await page.waitForTimeout(1500);
+  await page.locator(".t-lb.live").first().click();
+  await expect(page.locator('#gm-time button[data-t="45"]')).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator('#gm-score button[data-v="correct"]')).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("#gm-sa")).not.toBeChecked();
+});
