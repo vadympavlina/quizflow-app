@@ -204,6 +204,41 @@
 </div>
 
 
+<!-- Швидкий запуск гри зі сторінки «Тести» -->
+<div class="mo" id="m-game">
+  <div class="mb lk-mb" style="max-width:500px">
+    <button class="lk-x" type="button" onclick="closeM('m-game')" aria-label="Закрити"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="lk-h">
+      <div class="lk-hic gm-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg></div>
+      <div><div class="lk-t">Гра наживо</div><div class="lk-s" id="gm-sub"></div></div>
+    </div>
+    <div class="lk-body">
+      <div class="lk-f">
+        <label class="lk-l" id="gm-time-l">Час на питання</label>
+        <div class="gm-chips" id="gm-time" role="radiogroup" aria-labelledby="gm-time-l"></div>
+      </div>
+      <div class="lk-f">
+        <label class="lk-l" id="gm-score-l">Бали</label>
+        <div class="gm-seg" id="gm-score" role="radiogroup" aria-labelledby="gm-score-l">
+          <button type="button" role="radio" data-v="speed">За швидкість<small>Чим швидше, тим більше</small></button>
+          <button type="button" role="radio" data-v="correct">За правильність<small>Однакові бали</small></button>
+        </div>
+      </div>
+      <div class="lk-opts">
+        <label class="lk-sw"><input type="checkbox" id="gm-sa"><b></b><span>Перемішувати варіанти<small>У кожного учня свій порядок</small></span></label>
+        <label class="lk-sw"><input type="checkbox" id="gm-sq"><b></b><span>Перемішати питання<small>Новий порядок для всієї гри</small></span></label>
+      </div>
+      <div class="gm-note" id="gm-note" hidden></div>
+      <div class="lk-err" id="gm-err" role="alert"></div>
+    </div>
+    <div class="lk-foot">
+      <button class="btn bs" type="button" onclick="G.gmMore()">Усі налаштування</button>
+      <button class="btn bp" type="button" id="gm-go" onclick="G.gmGo()">Створити гру</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Поділитися тестом -->
 <div class="mo" id="m-share">
   <div class="mb" style="max-width:520px">

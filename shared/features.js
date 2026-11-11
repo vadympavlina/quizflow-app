@@ -12,6 +12,7 @@ import { assertAiQuota } from "./caps.js?v=3";
 import { callAIRaw as aiCallRaw } from "./ai-call.js?v=1";
 
 const { db, ref, get, set, push, update, remove, onValue, off } = window._fb;
+const _arr = v => Array.isArray(v) ? v : Object.values(v || {});
 
 // ─── Питання спроби ──────────────────────────────────────────────────────
 // Нові спроби не тримають копію питань: лише qVer (ключ версії в
@@ -879,6 +880,7 @@ const I = {
   edit: _ICON('<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
   link: _ICON('<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>'),
   live: _ICON('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>'),
+  play: _ICON('<polygon points="7 4 20 12 7 20 7 4" fill="currentColor"/>'),
   share: _ICON('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'),
   move: _ICON('<path d="M3 8a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><path d="M12 11l3 3-3 3M9 14h6"/>'),
   dup: _ICON('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>'),
@@ -982,7 +984,8 @@ function buildTestCard(t, idx, stats, showFolder){
     <div class="t-qc-foot">
       <span class="t-qc-date"${t.createdAt ? ` title="Створено ${_fmtDate(t.createdAt)}"` : ""}>${t.createdAt ? _fmtDate(t.createdAt) : ""}</span>
       <div class="t-qc-foot-actions">
-        <button class="t-edit-btn" data-act="edit" data-id="${esc(t.id)}">${I.edit}Редагувати</button>
+        <button class="t-edit-btn" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+        <button class="t-edit-btn live" data-act="live" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
         <button class="t-menu-btn" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій">${I.more}</button>
       </div>
     </div>
@@ -1003,6 +1006,7 @@ function buildTestRow(t, idx, stats, showFolder){
     </div>
     <div class="t-la">
       <button class="t-lb primary" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+      <button class="t-lb live" data-act="live" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
       <button class="t-lb edit" data-act="edit" data-id="${esc(t.id)}" title="Редагувати" aria-label="Редагувати">${I.edit}<span class="t-lb-t">Редагувати</span></button>
       <button class="t-lb icon" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій" title="Більше дій">${I.more}</button>
     </div>
@@ -1146,7 +1150,8 @@ function _testMenuHtml(t){
   return `<div class="t-fm-head" title="${esc(t.title)}">${esc(t.title)}</div>
     ${it("edit", I.edit, "Редагувати")}
     ${it("link", I.link, "Нове посилання для студентів")}
-    ${it("live", I.live, "Live гра")}
+    ${it("live", I.play, "Запустити гру")}
+    ${it("live-setup", I.live, "Гра: усі налаштування…")}
     <div class="t-fm-sep"></div>
     ${it("move", I.move, "Перемістити в папку")}
     ${it("dup", I.dup, "Дублювати")}
@@ -1162,7 +1167,8 @@ function _testsAction(act, id, el){
     case "edit":          if (t) location.href = `constructor?id=${encodeURIComponent(id)}`; break;
     case "menu":          if (t){ if (_tMenuFor === el) _closeTMenu(); else _openTMenu(el, _testMenuHtml(t)); } break;
     case "link":          _closeTMenu(); G.qLink(id); break;
-    case "live":          _closeTMenu(); G.startLiveGame(id); break;
+    case "live":          _closeTMenu(); G.gameModal(id); break;
+    case "live-setup":    _closeTMenu(); G.startLiveGame(id); break;
     case "move":          _closeTMenu(); G.openMoveModal(id); break;
     case "dup":           _closeTMenu(); G.duplicateTest(id); break;
     case "share":         _closeTMenu(); if (t) G.openShareModal(id, t.title); break;
@@ -2618,6 +2624,78 @@ window.G = {
     const conf = $("del-forever-confirm");
     if (conf && conf.hidden){ conf.hidden = false; conf.querySelector("button")?.focus(); return; }
     G.doDelTest("delete");
+  },
+  // ─── Швидка гра прямо зі сторінки «Тести» ───
+  // Налаштування беруться з останньої гри (qf-live-setup) і зберігаються назад — як на сторінці налаштувань.
+  _gm: null,
+  // chips/segmented: делегований клік (прив'язується один раз)
+  gameModal(testId){
+    if (window.qfCan && !window.qfCan("games")) return;
+    const t = tests.find(x => x.id === testId); if (!t) return;
+    const all = _arr(t.questions);
+    const qs = all.filter(q => q && ["single", "multi", "text", "number"].includes(q.type || "single"));
+    if (!qs.length) { toast("У тесті немає питань, які підходять для гри", "err"); return; }
+    let saved = {}; try { saved = JSON.parse(localStorage.getItem("qf-live-setup") || "{}") || {}; } catch {}
+    const clamp = v => { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(300, Math.max(5, v)) : 20; };
+    const idOk = v => typeof v === "string" && /^[a-z0-9-]{1,30}$/.test(v);
+    G._gm = { id: testId, saved, time: clamp(saved.time ?? 20), scoring: saved.scoring === "correct" ? "correct" : "speed",
+      shuffle: saved.shuffle ?? true, shuffleQ: saved.shuffleQ ?? false, grad: idOk(saved.grad) ? saved.grad : "g-default",
+      pat: saved.pat === "none" || idOk(saved.pat) ? saved.pat : "grid" };
+    const m = G._gm, n = qs.length;
+    $("gm-sub").textContent = `${t.title || "Без назви"} · ${n} пит.`;
+    const times = [...new Set([10, 20, 30, 45, 60, m.time])].sort((a, b) => a - b);
+    $("gm-time").innerHTML = times.map(v => `<button type="button" role="radio" data-t="${v}">${v} с</button>`).join("");
+    $("gm-sa").checked = !!m.shuffle; $("gm-sq").checked = !!m.shuffleQ;
+    const notes = [];
+    if (all.length > n) notes.push(`${all.length - n} ${all.length - n === 1 ? "питання не увійде" : "питань не увійдуть"} у гру: такі типи в грі не підтримуються.`);
+    const broken = qs.filter(q => q.type === "multi" && !_arr(q.correct).length && (q.correct == null || q.correct === "")).length;
+    if (broken) notes.push(`${broken} ${broken === 1 ? "питання" : "питань"} з кількома відповідями не має позначених правильних.`);
+    $("gm-note").hidden = !notes.length; $("gm-note").textContent = notes.join(" ");
+    $("gm-err").textContent = ""; $("gm-go").disabled = false; $("gm-go").textContent = "Створити гру";
+    G._gmPaint(); openM("m-game");
+  },
+  _gmPaint(){
+    const m = G._gm; if (!m) return;
+    $("gm-time").querySelectorAll("button").forEach(b => b.setAttribute("aria-checked", +b.dataset.t === m.time));
+    $("gm-score").querySelectorAll("button").forEach(b => b.setAttribute("aria-checked", b.dataset.v === m.scoring));
+  },
+  gmMore(){ const id = G._gm?.id; closeM("m-game"); if (id) G.startLiveGame(id); },
+  async gmGo(){
+    const m = G._gm; if (!m) return;
+    const btn = $("gm-go"); if (btn.disabled) return;
+    const t = tests.find(x => x.id === m.id); if (!t) return;
+    m.shuffle = $("gm-sa").checked; m.shuffleQ = $("gm-sq").checked;
+    const qs0 = _arr(t.questions).filter(q => q && ["single", "multi", "text", "number"].includes(q.type || "single"));
+    btn.disabled = true; btn.textContent = "Створюємо гру…"; $("gm-err").textContent = "";
+    try {
+      let code = null;
+      for (let i = 0; i < 12 && !code; i++) {
+        const c = String(10000000 + Math.floor(Math.random() * 90000000));
+        if (!(await get(ref(db, `rooms/${c}/status`))).exists()) code = c;
+      }
+      if (!code) throw new Error("не вдалося підібрати вільний код, спробуйте ще раз");
+      const list = [...qs0];
+      if (m.shuffleQ) for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+      // Правильні відповіді не кладемо в публічну кімнату: ключ у приватній гілці викладача
+      const key = {}; list.forEach((q, i) => { key[i] = q.correct ?? null; });
+      const now = Date.now();
+      await update(ref(db), {
+        [`rooms/${code}`]: {
+          hostUid: _uid, testId: m.id, status: "lobby", currentQ: 0, timePerQ: m.time, scoring: m.scoring,
+          theme: { grad: m.grad, pat: m.pat },
+          options: { shuffle: !!m.shuffle, shuffleQ: !!m.shuffleQ, podium: m.saved.podium ?? true },
+          questions: list.map(q => ({ id: q.id || "", type: q.type || "single", text: q.text || "", options: q.options || null })),
+          testTitle: t.title || "", qCount: list.length, createdAt: now,
+        },
+        [`teachers/${_uid}/liveRooms/${code}`]: { createdAt: now, key },
+      });
+      try { localStorage.setItem("qf-live-setup", JSON.stringify({ ...m.saved, time: m.time, scoring: m.scoring, shuffle: !!m.shuffle, shuffleQ: !!m.shuffleQ })); } catch {}
+      location.href = `live/lobby?code=${code}`;
+    } catch (e) {
+      console.error(e);
+      $("gm-err").textContent = "Не вдалося створити гру: " + (e.message || e);
+      btn.disabled = false; btn.textContent = "Створити гру";
+    }
   },
   startLiveGame(testId){
     document.querySelectorAll("[id^='tmenu-']").forEach(m=>m.style.display="none");
@@ -5151,3 +5229,10 @@ function _attStatusPill(status){
   if (status === "in_progress")    return `<span class="pill info">В процесі</span>`;
   return `<span class="pill off">—</span>`;
 }
+
+// Швидка гра: вибір часу й балів (m-game)
+document.addEventListener("click", e => {
+  const tb = e.target.closest("#gm-time button"), sb = e.target.closest("#gm-score button");
+  if (tb && G._gm) { G._gm.time = +tb.dataset.t; G._gmPaint(); }
+  if (sb && G._gm) { G._gm.scoring = sb.dataset.v; G._gmPaint(); }
+});

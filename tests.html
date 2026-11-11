@@ -29,9 +29,9 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=48">
-<link rel="modulepreload" href="shared/app.js?v=32">
-<link rel="modulepreload" href="shared/features.js?v=45">
+<link rel="stylesheet" href="shared/styles.css?v=49">
+<link rel="modulepreload" href="shared/app.js?v=33">
+<link rel="modulepreload" href="shared/features.js?v=46">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    СТОРІНКА «ТЕСТИ» — стилі під #sec-tests
@@ -215,6 +215,11 @@
 #sec-tests .t-lb svg{width:13px;height:13px;flex:0 0 auto}
 #sec-tests .t-lb.primary{background:var(--nav-600);border-color:var(--nav-600);color:#fff}
 #sec-tests .t-lb.primary:hover{background:#1E40AF;border-color:#1E40AF;color:#fff}
+#sec-tests .t-lb.live{background:#5B4FE8;border-color:#5B4FE8;color:#fff}
+#sec-tests .t-lb.live:hover{background:#4A3FD1;border-color:#4A3FD1;color:#fff}
+#sec-tests .t-edit-btn.live{border-color:#5B4FE8;color:#4A3FD1}
+#sec-tests .t-edit-btn.live:hover{background:#EDEBFF;border-color:#4A3FD1;color:#4A3FD1}
+#sec-tests .t-edit-btn.live svg{fill:currentColor}
 #sec-tests .t-lb.icon,#sec-tests .t-lb.edit{width:32px;padding:0}
 #sec-tests .t-lb.icon svg,#sec-tests .t-lb.edit svg{width:15px;height:15px}
 #sec-tests .t-lb .t-lb-t{display:none}
@@ -224,8 +229,7 @@
   #sec-tests .t-lrow{grid-template-columns:40px minmax(0,1fr);padding:12px 14px;row-gap:8px}
   #sec-tests .t-la{grid-column:1 / -1}
   #sec-tests .t-lb{flex:1;height:40px}
-  #sec-tests .t-lb.edit{width:auto}
-  #sec-tests .t-lb.edit .t-lb-t{display:inline}
+  #sec-tests .t-lb.edit{flex:0 0 44px;width:44px}
   #sec-tests .t-lb.icon{flex:0 0 44px}
 }
 
@@ -410,8 +414,8 @@
 
 <script type="module">
 // ─── Ініціалізація (паралельне завантаження — як в оригіналі) ───
-const { initApp } = await import("./shared/app.js?v=32");
-const featuresP = import("./shared/features.js?v=45");
+const { initApp } = await import("./shared/app.js?v=33");
+const featuresP = import("./shared/features.js?v=46");
 
 window.showSec = function(name){
   if (name === "tests"){

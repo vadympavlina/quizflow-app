@@ -843,6 +843,20 @@ textarea.fi{height:auto;padding:11px 14px;line-height:1.5}
 /* ═══════════════════════════════════════════════════════════════════════
    ПОСИЛАННЯ: модалка створення / QR / «готово» (m-link, m-qr) — shared
    ═══════════════════════════════════════════════════════════════════════ */
+/* Швидкий запуск гри (m-game) */
+.gm-ic{background:#EDEBFF!important;color:#5B4FE8!important}
+.gm-chips{display:flex;gap:8px;flex-wrap:wrap}
+.gm-chips button{appearance:none;min-width:58px;height:42px;padding:0 14px;border-radius:12px;border:1.5px solid #DCE3F2;background:#fff;color:#24335A;font:700 14px 'Manrope',sans-serif;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.gm-chips button:hover{border-color:#5B4FE8}
+.gm-chips button[aria-checked=true]{border-color:#5B4FE8;background:#EDEBFF;color:#3B30C4}
+.gm-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gm-seg button{appearance:none;text-align:left;padding:10px 14px;border-radius:12px;border:1.5px solid #DCE3F2;background:#fff;color:#24335A;font:700 14px 'Manrope',sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
+.gm-seg button small{display:block;margin-top:2px;font-weight:500;font-size:12px;color:#6B7794}
+.gm-seg button:hover{border-color:#5B4FE8}
+.gm-seg button[aria-checked=true]{border-color:#5B4FE8;background:#EDEBFF;color:#3B30C4}
+.gm-chips button:focus-visible,.gm-seg button:focus-visible{outline:3px solid #5B4FE8;outline-offset:2px}
+.gm-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#FFF7E6;border:1px solid #F5DFA8;color:#7A5200;font-size:13px;font-weight:600;line-height:1.4}
+@media (max-width:520px){.gm-seg{grid-template-columns:1fr}}
 .lk-mb{max-width:620px;padding:0;font-family:'Manrope',system-ui,sans-serif;color:#0B1437;position:relative}
 .lk-x{position:absolute;top:14px;right:14px;z-index:2;width:34px;height:34px;border-radius:10px;border:1px solid #E3E8F2;background:#fff;display:grid;place-items:center;color:#5B6A8F;cursor:pointer;transition:all .15s}
 .lk-x:hover{border-color:#FECACA;color:#B91C1C;background:#FEF2F2}
