@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=6">
+<link rel="modulepreload" href="live-core.js?v=7">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -79,6 +79,7 @@
   .player.new{animation:pop .35s cubic-bezier(.34,1.56,.64,1)}
   @keyframes pop{from{transform:scale(.85);opacity:0}}
   .player:hover{border-color:var(--accent)}
+  .av img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;pointer-events:none;-webkit-user-drag:none}
   .player .av{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;flex:0 0 auto;position:relative}
   .player .av::after{content:"";position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--good);border:2.5px solid var(--card)}
   .player.off{opacity:.55}
@@ -158,8 +159,8 @@
 <script type="module">
 import {
   db, ref, get, update, onValue, requireTeacher, readParams, isValidCode, fatal, toast,
-  esc, initialsOf, avatarColor, joinUrl, HOME_URL, serverNow, isActive, isOnline, confirmDlg,
-} from "./live-core.js?v=6";
+  esc, initialsOf, avatarColor, avatarFill, avatarInner, joinUrl, HOME_URL, serverNow, isActive, isOnline, confirmDlg,
+} from "./live-core.js?v=7";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -257,10 +258,11 @@ function render() {
   list.forEach(([pid, p]) => {
     const el = card(pid);
     const nick = p.nickname || "—";
-    if (el.dataset.nick !== nick) {
-      el.dataset.nick = nick;
+    const avKey = nick + "|" + (p.avatar || "");
+    if (el.dataset.nick !== avKey) {
+      el.dataset.nick = avKey;
       const av = el.querySelector(".av");
-      av.textContent = initialsOf(nick); av.style.background = avatarColor(nick);
+      av.innerHTML = avatarInner(nick, p.avatar); av.style.background = avatarFill(nick, p.avatar);
       el.querySelector(".name").textContent = nick; el.querySelector(".name").title = nick;
       el.querySelector(".x").setAttribute("aria-label", `Видалити ${nick}`);
     }

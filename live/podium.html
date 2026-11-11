@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=6">
+<link rel="modulepreload" href="live-core.js?v=7">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -69,6 +69,7 @@
   .pod-3 .pod-card{border-color:var(--bronze)}
   .pod-body{padding:24px 20px;text-align:center}
   .pod-1 .pod-body{padding-top:32px}
+  .av img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;pointer-events:none;-webkit-user-drag:none}
   .pod-body > .av{width:76px;height:76px;border-radius:14px;margin:0 auto 14px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:26px}
   .pod-1 .pod-body > .av{width:92px;height:92px;font-size:32px}
   .pod-body .name{font-size:21px;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}
@@ -151,8 +152,8 @@
 <script type="module">
 import {
   db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
-  esc, initialsOf, avatarColor, standings, THEMES, DEFAULT_THEME, plural, fmtNum, HOME_URL, serverNow,
-} from "./live-core.js?v=6";
+  esc, initialsOf, avatarColor, avatarFill, avatarInner, standings, THEMES, DEFAULT_THEME, plural, fmtNum, HOME_URL, serverNow,
+} from "./live-core.js?v=7";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -175,7 +176,7 @@ $("band").style.background = (THEMES[room.theme?.grad] || THEMES[DEFAULT_THEME.g
 if (room.testId) $("again-btn").href = `setup?testId=${encodeURIComponent(room.testId)}`;
 else $("again-btn").hidden = true;
 
-const av = (p, extra = "") => `<div class="av"${extra} style="background:${avatarColor(p.nickname)}">${esc(initialsOf(p.nickname))}</div>`;
+const av = (p, extra = "") => `<div class="av"${extra} style="background:${avatarFill(p.nickname, p.avatar)}">${avatarInner(p.nickname, p.avatar)}</div>`;
 
 if (!list.length) {
   $("podium-wrap").outerHTML = `<div class="empty">У грі не було учасників</div>`;

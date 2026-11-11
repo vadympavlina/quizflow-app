@@ -103,6 +103,22 @@ export function richHtml(html) {
   return out.innerHTML;
 }
 
+// ─── Аватари гравців (герої): обирає учень при вході, діє лише в цій грі ───
+// Список генерується: cd tests && npm run avatars (quizflow-play). Картинки — assets/avatars/<id>.svg.
+import { AVATARS } from "./avatars.js?v=2";
+export { AVATARS };
+const AV_V = 2;                                           // піднімати, коли змінюються картинки
+const AV_BY = new Map(AVATARS.map(a => [a.id, a]));
+export const avatarInfo = (id) => AV_BY.get(id) || null;
+export const avatarSrc = (id) => new URL(`../assets/avatars/${id}.svg?v=${AV_V}`, import.meta.url).href;
+export const AVATAR_ID_RE = /^[a-z0-9-]{1,24}$/;
+// Без аватара (старі гравці) лишаються ініціали на кольоровому тлі
+export const avatarFill = (nick, id) => avatarInfo(id)?.bg || avatarColor(nick);
+export const avatarInner = (nick, id) => avatarInfo(id)
+  ? `<img src="${esc(avatarSrc(id))}" alt="" draggable="false">`
+  : esc(initialsOf(nick));
+export const randomAvatar = () => AVATARS[Math.floor(Math.random() * AVATARS.length)]?.id || "";
+
 export function initialsOf(nick) {
   const parts = String(nick || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -274,7 +290,7 @@ export function standings(players, allAnswers) {
   const tally = tallyAnswers(allAnswers);
   const list = Object.entries(players || {})
     .filter(([, p]) => p && p.active !== false)
-    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", ...(tally[pid] || { score: 0, correct: 0, answered: 0 }) }))
+    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0 }) }))
     .sort((a, b) => b.score - a.score || b.correct - a.correct || a.nickname.localeCompare(b.nickname, "uk"));
   return denseRank(list);
 }
