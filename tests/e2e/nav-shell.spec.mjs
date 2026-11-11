@@ -25,7 +25,7 @@ test("кожна сторінка показує шлях «Розділ / Ст�
 test("заголовки: на кожній сторінці свій видимий заголовок; запасний механізм ховає дублікат", async ({ page, errors }) => {
   await seed(page, rich(Date.now()), "t1");
   await page.goto("/"); await page.waitForTimeout(1300);
-  await expect(page.locator(".main h1").first()).toContainText("Добрий");          // привітання на дашборді
+  await expect(page.locator(".main h1").first()).toContainText(/Добр/);          // привітання на дашборді (залежить від часу доби)
   for (const [pg, h] of [["attempts", "Усі проходження"], ["tests", "Бібліотека тестів"], ["gradebook", "Оцінки по групах"], ["online", "Хто проходить зараз"]]) {
     await page.goto("/" + pg); await page.waitForTimeout(1300);
     const h1 = page.locator(".main h1").first();
