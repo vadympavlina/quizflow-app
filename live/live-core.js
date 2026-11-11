@@ -103,6 +103,38 @@ export function richHtml(html) {
   return out.innerHTML;
 }
 
+// ─── Аватари гравців (герої): обирає учень при вході, діє лише в цій грі ───
+// Список генерується: cd tests && npm run avatars (quizflow-play). Картинки — assets/avatars/<id>.svg.
+import { AVATARS } from "./avatars.js?v=3";
+import { HATS, GLASSES, FIT, SC } from "./accessories.js?v=3";
+export { AVATARS, HATS, GLASSES };
+const AV_V = 3;                                           // піднімати, коли змінюються картинки
+const AV_BY = new Map(AVATARS.map(a => [a.id, a]));
+export const avatarInfo = (id) => AV_BY.get(id) || null;
+export const avatarSrc = (id) => new URL(`../assets/avatars/${id}.svg?v=${AV_V}`, import.meta.url).href;
+export const AVATAR_ID_RE = /^[a-z0-9-]{1,24}$/;
+// Без аватара (старі гравці) лишаються ініціали на кольоровому тлі
+export const avatarFill = (nick, id) => avatarInfo(id)?.bg || avatarColor(nick);
+const HAT_BY = new Map(HATS.map(h => [h.id, h])), GL_BY = new Map(GLASSES.map(g => [g.id, g]));
+export const hatInfo = (id) => HAT_BY.get(id) || null;
+export const glassesInfo = (id) => GL_BY.get(id) || null;
+// Розміщення убору/окулярів: спершу підгонка під героя, потім той самий масштаб, що й у самого героя
+const place = (charId, kind, dyExtra = 0) => {
+  const [k, sdy] = SC[charId] || [1, 0], [dx, dy, sc] = (FIT[charId] || {})[kind] || [0, 0, 1];
+  return `translate(100 ${106 + sdy}) scale(${k}) translate(-100 -106) translate(${100 + dx} ${100 + dy + dyExtra}) scale(${sc}) translate(-100 -100)`;
+};
+// Герой (+ убір, окуляри). Без аксесуарів — звичайна картинка; з ними — один inline-SVG (id всередині унікальні).
+export const avatarInner = (nick, id, opts = {}) => {
+  if (!avatarInfo(id)) return esc(initialsOf(nick));
+  const hat = HAT_BY.get(opts?.hat), gl = GL_BY.get(opts?.glasses);
+  if (!hat && !gl) return `<img src="${esc(avatarSrc(id))}" alt="" draggable="false">`;
+  const vb = hat?.tall ? "0 -22 200 200" : "12 8 176 176";
+  return `<svg viewBox="${vb}" aria-hidden="true"><image href="${esc(avatarSrc(id))}" x="12" y="8" width="176" height="176"/>`
+    + (gl ? `<g transform="${place(id, "gl")}">${gl.svg}</g>` : "")
+    + (hat ? `<g transform="${place(id, "hat", hat.dy)}">${hat.svg}</g>` : "") + `</svg>`;
+};
+export const randomAvatar = () => AVATARS[Math.floor(Math.random() * AVATARS.length)]?.id || "";
+
 export function initialsOf(nick) {
   const parts = String(nick || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -274,7 +306,7 @@ export function standings(players, allAnswers) {
   const tally = tallyAnswers(allAnswers);
   const list = Object.entries(players || {})
     .filter(([, p]) => p && p.active !== false)
-    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", ...(tally[pid] || { score: 0, correct: 0, answered: 0 }) }))
+    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", hat: p.hat || "", glasses: p.glasses || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0 }) }))
     .sort((a, b) => b.score - a.score || b.correct - a.correct || a.nickname.localeCompare(b.nickname, "uk"));
   return denseRank(list);
 }
