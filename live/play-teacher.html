@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=5">
+<link rel="modulepreload" href="live-core.js?v=6">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -97,20 +97,24 @@
   .stage{padding:28px 28px 20px;max-width:1500px;margin:0 auto;position:relative;z-index:1}
   .pause-banner{display:none;margin:0 auto 20px;max-width:560px;text-align:center;padding:14px 20px;border-radius:16px;background:rgba(15,23,42,.7);border:1px solid rgba(148,163,184,.4);font-weight:800;font-size:18px;backdrop-filter:blur(8px)}
   .pause-banner.show{display:block}
-  .answered-bar{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px 20px;display:flex;align-items:center;gap:18px;margin:0 auto 26px;max-width:1400px}
-  .answered-bar .l{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C4B5FD}
-  .answered-bar .bar{flex:1;height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-  .answered-bar .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#34D399,#A78BFA);border-radius:999px;transition:width .4s}
-  .answered-bar .nums{font-family:"Geist Mono",monospace;font-size:20px;font-weight:800;white-space:nowrap}
-  .answered-bar .nums .dim{color:#8D97C4}
-  .answered-wait{max-width:1400px;margin:-16px auto 22px;text-align:center;font-size:14px;font-weight:700;color:#C7CCEA;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-  .q-type-wrap{display:flex;justify-content:center;margin-bottom:14px}
-  .q-type-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.04em;border:1.5px solid}
-  .q-type-badge.single{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.5);color:#DDD6FE}
-  .q-type-badge.multi{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.5);color:#A7F3D0}
-  .q-type-badge.text{background:rgba(251,191,36,.13);border-color:rgba(251,191,36,.5);color:#FDE68A}
-  .q-type-badge.number{background:rgba(96,165,250,.15);border-color:rgba(96,165,250,.5);color:#BFDBFE}
+  /* ── Ярлик типу питання + лічильник відповідей ── */
+  .meta-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:0 auto 22px;max-width:1400px}
+  .tchip{display:inline-flex;align-items:center;gap:10px;padding:10px 20px 10px 14px;border-radius:999px;font-size:clamp(15px,1.3vw,19px);font-weight:800;letter-spacing:-.005em;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .tchip svg{width:22px;height:22px;flex:0 0 auto}
+  .tchip.single{background:#EDE9FE;color:#4C1D95}
+  .tchip.multi{background:#D1FAE5;color:#065F46}
+  .tchip.text{background:#FEF3C7;color:#78350F}
+  .tchip.number{background:#DBEAFE;color:#1E3A8A}
+  .pulse{display:inline-flex;align-items:center;gap:12px;padding:6px 20px 6px 8px;border-radius:999px;background:rgba(5,8,30,.55);border:1px solid rgba(255,255,255,.16)}
+  .pulse .ring{width:44px;height:44px;transform:rotate(-90deg);flex:0 0 auto}
+  .pulse .ring circle{fill:none;stroke-width:5}
+  .pulse .rt{stroke:rgba(255,255,255,.14)}
+  .pulse .rf{stroke:#34D399;stroke-linecap:round;stroke-dasharray:119.4;stroke-dashoffset:119.4;transition:stroke-dashoffset .5s cubic-bezier(.22,1,.36,1),stroke .3s}
+  .pulse.full .rf{stroke:#FDE047}
+  .pulse .pt{display:flex;flex-direction:column;gap:2px;line-height:1}
+  .pulse .pl{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#C4B5FD}
+  .pulse .pn{font-family:"Geist Mono",monospace;font-size:22px;font-weight:800;white-space:nowrap}
+  .pulse .pn i{font-style:normal;color:#8D97C4;font-size:.78em}
   .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:900;letter-spacing:-.025em;line-height:1.15;margin:0 auto 36px;max-width:1300px;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
   .question-text.small{font-weight:800;line-height:1.28;letter-spacing:-.015em}
   .question-text img{max-width:100%;max-height:34vh;border-radius:14px;display:block;margin:14px auto 0}
@@ -136,10 +140,18 @@
   .ans.d{background:linear-gradient(135deg,#3B82F6,#1D4ED8)}
   .ans.e{background:linear-gradient(135deg,#A78BFA,#6D28D9)}
   .ans.f{background:linear-gradient(135deg,#EC4899,#BE185D)}
-  .ans.correct{outline:5px solid #FDE047;outline-offset:4px;transform:scale(1.015)}
-  .ans.correct .letter{background:#FDE047;color:#713F12}
-  .ans.correct .tag{position:absolute;top:10px;right:14px;background:#FDE047;color:#713F12;font-size:11px;font-weight:900;letter-spacing:.1em;padding:3px 9px;border-radius:6px}
-  .ans.dim{opacity:.32;filter:saturate(.6);transform:scale(.97)}
+  .ans{--chk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E")}
+  .ans.correct{box-shadow:0 12px 30px rgba(0,0,0,.3), inset 0 0 0 4px rgba(255,255,255,.95)}
+  .ans.correct .letter{background:#fff;border-color:#fff;color:transparent;position:relative}
+  .ans.correct .letter::after{content:"";position:absolute;inset:0;margin:auto;width:62%;height:62%;background:#059669;-webkit-mask:var(--chk) center/contain no-repeat;mask:var(--chk) center/contain no-repeat}
+  .ans.dim{opacity:.36;filter:saturate(.55);transform:scale(.985)}
+  .key-line{display:none;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 12px;margin:24px auto 0;max-width:1400px}
+  .revealed .key-line{display:flex}
+  .key-line .kl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#A7F3D0}
+  .kchip{display:inline-flex;align-items:center;gap:9px;padding:6px 16px 6px 7px;border-radius:999px;background:rgba(16,185,129,.2);border:1px solid rgba(52,211,153,.55);font-weight:800;font-size:17px;max-width:min(460px,100%)}
+  .kchip b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#34D399;color:#064E3B;font:800 13px "Geist Mono",monospace;flex:0 0 auto}
+  .kchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kchip.v{padding:6px 16px}
 
   .text-wait-hint{max-width:640px;margin:0 auto;text-align:center;padding:40px 32px;border:2px dashed rgba(255,255,255,.18);border-radius:22px;color:#B8C0E6;font-size:17px;font-weight:600;line-height:1.6}
   .text-wait-hint b{color:#fff}
@@ -153,9 +165,8 @@
   .panel{background:rgba(5,8,30,.45);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px 20px;backdrop-filter:blur(8px)}
   .panel h3{margin:0 0 12px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C4B5FD;display:flex;align-items:center;gap:10px}
   .panel h3 small{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;color:#8D97C4;font-size:12px}
-  .correct-line{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-  .correct-line span{font-size:12.5px;color:#B8C0E6;font-weight:700}
-  .correct-line b{font-family:"Geist Mono",monospace;font-size:22px;color:#86EFAC}
+  .correct-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .correct-line > span{font-size:12.5px;color:#B8C0E6;font-weight:700}
   .groups{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px}
   .grp{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05)}
   .grp.ok{background:rgba(16,185,129,.16)}
@@ -210,8 +221,11 @@
     .actions{width:100%;margin-left:0}
     .actions .btn{flex:1 1 auto;justify-content:center;padding:10px 12px}
     .stage{padding-top:16px}
-    .answered-bar{padding:10px 14px;gap:12px;margin-bottom:18px}
-    .answered-bar .nums{font-size:16px}
+    .meta-row{gap:10px;margin-bottom:16px}
+    .tchip{padding:8px 16px 8px 11px;font-size:15px}
+    .tchip svg{width:19px;height:19px}
+    .pulse .ring{width:38px;height:38px}
+    .pulse .pn{font-size:19px}
     .stage .question-text{margin-bottom:22px}
     .answers{gap:10px}
     .ans,.answers.many .ans{padding:14px 16px;min-height:64px;gap:14px;font-size:17px;border-radius:16px}
@@ -246,16 +260,17 @@
 
 <main class="stage" id="stage">
   <div class="pause-banner" id="pause-banner"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>Гру призупинено — учні бачать екран паузи</div>
-  <div class="answered-bar" id="answered-bar">
-    <span class="l">Відповіли</span>
-    <div class="bar"><i id="answered-fill"></i></div>
-    <span class="nums"><span id="answered-num">0</span> <span class="dim">/ <span id="answered-total">0</span></span></span>
+  <div class="meta-row">
+    <span id="q-type-wrap"></span>
+    <div class="pulse" id="answered-bar" role="status">
+      <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="rt" cx="22" cy="22" r="19"/><circle class="rf" id="answered-ring" cx="22" cy="22" r="19"/></svg>
+      <div class="pt"><span class="pl">Відповіли</span><span class="pn"><span id="answered-num">0</span> <i>/ <span id="answered-total">0</span></i></span></div>
+    </div>
   </div>
-  <div class="answered-wait" id="answered-wait" hidden></div>
-  <div class="q-type-wrap"><span class="q-type-badge single" id="q-type-badge">Одна правильна</span></div>
   <div class="question-text qf-rich" id="q-text"></div>
   <div class="answers" id="answers-grid"></div>
-  <div class="text-wait-hint" id="text-wait-hint" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Учні вводять власну відповідь<br><b>Прогрес видно на смузі вище</b></div>
+  <div class="key-line" id="key-line"></div>
+  <div class="text-wait-hint" id="text-wait-hint" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Учні вводять власну відповідь<br><b>Скільки вже відповіли, видно у лічильнику вгорі</b></div>
 
   <div class="reveal-grid" id="reveal-grid">
     <div class="panel grading" id="grading"></div>
@@ -283,8 +298,8 @@ import {
   esc, initialsOf, avatarColor, applyTheme, serverNow, watchFields, safeStore, HOME_URL,
   OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
-  richHtml, confirmDlg, rankMap,
-} from "./live-core.js?v=5";
+  richHtml, confirmDlg, rankMap, typeChip, textAnswers,
+} from "./live-core.js?v=6";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -497,9 +512,7 @@ function renderQuestion(qi) {
   const qt = $("q-text");
   qt.innerHTML = richHtml(q.text);
 
-  const t = TYPE_LABELS[q.type] || TYPE_LABELS.single;
-  $("q-type-badge").className = "q-type-badge " + t.cls;
-  $("q-type-badge").textContent = t.label;   // лише тип, без кількості правильних — екран бачить увесь клас
+  $("q-type-wrap").innerHTML = typeChip(q.type);   // лише тип, без кількості правильних — екран бачить увесь клас
 
   const free = isFreeform(q);
   $("text-wait-hint").hidden = !free;
@@ -512,6 +525,7 @@ function renderQuestion(qi) {
       <span class="txt">${esc(o)}</span>
       <span class="count">0</span>
     </div>`).join("");
+  $("key-line").innerHTML = "";
   const longest = Math.max(0, ...(q.options || []).map(o => String(o ?? "").length));
   grid.style.gridTemplateColumns = (q.options || []).length <= 2 && longest > 40 ? "1fr" : "1fr 1fr";
   grid.classList.toggle("many", (q.options || []).length >= 5);
@@ -551,17 +565,12 @@ function maybeAutoReveal() {
 function renderAnswered() {
   const answered = Object.keys(currentAnswers()).length;
   const total = expectedCount();
-  $("answered-fill").style.width = (total ? Math.round(answered / total * 100) : 0) + "%";
+  const share = total ? Math.min(1, answered / total) : 0;
+  $("answered-ring").style.strokeDashoffset = (119.4 * (1 - share)).toFixed(1);
+  $("answered-bar").classList.toggle("full", total > 0 && answered >= total);
   $("answered-num").textContent = answered;
   $("answered-total").textContent = total;
   $("footer-players").textContent = total;
-  // Хто ще не відповів — коли лишилось кілька людей, викладач може їх гукнути
-  const ans = currentAnswers();
-  const waiting = activePids().filter(p => isOnline(players[p]) && !ans[p]).map(p => players[p].nickname || "—");
-  const w = $("answered-wait");
-  const showW = state.status === "question" && answered > 0 && waiting.length > 0 && waiting.length <= 6;
-  w.hidden = !showW;
-  if (showW) w.textContent = "Чекаємо: " + waiting.sort((a, b) => a.localeCompare(b, "uk")).join(", ");
 }
 
 // ─── Розкриття ─────────────────────────────────────────────────────────
@@ -583,11 +592,15 @@ function renderReveal() {
       const ok = correct.includes(i);
       el.classList.toggle("correct", ok);
       el.classList.toggle("dim", !ok);
-      if (ok && !el.querySelector(".tag")) el.insertAdjacentHTML("beforeend", `<span class="tag">✓ ПРАВИЛЬНО</span>`);
       const pct = n ? Math.round(counts[i] / n * 100) : 0;
       el.querySelector(".count").innerHTML = `${counts[i]}<small>${pct}%</small>`;
       el.querySelector(".fill").style.width = pct + "%";
     });
+    // Правильні відповіді одним рядком: «Правильна відповідь» або «Правильні відповіді»
+    $("key-line").innerHTML = correct.length
+      ? `<span class="kl">${correct.length === 1 ? "Правильна відповідь" : "Правильні відповіді"}</span>` + correct.map(i =>
+          `<span class="kchip"><b>${OPT_LETTERS[i]}</b><span>${esc(q.options?.[i] ?? "")}</span></span>`).join("")
+      : "";
     $("reveal-grid").classList.add("no-grading");
   } else {
     $("reveal-grid").classList.remove("no-grading");
@@ -615,7 +628,7 @@ function renderGrading(ans) {
   const total = Object.keys(ans).length;
   $("grading").innerHTML = `
     <h3>Відповіді учнів <small>можна зарахувати вручну</small></h3>
-    <div class="correct-line"><span>Еталон:</span><b>${esc(keyFor(state.currentQ) ?? "—")}</b></div>
+    <div class="correct-line"><span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).length > 1 ? "Допустимі відповіді:" : "Еталон:"}</span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).map(v => `<span class="kchip v"><span>${esc(v)}</span></span>`).join("") || "—"}</div>
     <div class="groups">${groupsCache.length ? groupsCache.map((g, i) => {
       const ok = g.correct === g.pids.length;
       return `<div class="grp${ok ? " ok" : ""}">
@@ -676,7 +689,7 @@ function applyState(s) {
   const isReveal = state.status === "reveal";
   const isPaused = state.status === "paused";
   $("pause-banner").classList.toggle("show", isPaused);
-  $("answered-bar").style.display = isReveal ? "none" : "";
+  $("answered-bar").hidden = isReveal;
   renderAnswered();
   $("pause-btn").hidden = isReveal;
   $("pause-btn").innerHTML = isPaused ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><polygon points="6 4 20 12 6 20 6 4"/></svg>Продовжити <span class="k">P</span>` : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>Пауза <span class="k">P</span>`;
