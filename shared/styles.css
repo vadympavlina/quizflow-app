@@ -78,12 +78,11 @@ html.sb-boot .sb, html.sb-boot .sb *, html.sb-boot .main{ transition:none !impor
 .sb-head{ display:flex; align-items:center; height:44px; padding:0 4px; margin-bottom:10px; overflow:hidden; flex:0 0 auto; }
 .sb .logo{ display:flex; align-items:center; gap:11px; min-width:0; text-decoration:none; border-radius:12px; outline-offset:3px; }
 .sb .logo-i{
-  width:38px; height:38px; flex:0 0 auto; border-radius:12px;
+  width:40px; height:40px; flex:0 0 auto;
   display:grid; place-items:center;
-  background:linear-gradient(140deg,#6E9BFF 0%,#3B6BF6 45%,#2447C9 100%);
-  box-shadow:0 10px 22px -10px rgba(91,140,255,.9), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.15);
   transition:transform .2s var(--sb-ease);
 }
+.sb .logo-i img{ width:100%; height:100%; object-fit:contain; display:block; -webkit-user-drag:none; pointer-events:none; }
 .sb .logo:hover .logo-i{ transform:rotate(-6deg) scale(1.04); }
 .sb .logo-t{ font-weight:800; font-size:18px; letter-spacing:-.02em; color:#fff; white-space:nowrap; }
 .sb .logo-t em{ font-style:normal; background:linear-gradient(90deg,#A5C1FF,#6EE7D8); -webkit-background-clip:text; background-clip:text; color:transparent; }

@@ -21,7 +21,7 @@
 - **Вхід Firebase не ділиться між піддоменами** (браузер зберігає його окремо для кожного). Тому вхід викладача — лише в `app`, вхід адміна — лише в `admin`; учням (`play`, `test`) вхід не потрібен.
 - Правила бази, Cloudflare Worker пошти, `docs/` і генератори іконок та прев'ю лишаються в старому репозиторії `quizflow` (інфраструктура). Після змін правил їх треба вручну опублікувати в консолі Firebase.
 - Після змін у `shared/*.js|css` піднімати `?v=` у всіх HTML цього репозиторію, де файл підключено.
-- Іконки — `assets/icons/<teacher|game>/` і `/favicon.ico`; не малювати вручну: генеруються в `quizflow` (`cd tests && npm run icons`), потім копіюються сюди разом з `?v=` у посиланнях.
+- Іконки — `assets/icons/<teacher|game>/` і `/favicon.ico`. Набір `teacher` — талісман (синя качечка): генерується тут з `assets/icons/teacher/mascot.webp` командою `cd tests && npm run icons:mascot` (нове зображення: замінити файл, виконати скрипт, підняти `?v=` у посиланнях на іконки). Логотип у меню — `assets/icons/teacher/duck.webp` (`shared/nav.js`). Набір `game` — з репозиторію `quizflow` (`npm run icons`).
 - Прев'ю посилань (Open Graph) — метатеги в `<head>` і `assets/og/teacher.jpg і game.jpg`; генеруються в `quizflow` (`npm run og`).
 
 ## Спільні файли (копії між репозиторіями)
