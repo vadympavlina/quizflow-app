@@ -6,21 +6,21 @@ import fs from "node:fs";
 const OUT = new URL("../../assets/icons/teacher/", import.meta.url);
 const ROOT = new URL("../../", import.meta.url);
 const src = "data:image/webp;base64," + fs.readFileSync(new URL("mascot.webp", OUT)).toString("base64");
-const BG = "#F0F3FA";
+const BG = ["#EAF0FF", "#CFDCFF"]; // світло-синій градієнт, талісман цілком у рамці
 
 const b = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 const p = await b.newPage();
 await p.goto("about:blank");
-async function render(size, bg, scale, type = "image/png", q) {
-  const url = await p.evaluate(async ({ src, size, bg, scale, type, q }) => {
+async function render(size, bg, scale, type = "image/png", q, bottom = false) {
+  const url = await p.evaluate(async ({ src, size, bg, scale, type, q, bottom }) => {
     const img = new Image(); img.src = src; await img.decode();
     const c = document.createElement("canvas"); c.width = c.height = size;
     const x = c.getContext("2d"); x.imageSmoothingQuality = "high";
-    if (bg) { x.fillStyle = bg; x.fillRect(0, 0, size, size); }
+    if (bg) { const g = x.createLinearGradient(0, 0, 0, size); g.addColorStop(0, bg[0]); g.addColorStop(1, bg[1]); x.fillStyle = g; x.fillRect(0, 0, size, size); }
     const k = size * scale / Math.max(img.width, img.height), w = img.width * k, h = img.height * k;
-    x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+    x.drawImage(img, (size - w) / 2, bottom ? size - h : (size - h) / 2 + (bg ? size * 0.02 : 0), w, h);
     return c.toDataURL(type, q);
-  }, { src, size, bg, scale, type, q });
+  }, { src, size, bg, scale, type, q, bottom });
   return Buffer.from(url.split(",")[1], "base64");
 }
 function ico(pngs) {
@@ -32,13 +32,13 @@ function ico(pngs) {
   }
   return Buffer.concat([head, ...dir, ...body]);
 }
-fs.writeFileSync(new URL("favicon.ico", OUT), ico(await Promise.all([16, 32, 48].map(async s => ({ size: s, buf: await render(s, null, 1) })))));
-fs.writeFileSync(new URL("apple-touch-icon.png", OUT), await render(180, BG, 0.88));
-fs.writeFileSync(new URL("icon-192.png", OUT), await render(192, BG, 0.88));
-fs.writeFileSync(new URL("icon-512.png", OUT), await render(512, BG, 0.88));
-fs.writeFileSync(new URL("icon-maskable-512.png", OUT), await render(512, BG, 0.62));
+fs.writeFileSync(new URL("favicon.ico", OUT), ico(await Promise.all([16, 32, 48].map(async s => ({ size: s, buf: await render(s, BG, 0.94) })))));
+fs.writeFileSync(new URL("apple-touch-icon.png", OUT), await render(180, BG, 0.94));
+fs.writeFileSync(new URL("icon-192.png", OUT), await render(192, BG, 0.94));
+fs.writeFileSync(new URL("icon-512.png", OUT), await render(512, BG, 0.94));
+fs.writeFileSync(new URL("icon-maskable-512.png", OUT), await render(512, BG, 0.8, "image/png", undefined, true));
 fs.writeFileSync(new URL("duck.webp", OUT), await render(160, null, 1, "image/webp", 0.92)); // логотип у меню
-const svgPng = (await render(256, null, 1)).toString("base64");
+const svgPng = (await render(256, BG, 0.94)).toString("base64");
 fs.writeFileSync(new URL("icon.svg", OUT), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><image width="256" height="256" href="data:image/png;base64,${svgPng}"/></svg>\n`);
 fs.copyFileSync(new URL("favicon.ico", OUT), new URL("favicon.ico", ROOT));
 fs.copyFileSync(new URL("apple-touch-icon.png", OUT), new URL("apple-touch-icon.png", ROOT));
