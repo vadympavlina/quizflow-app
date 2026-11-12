@@ -16,7 +16,7 @@ test("меню: кнопка адмін-панелі веде на admin.quizflo
   const db = rich(Date.now()); db.users.t1.role = "admin";
   await seed(page, db, "t1");
   await page.goto("/tests"); await page.waitForTimeout(1500);
-  await expect(page.locator("#admin-panel-btn")).toHaveAttribute("href", "https://admin.quizflow.space/overview");
+  await expect(page.locator("#admin-panel-btn")).toHaveAttribute("href", "https://admin.quizflow.space/");
   expect(errors).toEqual([]);
 });
 

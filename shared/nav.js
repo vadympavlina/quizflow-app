@@ -188,7 +188,7 @@
         '<div class="sb-icon-strip">' +
           '<a href="live" target="_blank" rel="noopener" data-tip="Live-моніторинг (нова вкладка)" aria-label="Live-моніторинг (нова вкладка)" class="ni ni-live">' +
             '<span class="sb-ico">' + icon("zap") + '</span><span class="ni-label">Live</span></a>' +
-          '<a href="https://admin.quizflow.space/overview" id="admin-panel-btn" target="_blank" rel="noopener" data-tip="Адмін-панель (нова вкладка)" aria-label="Адмін-панель (нова вкладка)" class="ni ni-admin"' + (isAdmin ? "" : " hidden") + ">" +
+          '<a href="https://admin.quizflow.space/" id="admin-panel-btn" target="_blank" rel="noopener" data-tip="Адмін-панель (нова вкладка)" aria-label="Адмін-панель (нова вкладка)" class="ni ni-admin"' + (isAdmin ? "" : " hidden") + ">" +
             '<span class="sb-ico">' + icon("shield") + '</span><span class="ni-label">Адмін</span></a>' +
           '<a href="onboarding" data-tip="Знайомство з QuizFlow" aria-label="Знайомство з QuizFlow" class="ni ni-guide">' +
             '<span class="sb-ico">' + icon("help") + '</span><span class="ni-label">Гайд</span></a>' +
