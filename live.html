@@ -205,6 +205,7 @@ svg{flex:0 0 auto}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
 </head>
 <body>
 
