@@ -39,9 +39,8 @@
   *,*::before,*::after{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    font-family:Manrope,system-ui,sans-serif;color:#fff;min-height:100vh;
+    font-family:Manrope,system-ui,sans-serif;color:#fff;height:100vh;height:100dvh;display:flex;flex-direction:column;
     background:linear-gradient(160deg,#0A1240,#0F1844 40%,#112B7A);
-    padding-bottom:84px;
   }
   #theme-overlay,#pattern-overlay{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .6s}
   #theme-overlay{z-index:0}
@@ -50,7 +49,7 @@
 
   /* ── Верхня панель ── */
   .topbar{
-    position:sticky;top:0;z-index:5;padding:14px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    position:relative;flex:0 0 auto;z-index:5;padding:10px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
     background:rgba(5,8,30,.45);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);
   }
   .progress-wrap{flex:1;display:flex;align-items:center;gap:14px;min-width:200px;max-width:520px}
@@ -94,29 +93,26 @@
   @keyframes tpulse{50%{transform:scale(1.12)}}
 
   /* ── Сцена ── */
-  .stage{padding:28px 28px 20px;max-width:1500px;margin:0 auto;position:relative;z-index:1}
+  .stage{padding:14px 28px 16px;max-width:1500px;margin:0 auto;position:relative;z-index:1;width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow-y:auto}
   .pause-banner{display:none;margin:0 auto 20px;max-width:560px;text-align:center;padding:14px 20px;border-radius:16px;background:rgba(15,23,42,.7);border:1px solid rgba(148,163,184,.4);font-weight:800;font-size:18px;backdrop-filter:blur(8px)}
   .pause-banner.show{display:block}
   /* ── Ярлик типу питання + лічильник відповідей ── */
-  .meta-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:0 auto 22px;max-width:1400px}
+  .meta-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:0 auto 12px;max-width:1400px;flex:0 0 auto}
   .tchip{display:inline-flex;align-items:center;gap:10px;padding:10px 20px 10px 14px;border-radius:999px;font-size:clamp(15px,1.3vw,19px);font-weight:800;letter-spacing:-.005em;box-shadow:0 6px 18px rgba(0,0,0,.25)}
   .tchip svg{width:22px;height:22px;flex:0 0 auto}
   .tchip.single{background:#EDE9FE;color:#4C1D95}
   .tchip.multi{background:#D1FAE5;color:#065F46}
   .tchip.text{background:#FEF3C7;color:#78350F}
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
-  .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:900;letter-spacing:-.025em;line-height:1.15;margin:0 auto 36px;max-width:1300px;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
+  .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:900;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
   .question-text.small{font-weight:800;line-height:1.28;letter-spacing:-.015em}
   .question-text img{max-width:100%;max-height:34vh;border-radius:14px;display:block;margin:14px auto 0}
   .question-text p{margin:0}
 
-  .answers{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;margin:0 auto;width:100%}
-  @media (min-width:900px){
-    .stage{display:flex;flex-direction:column;min-height:calc(100vh - 92px)}
-    .stage:not(.revealed) .answers:not([hidden]){flex:1 1 auto;grid-auto-rows:1fr;max-height:min(58vh,640px);margin-bottom:24px}
-  }
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:1400px;margin:0 auto;width:100%;flex:1 1 0;min-height:0;grid-auto-rows:minmax(0,150px);align-content:center}
+  .revealed .answers{flex:0 0 auto;grid-auto-rows:minmax(64px,auto);align-content:start}
   .ans{
-    position:relative;display:flex;align-items:center;gap:20px;padding:26px 30px;min-height:108px;
+    position:relative;display:flex;align-items:center;gap:20px;padding:12px 26px;min-height:0;min-width:0;
     border-radius:22px;font-weight:800;font-size:clamp(20px,2vw,30px);letter-spacing:-.015em;
     box-shadow:0 12px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.2);
     overflow:hidden;transition:opacity .4s, transform .4s, filter .4s;isolation:isolate;
@@ -125,7 +121,7 @@
   @media (min-width:1600px){.ans .letter{width:68px!important;height:68px!important;font-size:28px!important;border-radius:18px!important}.ans .count{font-size:40px}}
   .ans .letter{width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,.3);display:grid;place-items:center;font-family:"Geist Mono",monospace;font-size:22px;flex:0 0 auto;border:1px solid rgba(255,255,255,.2)}
   .ans .txt{flex:1;min-width:0;overflow-wrap:break-word;hyphens:auto;line-height:1.22}
-  .answers.many .ans{padding:18px 24px;min-height:88px}
+  .answers.many .ans{padding:8px 20px;min-height:0}
   .ans .count{display:none;font-family:"Geist Mono",monospace;font-size:clamp(22px,2.2vw,34px);font-weight:800;background:rgba(0,0,0,.28);border-radius:12px;padding:4px 14px;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
   .ans .count small{font-size:.5em;opacity:.8;margin-left:6px}
   .revealed .ans .count{display:block}
@@ -191,7 +187,7 @@
   .lr .s{font-family:"Geist Mono",monospace;font-weight:800;font-size:16px}
 
   /* ── Нижня панель ── */
-  .footer{position:fixed;bottom:0;left:0;right:0;z-index:4;background:#070B26;border-top:1px solid rgba(255,255,255,.1);padding:12px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .footer{position:relative;flex:0 0 auto;z-index:4;background:#070B26;border-top:1px solid rgba(255,255,255,.1);padding:10px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .footer .stat{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:700;color:#B8C0E6}
   .footer .stat b{color:#fff;font-family:"Geist Mono",monospace;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .footer .hint{font-size:12px;color:#8D97C4;font-weight:600}
@@ -218,17 +214,21 @@
     .timer span{font-size:18px}
     .actions{width:100%;margin-left:0}
     .actions .btn{flex:1 1 auto;justify-content:center;padding:10px 12px}
-    .stage{padding-top:16px}
-    .meta-row{gap:10px;margin-bottom:16px}
+    .stage{padding-top:10px}
+    .meta-row{gap:10px;margin-bottom:8px}
     .tchip{padding:8px 16px 8px 11px;font-size:15px}
     .tchip svg{width:19px;height:19px}
-    .stage .question-text{margin-bottom:22px}
-    .answers{gap:10px}
-    .ans,.answers.many .ans{padding:14px 16px;min-height:64px;gap:14px;font-size:17px;border-radius:16px}
-    .ans .letter{width:38px;height:38px;border-radius:11px;font-size:17px}
+    .stage .question-text{margin-bottom:12px}
+    .answers{gap:8px;grid-auto-rows:minmax(0,84px)}
+    .revealed .answers{grid-auto-rows:minmax(52px,auto)}
+    .ans,.answers.many .ans{padding:6px 14px;min-height:0;gap:12px;font-size:17px;border-radius:14px}
+    .ans .letter{width:32px;height:32px;border-radius:10px;font-size:15px}
     .ans .count{font-size:18px;padding:2px 10px}
-    .footer{position:static;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
-    .footer .stat{padding:7px 11px;font-size:12px}
+    .footer{padding:8px 16px calc(10px + env(safe-area-inset-bottom))}
+    .footer{gap:8px;flex-wrap:nowrap}
+    .footer .stat{padding:6px 10px;font-size:12px}
+    .footer .stat:nth-of-type(n+2){display:none}
+    .footer .right{flex:0 0 auto}
   }
 </style>
 </head>
@@ -537,9 +537,11 @@ function refit() {
   // Чим більше варіантів, тим менше місця лишається для питання
   const qShare = isFreeform(questions[shownQ]) ? 0.34 : nOpts >= 5 ? 0.2 : 0.25;
   fitText(qt, { max: innerWidth < 640 ? 32 : 64, min: 20, maxHeight: innerHeight * qShare + imgH });
-  fitGroup(document.querySelectorAll("#answers-grid .ans .txt"), {
-    max: innerWidth < 760 ? 22 : innerWidth >= 1600 ? 46 : 32, min: 14, maxHeight: Math.max(60, innerHeight * (nOpts >= 5 ? 0.075 : 0.1)),
-  });
+  // Висоту клітинки задає екран, тож шрифт підбираємо під неї
+  const txts = document.querySelectorAll("#answers-grid .ans .txt");
+  const cell = txts[0]?.closest(".ans");
+  const room = cell ? cell.clientHeight - (parseFloat(getComputedStyle(cell).paddingTop) || 0) * 2 : 0;
+  if (txts.length) fitGroup(txts, { max: innerWidth < 760 ? 22 : innerWidth >= 1600 ? 46 : 32, min: 11, maxHeight: Math.max(24, room) });
 }
 onRefit(refit, $("q-text"));
 
