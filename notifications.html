@@ -28,17 +28,17 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=55">
+<link rel="stylesheet" href="shared/styles.css?v=56">
 <link rel="modulepreload" href="shared/app.js?v=39">
 <link rel="modulepreload" href="shared/features.js?v=50">
 
 <style>
 /* ── Page tokens (not present in shared styles.css) ── */
 #sec-notifications{
-  --ink-900:#0B1437; --ink-700:#24335A; --ink-500:#5B6A8F; --ink-400:#636E8B; --ink-300:#A8B2C9;
-  --line:#E3E8F2; --line-strong:#CDD6E8;
-  --nav-600:#1E3A8A; --nav-accent:#3B82F6;
-  --good:#16A34A; --warn:#F59E0B; --bad:#DC2626;
+  --ink-900:var(--qf-ink-900); --ink-700:var(--qf-ink-700); --ink-500:var(--qf-ink-500); --ink-400:var(--qf-ink-400); --ink-300:#A8B2C9;
+  --line:var(--qf-line); --line-strong:var(--qf-line-strong);
+  --nav-600:var(--qf-primary-dark); --nav-accent:var(--qf-blue);
+  --good:#16A34A; --warn:var(--qf-amber); --bad:var(--qf-danger-strong);
   font-family:"Manrope",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;
   color:var(--ink-900);
@@ -51,21 +51,21 @@
   margin-bottom:16px;
 }
 #sec-notifications .nf-head h1{margin:0; font-size:26px; font-weight:800; letter-spacing:-.02em; font-family:"Manrope",sans-serif; color:var(--ink-900)}
-#sec-notifications .nf-head p{margin:4px 0 0; color:var(--ink-500); font-size:13.5px}
+#sec-notifications .nf-head p{margin:4px 0 0; color:var(--ink-500); font-size:14px}
 
 #sec-notifications .nf-actions{display:flex; align-items:center; gap:8px}
 
 /* Buttons */
 #sec-notifications .nf-btn{
-  background:#fff; border:1px solid var(--line); border-radius:9px;
+  background:#fff; border:1px solid var(--line); border-radius:10px;
   padding:8px 14px; font:inherit; font-size:13px; font-weight:600; color:var(--ink-700);
   cursor:pointer; display:inline-flex; align-items:center; gap:7px;
   transition: border-color .15s, background .15s, color .15s;
   font-family:"Manrope",sans-serif;
 }
-#sec-notifications .nf-btn:hover{border-color:var(--line-strong); background:#FAFBFE}
-#sec-notifications .nf-btn.danger{color:#B91C1C; border-color:#FECACA; background:#FEF7F7}
-#sec-notifications .nf-btn.danger:hover{background:#FEE2E2; border-color:#FCA5A5}
+#sec-notifications .nf-btn:hover{border-color:var(--line-strong); background:var(--qf-surface-3)}
+#sec-notifications .nf-btn.danger{color:var(--qf-danger); border-color:var(--qf-danger-line); background:#FEF7F7}
+#sec-notifications .nf-btn.danger:hover{background:var(--qf-danger-soft); border-color:#FCA5A5}
 #sec-notifications .nf-btn.icon{padding:0; width:36px; height:36px; justify-content:center}
 #sec-notifications .nf-btn svg{width:13px; height:13px; flex:0 0 auto}
 
@@ -78,7 +78,7 @@
 /* Tabs */
 #sec-notifications .nf-tabs-wrap{
   display:flex; align-items:center; justify-content:space-between; gap:14px;
-  padding:14px 18px; border-bottom:1px solid var(--line); background:#FAFBFE;
+  padding:14px 18px; border-bottom:1px solid var(--line); background:var(--qf-surface-3);
 }
 #sec-notifications .nf-tabs{
   display:inline-flex; background:#fff; border:1px solid var(--line);
@@ -86,14 +86,14 @@
 }
 #sec-notifications .nf-tab{
   background:transparent; border:0; padding:7px 13px; border-radius:7px;
-  font:inherit; font-size:12.5px; font-weight:600; color:var(--ink-500); cursor:pointer;
+  font:inherit; font-size:13px; font-weight:600; color:var(--ink-500); cursor:pointer;
   display:inline-flex; align-items:center; gap:6px; font-family:"Manrope",sans-serif;
   transition: background .15s, color .15s;
 }
-#sec-notifications .nf-tab:hover:not(.on){color:var(--ink-700); background:#FAFBFE}
+#sec-notifications .nf-tab:hover:not(.on){color:var(--ink-700); background:var(--qf-surface-3)}
 #sec-notifications .nf-tab.on{background:var(--nav-600); color:#fff}
 #sec-notifications .nf-tab .cnt{
-  font-family:"Geist Mono",monospace; font-size:10.5px; font-weight:700;
+  font-family:"Geist Mono",monospace; font-size:11px; font-weight:700;
   padding:1px 7px; border-radius:999px;
   background:rgba(11,20,55,.07); color:var(--ink-500);
 }
@@ -122,7 +122,7 @@
   transition:background .12s;
 }
 #sec-notifications .notif:last-child{border-bottom:0}
-#sec-notifications .notif:hover{background:#FAFBFE}
+#sec-notifications .notif:hover{background:var(--qf-surface-3)}
 #sec-notifications .notif.unread{background:#F2F7FF}
 #sec-notifications .notif.unread:hover{background:#E8F0FF}
 #sec-notifications .notif.unread::before{
@@ -135,22 +135,22 @@
   width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
   flex:0 0 auto; font-size:18px; line-height:1;
 }
-#sec-notifications .notif-ico.ok   {background:#DCFCE7; color:#15803D}
-#sec-notifications .notif-ico.warn {background:#FEF3C7; color:#B45309}
-#sec-notifications .notif-ico.bad  {background:#FEE2E2; color:#B91C1C}
-#sec-notifications .notif-ico.info {background:#DBEAFE; color:#1E40AF}
+#sec-notifications .notif-ico.ok   {background:var(--qf-success-soft); color:var(--qf-success)}
+#sec-notifications .notif-ico.warn {background:var(--qf-warn-soft); color:var(--qf-warn)}
+#sec-notifications .notif-ico.bad  {background:var(--qf-danger-soft); color:var(--qf-danger)}
+#sec-notifications .notif-ico.info {background:#DBEAFE; color:var(--qf-primary-hover)}
 
 #sec-notifications .notif-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
 #sec-notifications .notif-title{font-weight:700; font-size:14px; color:var(--ink-900); letter-spacing:-.005em; line-height:1.3}
 #sec-notifications .notif-text{font-size:13px; color:var(--ink-700); line-height:1.5; word-break:break-word}
-#sec-notifications .notif-meta{font-size:11.5px; color:var(--ink-400); margin-top:6px; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+#sec-notifications .notif-meta{font-size:12px; color:var(--ink-400); margin-top:6px; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
 #sec-notifications .notif-meta .item{display:inline-flex; align-items:center; gap:5px; font-family:"Geist Mono",monospace}
 #sec-notifications .notif-meta .item svg{opacity:.7}
 #sec-notifications .notif-meta .tag{
   font-family:"Manrope",sans-serif;
-  font-size:10.5px; font-weight:700; letter-spacing:.04em;
+  font-size:11px; font-weight:700; letter-spacing:.04em;
   padding:2px 7px; border-radius:5px;
-  background:#EEF2FB; color:var(--ink-700);
+  background:var(--qf-surface-2); color:var(--ink-700);
 }
 
 #sec-notifications .notif-actions{display:flex; flex-direction:column; gap:5px; flex-shrink:0}
@@ -161,8 +161,8 @@
   display:grid; place-items:center;
   transition:all .15s; padding:0;
 }
-#sec-notifications .notif-actions .ib:hover{background:#F4F6FB; border-color:var(--line-strong); color:var(--ink-700)}
-#sec-notifications .notif-actions .ib.d:hover{background:#FEE2E2; border-color:#FCA5A5; color:#B91C1C}
+#sec-notifications .notif-actions .ib:hover{background:var(--qf-surface-5); border-color:var(--line-strong); color:var(--ink-700)}
+#sec-notifications .notif-actions .ib.d:hover{background:var(--qf-danger-soft); border-color:#FCA5A5; color:var(--qf-danger)}
 #sec-notifications .notif-actions .ib svg{width:13px; height:13px}
 
 #sec-notifications .nf-shared-link{
@@ -178,7 +178,7 @@
 #sec-notifications .nf-empty{padding:60px 24px; text-align:center; color:var(--ink-500)}
 #sec-notifications .nf-empty .ei{
   width:54px; height:54px; margin:0 auto 14px; border-radius:14px;
-  background:#EEF2FB; display:grid; place-items:center; color:var(--nav-600);
+  background:var(--qf-surface-2); display:grid; place-items:center; color:var(--nav-600);
 }
 #sec-notifications .nf-empty .et{font-size:15px; font-weight:700; color:var(--ink-900); margin-bottom:4px; font-family:"Manrope",sans-serif}
 #sec-notifications .nf-empty .es{font-size:13px}
@@ -191,25 +191,25 @@
 #sec-notifications .notif.can-open{cursor:pointer}
 #sec-notifications .notif:not(.can-open){cursor:default}
 #sec-notifications .notif-title b{font-weight:800}
-#sec-notifications .notif-meta .tag.ok{background:#DCFCE7;color:#15803D}
-#sec-notifications .notif-meta .tag.warn{background:#FEF3C7;color:#B45309}
-#sec-notifications .notif-meta .tag.bad{background:#FEE2E2;color:#B91C1C}
-#sec-notifications .notif-meta .tag.info{background:#DBEAFE;color:#1E40AF}
+#sec-notifications .notif-meta .tag.ok{background:var(--qf-success-soft);color:var(--qf-success)}
+#sec-notifications .notif-meta .tag.warn{background:var(--qf-warn-soft);color:var(--qf-warn)}
+#sec-notifications .notif-meta .tag.bad{background:var(--qf-danger-soft);color:var(--qf-danger)}
+#sec-notifications .notif-meta .tag.info{background:#DBEAFE;color:var(--qf-primary-hover)}
 #sec-notifications .notif-meta .chip{
   font-family:"Manrope",sans-serif;font-size:11px;font-weight:600;
   padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-700);background:#fff;
 }
 #sec-notifications .notif-meta .chip b{font-family:"Geist Mono",monospace;font-weight:800}
-#sec-notifications .notif-meta .chip.ok{border-color:#BBF7D0;color:#15803D;background:#F0FDF4}
-#sec-notifications .notif-meta .chip.info{border-color:#BFDBFE;color:#1E40AF;background:#EFF6FF}
-#sec-notifications .notif-meta .chip.warn{border-color:#FDE68A;color:#B45309;background:#FFFBEB}
-#sec-notifications .notif-meta .chip.bad{border-color:#FECACA;color:#B91C1C;background:#FEF2F2}
-#sec-notifications .notif-meta .chip.live{border-color:#BBF7D0;color:#15803D}
+#sec-notifications .notif-meta .chip.ok{border-color:var(--qf-success-line);color:var(--qf-success);background:#F0FDF4}
+#sec-notifications .notif-meta .chip.info{border-color:#BFDBFE;color:var(--qf-primary-hover);background:#EFF6FF}
+#sec-notifications .notif-meta .chip.warn{border-color:#FDE68A;color:var(--qf-warn);background:var(--qf-warn-bg)}
+#sec-notifications .notif-meta .chip.bad{border-color:var(--qf-danger-line);color:var(--qf-danger);background:var(--qf-danger-bg)}
+#sec-notifications .notif-meta .chip.live{border-color:var(--qf-success-line);color:var(--qf-success)}
 #sec-notifications .notif-meta .chip.muted{color:var(--ink-400);background:#F8FAFD}
 #sec-notifications .notif-actions{flex-direction:row;align-self:center;opacity:.55;transition:opacity .15s}
 #sec-notifications .notif:hover .notif-actions,#sec-notifications .notif:focus-within .notif-actions{opacity:1}
 #sec-notifications .nf-more{
-  display:block;width:100%;padding:13px;border:0;border-top:1px solid var(--line);background:#FAFBFE;
+  display:block;width:100%;padding:13px;border:0;border-top:1px solid var(--line);background:var(--qf-surface-3);
   font:inherit;font-size:13px;font-weight:700;color:var(--nav-600);cursor:pointer;font-family:"Manrope",sans-serif;
 }
 #sec-notifications .notif-meta .chip{display:inline-flex;align-items:center;gap:4px}
@@ -218,7 +218,7 @@
 #sec-notifications .nf-btn:disabled{opacity:.45;cursor:default}
 #sec-notifications .nf-tab[hidden]{display:none}
 #sec-notifications .nf-tab.on .cnt.warn{background:#fff;color:var(--nav-600)}
-#sec-notifications .nf-tab .cnt.warn{background:#DBEAFE;color:#1E40AF}
+#sec-notifications .nf-tab .cnt.warn{background:#DBEAFE;color:var(--qf-primary-hover)}
 #sec-notifications .nf-btn.icon svg{width:16px;height:16px}
 #sec-notifications .nf-btn.icon .off{display:none}
 #sec-notifications .nf-btn.icon.snd-off .on{display:none}
@@ -244,8 +244,8 @@
 @media (max-width:1023px){
   #sec-notifications .nf-tab{padding:9px 13px;font-size:13px}
   #sec-notifications .notif-actions .ib{width:38px;height:38px}
-  #sec-notifications .notif-meta{font-size:12.5px}
-  #sec-notifications .notif-meta .tag{font-size:11.5px}
+  #sec-notifications .notif-meta{font-size:13px}
+  #sec-notifications .notif-meta .tag{font-size:12px}
   #sec-notifications .notif-meta .chip{font-size:12px}
   #sec-notifications .nf-day-sep .lbl{font-size:12px}
 }
