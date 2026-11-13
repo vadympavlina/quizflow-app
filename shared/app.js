@@ -301,7 +301,7 @@ window.qfDismiss = function (el, o) {
 // фокус переходить у модалку й повертається на кнопку, що її відкрила,
 // сторінка під модалкою не прокручується.
 const _mStack = [];
-function _syncBodyLock() { document.body.classList.toggle("mo-open", _mStack.length > 0); }
+function _syncBodyLock() { document.body.classList.toggle("mo-open", _mStack.length > 0); if (window.qfLock) window.qfLock.set("modal", _mStack.length > 0); }
 window.openM = function (id) {
   const el = document.getElementById(id);
   if (!el) { console.warn("[openM] модалку не знайдено:", id); return; }
