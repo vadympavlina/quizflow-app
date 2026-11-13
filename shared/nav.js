@@ -412,7 +412,7 @@
     }
     function clear() {
       var e = el(); if (!e.sb || !e.ov) return;
-      e.sb.style.transition = ""; e.sb.style.transform = ""; e.ov.style.transition = ""; e.ov.style.opacity = "";
+      e.sb.style.transition = ""; e.sb.style.transform = ""; e.sb.style.willChange = ""; e.ov.style.transition = ""; e.ov.style.opacity = "";
     }
     document.addEventListener("pointerdown", function (e) {
       if (e.pointerType === "mouse" || !root.classList.contains("sb-open") || !isNarrow()) return;
@@ -428,7 +428,7 @@
         if (Math.abs(dx) < 8) return;
         st.drag = true;
         try { x.sb.setPointerCapture(e.pointerId); } catch (_) {}
-        x.sb.style.transition = "none"; x.ov.style.transition = "none";
+        x.sb.style.transition = "none"; x.ov.style.transition = "none"; x.sb.style.willChange = "transform";
       }
       var dt = e.timeStamp - st.lt;
       if (dt > 0) st.v = 0.7 * ((e.clientX - st.lx) / dt) + 0.3 * st.v;                // згладжена швидкість

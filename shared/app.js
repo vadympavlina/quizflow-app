@@ -202,6 +202,100 @@ window.appReady = () => ldr(false);
 // ─── Sidebar toggle ────────────────────────────────────────────────────
 // Реалізація — у shared/nav.js (window.toggleSidebar)
 
+// ─── Жести панелей ─────────────────────────────────────────────────────
+// Єдиний жест «змахнути, щоб закрити» для нижніх шторок (модалки на телефоні) і бічних панелей.
+// Правила: жест стартує після 12 px і лише в потрібному напрямку; прокрутка вмісту має пріоритет
+// (шторка тягнеться лише коли вміст догори); панель іде за пальцем 1:1, підкладка світлішає;
+// відпустили — закриваємо за відстанню (понад 30%) або швидкістю (понад 0,5 px/мс), інакше
+// м'яко повертаємо. Кнопка «закрити» й Esc лишаються. Слухач touchmove вішається лише на час жесту
+// й лише на саму панель, тож прокрутка решти сторінки не сповільнюється.
+window.qfDismiss = function (el, o) {
+  if (!el || el._qfDismiss) return;
+  el._qfDismiss = true;
+  const dir = o.dir || "down";                                      // down | up | left | right
+  const vert = dir === "down" || dir === "up", sgn = dir === "down" || dir === "right" ? 1 : -1;
+  const reduce = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SKIP = "input,textarea,select,[contenteditable='true'],.qd-pop,[data-no-swipe]";
+  let st = null;
+  const ovl = () => (typeof o.overlay === "function" ? o.overlay() : o.overlay) || null;
+  const size = () => (vert ? el.offsetHeight : el.offsetWidth) || 300;
+  // Чи є всередині вміст, який ще можна прокрутити проти жесту (тоді це прокрутка, а не закриття)
+  function scrolledInside(target) {
+    for (let n = target; n && n !== el.parentNode; n = n.parentNode) {
+      if (n.nodeType !== 1) continue;
+      if (vert ? n.scrollHeight > n.clientHeight + 1 : n.scrollWidth > n.clientWidth + 1) {
+        const pos = vert ? n.scrollTop : n.scrollLeft;
+        const ov = getComputedStyle(n)[vert ? "overflowY" : "overflowX"];
+        if (/auto|scroll/.test(ov) && (sgn > 0 ? pos > 0 : pos < (vert ? n.scrollHeight - n.clientHeight : n.scrollWidth - n.clientWidth) - 1)) return true;
+      }
+      if (n === el) break;
+    }
+    return false;
+  }
+  function paint(d) {
+    const m = d > 0 ? d : d * 0.15;                                 // проти жесту — опір, а не жорсткий стоп
+    el.style.transform = vert ? `translate3d(0,${m * sgn}px,0)` : `translate3d(${m * sgn}px,0,0)`;
+    const v = ovl(); if (v) v.style.opacity = String(Math.max(0, 1 - Math.max(0, d) / (size() * 1.1)));
+  }
+  function reset() {
+    el.style.transition = ""; el.style.transform = ""; el.style.willChange = "";
+    const v = ovl(); if (v) { v.style.transition = ""; v.style.opacity = ""; }
+  }
+  function cleanup() {
+    el.removeEventListener("touchmove", move); el.removeEventListener("touchend", end); el.removeEventListener("touchcancel", end);
+    st = null;
+  }
+  function move(e) {
+    if (!st) return;
+    const t = e.touches[0]; if (!t) return;
+    const dx = t.clientX - st.x, dy = t.clientY - st.y;
+    const d = (vert ? dy : dx) * sgn, c = vert ? dx : dy;
+    if (!st.drag) {
+      if (Math.abs(c) > 10 && Math.abs(c) > Math.abs(d)) { cleanup(); return; }   // це інший жест (прокрутка вбік)
+      if (d < -10) { cleanup(); return; }                                         // тягнуть у протилежний бік
+      if (d < 12) return;                                                          // поріг активації
+      st.drag = true; st.off = d;
+      el.style.transition = "none"; el.style.willChange = "transform";
+      const v = ovl(); if (v) v.style.transition = "none";
+    }
+    if (e.cancelable) e.preventDefault();                                          // тепер це наш жест, сторінка не прокручується
+    const dist = d - st.off, dt = e.timeStamp - st.lt;
+    if (dt > 0) st.v = 0.7 * ((d - st.ld) / dt) + 0.3 * st.v;                       // згладжена швидкість
+    st.ld = d; st.lt = e.timeStamp; st.dist = dist;
+    if (!st.tick && dist > size() * 0.3) { st.tick = true; try { navigator.vibrate && navigator.vibrate(8); } catch {} }
+    if (st.tick && dist < size() * 0.3) st.tick = false;
+    paint(dist);
+  }
+  function end() {
+    if (!st) return;
+    const s = st; cleanup();
+    if (!s.drag) return;
+    const far = s.dist > size() * 0.3 || (s.v > 0.5 && s.dist > 24);
+    const v = ovl();
+    if (reduce()) { reset(); if (far) o.close(); return; }
+    if (far) {
+      el.style.transition = "transform .22s cubic-bezier(.4,0,1,1)";
+      if (v) { v.style.transition = "opacity .22s ease"; v.style.opacity = "0"; }
+      el.style.transform = vert ? `translate3d(0,${sgn * 100}%,0)` : `translate3d(${sgn * 100}%,0,0)`;
+      setTimeout(() => { o.close(); setTimeout(reset, 60); }, 190);
+    } else {
+      el.style.transition = "transform .3s cubic-bezier(.2,.8,.2,1)";
+      if (v) { v.style.transition = "opacity .3s ease"; v.style.opacity = ""; }
+      el.style.transform = "";
+      setTimeout(reset, 320);
+    }
+  }
+  el.addEventListener("touchstart", e => {
+    if (st || e.touches.length !== 1 || (o.enabled && !o.enabled())) return;
+    if (e.target.closest && e.target.closest(SKIP)) return;
+    if (scrolledInside(e.target)) return;
+    const t = e.touches[0];
+    st = { x: t.clientX, y: t.clientY, lt: e.timeStamp, ld: 0, v: 0, dist: 0, off: 0, drag: false, tick: false };
+    el.addEventListener("touchmove", move, { passive: false });
+    el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
+  }, { passive: true });
+};
+
 // ─── Modal helpers ─────────────────────────────────────────────────────
 // Стек відкритих модалок: Esc і клік по фону закривають лише верхню,
 // фокус переходить у модалку й повертається на кнопку, що її відкрила,
@@ -216,9 +310,13 @@ window.openM = function (id) {
   _mStack.push({ el, opener: document.activeElement });
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-modal", "true");
+  const mb = el.querySelector(".mb");
+  if (mb) { mb.style.transform = ""; mb.style.transition = ""; el.style.opacity = ""; el.style.transition = ""; }
   el.style.display = "flex";
   void el.offsetWidth;          // reflow — щоб спрацювала анімація появи
   el.classList.add("on");
+  // Телефон: модалка — нижня шторка, її можна змахнути вниз
+  if (mb) qfDismiss(mb, { dir: "down", overlay: el, close: () => closeM(id), enabled: () => matchMedia("(max-width:1023px)").matches });
   _syncBodyLock();
   // Фокус: [autofocus] → перше порожнє поле → перша кнопка
   setTimeout(() => {
@@ -236,7 +334,7 @@ window.closeM = function (id) {
   const i = _mStack.findIndex(m => m.el === el);
   const entry = i >= 0 ? _mStack.splice(i, 1)[0] : null;
   _syncBodyLock();
-  setTimeout(() => { if (!el.classList.contains("on")) el.style.display = "none"; }, 200);
+  setTimeout(() => { if (!el.classList.contains("on")) el.style.display = "none"; }, 260);
   try { if (entry?.opener && document.contains(entry.opener)) entry.opener.focus({ preventScroll: true }); } catch {}
 };
 document.addEventListener("click", e => {
@@ -245,6 +343,18 @@ document.addEventListener("click", e => {
 // Esc закриває лише верхню модалку. Слухаємо в фазі capture й зупиняємо подію,
 // щоб старі обробники сторінок не закривали одразу всі модалки.
 window.addEventListener("keydown", e => {
+  // Tab не виходить за межі верхньої модалки (клавіатура на ПК)
+  if (e.key === "Tab") {
+    const topM = [..._mStack].reverse().find(m => m.el.classList.contains("on") && m.el.style.display !== "none");
+    if (!topM) return;
+    const fs = [...topM.el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x => x.offsetParent !== null);
+    if (!fs.length) return;
+    const first = fs[0], last = fs[fs.length - 1], a = document.activeElement;
+    if (!topM.el.contains(a)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+    return;
+  }
   if (e.key !== "Escape") return;
   // Відкритий поповер/дропдаун у модалці закривається першим (своїм обробником)
   if (document.querySelector('[data-open="1"], .cd-menu.open')) return;

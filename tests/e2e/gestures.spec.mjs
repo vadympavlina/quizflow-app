@@ -64,3 +64,62 @@ test("вертикальна прокрутка списку пунктів ме
   expect(await isOpen(page)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+// ── Шторки й панелі: змах закриває, коротка тяга повертає, кнопка «закрити» лишається ──
+async function openSheet(page) {
+  await seed(page, rich(Date.now()), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(1500);
+  await page.evaluate(() => window.openM("m-folder"));
+  await page.waitForTimeout(450);
+}
+const sheetOn = page => page.evaluate(() => document.getElementById("m-folder").classList.contains("on"));
+const sheetY = page => page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector("#m-folder .mb")).transform).m42);
+
+test("модалка на телефоні — шторка: змах вниз закриває, коротка тяга повертає назад", async ({ page, errors }) => {
+  await openSheet(page);
+  const box = await page.locator("#m-folder .mb").boundingBox();
+  const cdp = await page.context().newCDPSession(page);
+  const x = box.x + box.width / 2, y = box.y + 14;
+  // коротка тяга (60 px) — шторка йде за пальцем, а після відпускання повертається
+  await touchDrag(page, cdp, { x, y }, { x, y: y + 60 });
+  await page.waitForTimeout(450);
+  expect(await sheetOn(page)).toBe(true);
+  expect(Math.abs(await sheetY(page))).toBeLessThan(2);
+  // довгий змах вниз — закривається
+  await touchDrag(page, cdp, { x, y }, { x, y: y + 260 });
+  await expect.poll(() => sheetOn(page)).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test("шторка: під час тяги йде за пальцем, а кнопкою «закрити» теж закривається", async ({ page, errors }) => {
+  await openSheet(page);
+  const box = await page.locator("#m-folder .mb").boundingBox();
+  const cdp = await page.context().newCDPSession(page);
+  const x = box.x + box.width / 2, y = box.y + 14;
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y, id: 1 }] });
+  for (let i = 1; i <= 6; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y + i * 15, id: 1 }] }); await page.waitForTimeout(16); }
+  expect(await sheetY(page)).toBeGreaterThan(40);                       // 1:1 за пальцем (мінус поріг 12 px)
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await page.waitForTimeout(450);
+  await page.evaluate(() => window.closeM("m-folder"));                 // не жест: звичайне закриття
+  await expect.poll(() => sheetOn(page)).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test("бокова панель: змах вправо закриває (qfDismiss), змах вбік у протилежний бік — ні", async ({ page, errors }) => {
+  await seed(page, rich(Date.now()), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(1200);
+  await page.evaluate(() => {
+    const p = document.createElement("div");
+    p.id = "t-panel"; p.style.cssText = "position:fixed;top:0;right:0;bottom:0;width:300px;background:#fff;z-index:900;touch-action:pan-y";
+    document.body.appendChild(p); window._closed = 0;
+    window.qfDismiss(p, { dir: "right", close: () => { window._closed++; p.remove(); } });
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await touchDrag(page, cdp, { x: 200, y: 400 }, { x: 150, y: 400 });   // у протилежний бік
+  await page.waitForTimeout(450);
+  expect(await page.evaluate(() => window._closed)).toBe(0);
+  await touchDrag(page, cdp, { x: 200, y: 400 }, { x: 380, y: 400 });   // далекий змах вправо
+  await expect.poll(() => page.evaluate(() => window._closed)).toBe(1);
+  expect(errors).toEqual([]);
+});

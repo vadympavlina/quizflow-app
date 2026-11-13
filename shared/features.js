@@ -1469,7 +1469,9 @@ function qfDrop(host, opt = {}){
   }
   function close(){
     if (!pop) return;
-    pop.remove(); pop = null;
+    const gone = pop; pop = null;
+    gone.removeAttribute("data-open"); gone.classList.add("out");   // коротке згасання; прибираємо після нього
+    setTimeout(() => gone.remove(), 110);
     btn.classList.remove("open"); btn.setAttribute("aria-expanded", "false");
     document.removeEventListener("mousedown", outside, true);
     removeEventListener("keydown", onKey, true);
@@ -3799,6 +3801,7 @@ window.G = {
     const f=document.getElementById("ai-side-foot");
     if(f){ f.hidden=!!busy; f.dataset.id=attId; }
     const p=document.getElementById("ai-side-panel");
+    qfDismiss(p,{dir:"right",overlay:()=>document.getElementById("ai-side-overlay"),close:()=>G.closeAiPanel()});   // змахнути вправо = закрити
     p.classList.add("on"); p.dataset.open="1";   // data-open: глобальний Esc спершу закриває панель, а не модалку під нею
     if(!G._aiEsc){ G._aiEsc=true; addEventListener("keydown",e=>{ if(e.key==="Escape"&&document.getElementById("ai-side-panel")?.classList.contains("on")){ e.stopImmediatePropagation(); e.preventDefault(); G.closeAiPanel(); } }, true); }
     document.getElementById("ai-side-overlay").style.display="block";

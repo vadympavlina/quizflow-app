@@ -1358,3 +1358,19 @@ a, button, [role="button"], [role="tab"], summary, label, input, select, textare
 @media (min-width:1024px){
   .sb.collapsed .sb-icon-strip, html.sb-c .sb .sb-icon-strip{ display:none; }
 }
+
+/* ═══ Жести й панелі ═══════════════════════════════════════════════════
+   Телефон: модалка — нижня шторка, що виїжджає знизу й закривається змахом вниз
+   (ручка зверху підказує жест). Лише transform/opacity — без перерахунку розкладки.
+   Прокрутка всередині панелей не «протікає» на сторінку. */
+.mo,.mb,.ai-panel-b,.qd-list{ overscroll-behavior:contain; }
+.qd-pop.out{ animation:qdOut .1s ease forwards; pointer-events:none; }
+@keyframes qdOut{ to{ opacity:0; transform:translateY(-3px) scale(.985); } }
+@media (max-width:1023px){
+  .mo .mb{ transform:translate3d(0,100%,0); transition:transform .34s cubic-bezier(.2,.8,.2,1); }
+  .mo.on .mb{ transform:none; }
+  .mo:not(.on) .mb{ transition-duration:.2s; transition-timing-function:cubic-bezier(.4,0,1,1); }
+  .mb::before{ content:""; position:absolute; top:7px; left:50%; width:38px; height:4px; margin-left:-19px; border-radius:2px; background:#CBD3E6; pointer-events:none; }
+  .ai-panel{ touch-action:pan-y; }
+}
+@media (prefers-reduced-motion:reduce){ .mo .mb{ transition:none !important; } .qd-pop.out{ animation:none; } }
