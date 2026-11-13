@@ -140,7 +140,7 @@ const _stColorOnDark = g => g == null ? "#fff" : g >= 10 ? "#4ADE80" : g >= 7 ? 
 const _stFmt1 = v => v == null ? "—" : (Math.round(v * 10) / 10).toLocaleString("uk-UA");
 const _stBg = g => g == null ? "#F1F5FB" : g >= 10 ? "#DCFCE7" : g >= 7 ? "#DBEAFE" : g >= 4 ? "#FEF3C7" : "#FEE2E2";
 const _stBar = g => g >= 10 ? "#16A34A" : g >= 7 ? "#2563EB" : g >= 4 ? "#F59E0B" : "#DC2626";
-const _ST_AVA = ["#3B82F6","#DB2777","#16A34A","#F59E0B","#6366F1","#0EA5E9","#8B5CF6","#EF4444","#14B8A6"];
+const _ST_AVA = ["#2563EB","#DB2777","#15803D","#B45309","#4F46E5","#0369A1","#7C3AED","#DC2626","#0F766E"];
 const _stAvaColor = s => { let h = 0; for (const ch of String(s.surname || "") + String(s.name || "")) h = (h * 31 + ch.codePointAt(0)) | 0; return _ST_AVA[Math.abs(h) % _ST_AVA.length]; };
 const _stInit = s => ((s.surname?.[0] || "") + (s.name?.[0] || "")).toUpperCase() || "?";
 const _stDate = (t, time = true) => t ? new Date(t).toLocaleDateString("uk-UA", time ? { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" } : { day: "numeric", month: "short" }) : "—";
@@ -214,7 +214,7 @@ function buildChips(){
   panel.innerHTML = `
     <div style="position:relative">
       <button id="nt-folder-btn" onclick="window._toggleFolderChips()" type="button"
-        style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:10px;border:1.5px solid #E3E8F2;background:#fff;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:border-color .15s;font-family:inherit;color:${sel?"#0B1437":"#8691AC"}">
+        style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:10px;border:1.5px solid #E3E8F2;background:#fff;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:border-color .15s;font-family:inherit;color:${sel?"#0B1437":"#636E8B"}">
         ${sel
           ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:${folderColor};flex-shrink:0">
                <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M3 8a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
@@ -537,7 +537,7 @@ function showNotifBanner({icon, msg, color, id}){
     background:#0d1340;color:white;
     padding:12px 16px;border-radius:14px;
     box-shadow:0 8px 28px rgba(0,0,0,.25);
-    font-family:'DM Sans',sans-serif;font-size:14px;
+    font-family:'Manrope',system-ui,sans-serif;font-size:14px;
     max-width:320px;pointer-events:all;cursor:pointer;
     border-left:4px solid ${color};
     animation:notifIn .3s cubic-bezier(.34,1.56,.64,1);
@@ -978,7 +978,7 @@ function buildTestCard(t, idx, stats, showFolder){
       <div class="t-qc-meta">
         <span>${I.cal}${qCnt} пит.</span>
         ${t.timeLimit ? `<span>${I.clock}${Math.round(t.timeLimit / 60)} хв</span>` : ""}
-        ${folder ? `<span class="t-qc-folder" style="--fc:${_folderColor(folder)}">${esc(folder.name)}</span>` : showFolder ? `<span class="t-qc-folder" style="--fc:#8691AC">Без папки</span>` : ""}
+        ${folder ? `<span class="t-qc-folder" style="--fc:${_folderColor(folder)}">${esc(folder.name)}</span>` : showFolder ? `<span class="t-qc-folder" style="--fc:#636E8B">Без папки</span>` : ""}
       </div>
     </div>
     <div class="t-qc-foot">
@@ -2315,9 +2315,9 @@ window.G = {
           <div onclick="G.pickNlFolder('${r.id}')" style="display:flex;align-items:center;gap:11px;padding:11px 12px;margin:2px 0;border-radius:10px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='#EFF3FE'" onmouseout="this.style.background='transparent'">
             <span style="width:9px;height:9px;border-radius:50%;background:${r.color};flex:0 0 auto"></span>
             <span style="flex:1;font-size:13.5px;font-weight:700;color:#0B1437">${esc(r.name)}</span>
-            <span style="font-size:12px;color:#8691AC">${r.count} ${r.count===1?"тест":"тестів"}</span>
+            <span style="font-size:12px;color:#636E8B">${r.count} ${r.count===1?"тест":"тестів"}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C7CFE0" stroke-width="2.2" style="flex:0 0 auto"><polyline points="9 6 15 12 9 18"/></svg>
-          </div>`).join("") : `<div style="padding:28px 12px;text-align:center;color:#8691AC;font-size:12.5px">Нічого не знайдено</div>`}
+          </div>`).join("") : `<div style="padding:28px 12px;text-align:center;color:#636E8B;font-size:12.5px">Нічого не знайдено</div>`}
       </div>`;
   },
   pickNlFolder(fid){
@@ -2363,10 +2363,10 @@ window.G = {
             </div>
             <div style="flex:1;min-width:0">
               <div style="font-size:13.5px;font-weight:700;color:#0B1437;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.title)}</div>
-              <div style="font-size:10.5px;color:#8691AC">${(t.questions||[]).length} ${_plural((t.questions||[]).length, "питання", "питання", "питань")}${nL ? ` · ${nL} ${_plural(nL, "активне посилання", "активні посилання", "активних посилань")}` : ""}</div>
+              <div style="font-size:10.5px;color:#636E8B">${(t.questions||[]).length} ${_plural((t.questions||[]).length, "питання", "питання", "питань")}${nL ? ` · ${nL} ${_plural(nL, "активне посилання", "активні посилання", "активних посилань")}` : ""}</div>
             </div>
           </div>`;
-        }).join("") : `<div style="padding:28px 12px;text-align:center;color:#8691AC;font-size:12.5px">Нічого не знайдено</div>`}
+        }).join("") : `<div style="padding:28px 12px;text-align:center;color:#636E8B;font-size:12.5px">Нічого не знайдено</div>`}
       </div>`;
   },
 
@@ -2533,7 +2533,7 @@ window.G = {
     const t = tests.find(x => x.id === testId); if (!t) return;
     window._moveTestId = testId;
     $("move-test-name").textContent = t.title;
-    const opts = [{ id: "", name: "Без папки", color: "#8691AC" }, ...folders.map(f => ({ id: f.id, name: f.name, color: _folderColor(f) }))];
+    const opts = [{ id: "", name: "Без папки", color: "#636E8B" }, ...folders.map(f => ({ id: f.id, name: f.name, color: _folderColor(f) }))];
     $("move-list").innerHTML = opts.map(o => {
       const cur = (t.folderId || "") === o.id;
       const n = tests.filter(x => (x.folderId || "") === o.id && x.status !== "archived").length;
@@ -3013,7 +3013,7 @@ window.G = {
     g.drawImage(src, 100, 220, 900, 900);
     g.fillStyle = "#5B6A8F"; g.font = "500 30px 'Geist Mono', monospace";
     g.fillText(url.replace(/^https?:\/\//, "").replace(/&t=.*/, "…"), W / 2, 1200);
-    g.fillStyle = "#8691AC"; g.font = "600 28px Manrope, system-ui, sans-serif";
+    g.fillStyle = "#636E8B"; g.font = "600 28px Manrope, system-ui, sans-serif";
     g.fillText("Відскануйте камерою телефона", W / 2, 1270);
     const a = document.createElement("a");
     a.download = `QR — ${title}${l.group ? " — " + l.group : ""}.png`.replace(/[\\/:*?"<>|]/g, "_");
@@ -3367,7 +3367,7 @@ window.G = {
     let pagHtml = "";
     if (totalPages > 1){
       let a = Math.max(1, page - 2), b = Math.min(totalPages, a + 4); a = Math.max(1, b - 4);
-      const btn = (p, label, dis, cls = "") => `<button type="button" class="st-pg-btn ${cls}" ${dis ? "disabled" : `data-st-page="${p}"`}>${label}</button>`;
+      const btn = (p, label, dis, cls = "") => `<button type="button" class="st-pg-btn ${cls}" aria-label="${cls === "prev" ? "Попередня сторінка" : cls === "next" ? "Наступна сторінка" : "Сторінка " + p}"${cls === "is-active" ? ' aria-current="page"' : ""} ${dis ? "disabled" : `data-st-page="${p}"`}>${label}</button>`;
       const nums = [];
       if (a > 1){ nums.push(btn(1, "1")); if (a > 2) nums.push(`<span class="st-pg-ellipsis">…</span>`); }
       for (let p = a; p <= b; p++) nums.push(btn(p, String(p), false, p === page ? "is-active" : ""));
@@ -3716,7 +3716,7 @@ window.G = {
         target.innerHTML = '<div style="padding:24px;color:#B91C1C;font-family:Manrope,sans-serif">'
           + '<div style="font-weight:700;font-size:15px;margin-bottom:8px">Помилка відображення деталей спроби</div>'
           + '<div style="font-size:13px;color:#5B6A8F;line-height:1.5">' + esc(err.message || String(err)) + '</div>'
-          + '<div style="font-size:12px;color:#8691AC;margin-top:10px">Відкрий DevTools → Console для деталей</div>'
+          + '<div style="font-size:12px;color:#636E8B;margin-top:10px">Відкрий DevTools → Console для деталей</div>'
           + '</div>';
       }
     }
@@ -4353,7 +4353,7 @@ window.G = {
       toast("CSV завантажено");
       return;
     }
-    const col = g => g == null ? "#8691AC" : g >= 10 ? "#15803D" : g >= 7 ? "#1E40AF" : g >= 4 ? "#B45309" : "#B91C1C";
+    const col = g => g == null ? "#636E8B" : g >= 10 ? "#15803D" : g >= 7 ? "#1E40AF" : g >= 4 ? "#B45309" : "#B91C1C";
     const html = `<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Журнал оцінок — ${esc(GB.group)} — ${dateStr}</title>
 <style>
@@ -4366,7 +4366,7 @@ window.G = {
   th:first-child,td:first-child{text-align:left}
   td{padding:9px 12px;border-bottom:1px solid #E3E8F2;font-size:14px;text-align:center;font-variant-numeric:tabular-nums}
   tfoot td{background:#F4F6FB;font-weight:700}
-  .foot{margin-top:16px;font-size:12px;color:#8691AC}
+  .foot{margin-top:16px;font-size:12px;color:#636E8B}
   @media print{body{background:#fff;padding:0}table{box-shadow:none}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
 <h1>Журнал оцінок — ${esc(GB.group)}</h1>
@@ -4552,7 +4552,7 @@ window.G = {
       const fmtW = k => new Date(k).toLocaleDateString("uk-UA", { day: "numeric", month: "short" });
       const pts = weeks.map((w, i) => `${x(i).toFixed(1)},${y(w.avg).toFixed(1)}`).join(" ");
       const every = Math.ceil(weeks.length / 6);
-      trend = `<div class="a-card"><div class="a-card-h"><h3>Середня оцінка по тижнях</h3><span class="a-card-h-meta">останні ${weeks.length} ${_plural(weeks.length, "тиждень", "тижні", "тижнів")} з результатами</span></div>
+      trend = `<div class="a-card"><div class="a-card-h"><h3 aria-level="2">Середня оцінка по тижнях</h3><span class="a-card-h-meta">останні ${weeks.length} ${_plural(weeks.length, "тиждень", "тижні", "тижнів")} з результатами</span></div>
         <div class="a-card-body"><svg class="a-trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Середня оцінка по тижнях">
           ${[4, 8, 12].map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="a-grid"/><text x="${L - 8}" y="${y(v) + 4}" class="a-ax" text-anchor="end">${v}</text>`).join("")}
           <line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" class="a-base"/>
@@ -4577,7 +4577,7 @@ window.G = {
         .sort((a, b) => a.pct - b.pct || a.i - b.i);
       if (qs.length){
         const shown = AN.allQ ? qs : qs.slice(0, 8);
-        diff = `<div class="a-card"><div class="a-card-h"><h3>Складність питань</h3><span class="a-card-h-meta">частка правильних відповідей · спершу найважчі</span></div>
+        diff = `<div class="a-card"><div class="a-card-h"><h3 aria-level="2">Складність питань</h3><span class="a-card-h-meta">частка правильних відповідей · спершу найважчі</span></div>
           <div class="a-card-body a-qs">${shown.map(s => {
             const txt = _rpPlain(s.q.text) || "Питання без тексту";
             return `<div class="a-q" data-tip="Питання ${s.i + 1}<br>правильно ${s.ok}${s.part ? ` · частково ${s.part}` : ""} · неправильно ${s.n - s.ok - s.part}${s.skip ? ` · без відповіді ${s.skip}` : ""}">
@@ -4592,7 +4592,7 @@ window.G = {
     } else if (!AN.test){
       // Без обраного тесту — швидкий вибір найчастіших тестів, щоб подивитись складність питань
       const top = tItems.slice(1).sort((a, b) => b.count - a.count).slice(0, 5);
-      if (top.length) diff = `<div class="a-card"><div class="a-card-h"><h3>Складність питань</h3><span class="a-card-h-meta">оберіть тест</span></div>
+      if (top.length) diff = `<div class="a-card"><div class="a-card-h"><h3 aria-level="2">Складність питань</h3><span class="a-card-h-meta">оберіть тест</span></div>
         <div class="a-card-body"><div class="rp-chips" style="justify-content:flex-start;margin:0">${top.map(i => `<button type="button" class="rp-chip" data-an-test="${esc(i.value)}">${esc(i.label)}<i>${i.count}</i></button>`).join("")}</div></div></div>`;
     }
 
@@ -4609,7 +4609,7 @@ window.G = {
       </div>
       <div class="${trend && half ? "a-row" : ""}" style="${trend && half ? "" : "display:contents"}">
       <div class="a-card">
-        <div class="a-card-h"><h3>Розподіл оцінок</h3><span class="a-card-h-meta">${grades.length} ${_plural(grades.length, "оцінка", "оцінки", "оцінок")} · шкала 1–12</span></div>
+        <div class="a-card-h"><h3 aria-level="2">Розподіл оцінок</h3><span class="a-card-h-meta">${grades.length} ${_plural(grades.length, "оцінка", "оцінки", "оцінок")} · шкала 1–12</span></div>
         <div class="a-card-body">
           <div class="a-dist">${dist.map((c, i) => `<div class="a-dist-col" data-tip="Оцінка ${i + 1}<br><b>${c}</b> ${_plural(c, "результат", "результати", "результатів")}${grades.length ? ` · ${Math.round(c / grades.length * 100)}%` : ""}">
               <div class="a-dist-cnt">${c || ""}</div>
@@ -4628,7 +4628,7 @@ window.G = {
       </div>
       ${diff}
       ${done.length ? `<div class="a-card">
-        <div class="a-card-h"><h3>Результати студентів</h3><span class="a-card-h-meta">${done.length} ${_plural(done.length, "запис", "записи", "записів")} · натисніть рядок, щоб відкрити спробу</span></div>
+        <div class="a-card-h"><h3 aria-level="2">Результати студентів</h3><span class="a-card-h-meta">${done.length} ${_plural(done.length, "запис", "записи", "записів")} · натисніть рядок, щоб відкрити спробу</span></div>
         <table class="a-tbl">
           <thead><tr><th class="a-rank">#</th><th>Студент</th><th>Оцінка</th><th>%</th>${AN.group ? "" : "<th>Група</th>"}${AN.test ? "" : "<th>Тест</th>"}<th>Дата</th></tr></thead>
           <tbody>${lim.map((r, i) => {
@@ -5208,7 +5208,7 @@ function _attAva(name, surname){
   const str = String(surname || "") + String(name || "");
   let hash = 0;
   for (let i = 0; i < str.length; i++) hash = (hash + str.charCodeAt(i)) | 0;
-  const colors = ["#3B82F6","#DB2777","#16A34A","#F59E0B","#6366F1","#0EA5E9","#8B5CF6","#EF4444","#14B8A6","#F97316"];
+  const colors = ["#2563EB","#DB2777","#15803D","#B45309","#4F46E5","#0369A1","#7C3AED","#DC2626","#0F766E","#F97316"];
   const c = colors[Math.abs(hash) % colors.length];
   return `<div class="att-ava" style="background:linear-gradient(135deg, ${c}CC, ${c})">${esc(initials)}</div>`;
 }

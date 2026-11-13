@@ -157,7 +157,7 @@ function renderTests(A, L, T, games, now){
   box.innerHTML = list.map(({ t, at }) => {
     const c = colorFor(t.id), qn = (t.questions || []).length;
     const used = last.get(t.id) ? `використано ${fmtDay(last.get(t.id))}` : "ще не використано";
-    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(t.title))}</span>
+    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:color-mix(in srgb,${c} 66%,#0B1437)">${esc(abbr(t.title))}</span>
       <span class="dx-row-b"><b>${esc(t.title || "Без назви")}</b><small>${qn} ${plural(qn, ["питання", "питання", "питань"])} · ${esc(used)}</small></span>
       <span class="dx-qa">${btn("g", "game", t.id, "Гра", IC.play)}${btn("", "link", t.id, "Посилання", IC.link)}${btn("ic", "edit", t.id, "", IC2.edit, "Редагувати")}</span></div>`;
   }).join("") + `<div class="dx-all"><a class="go" href="tests">Усі тести${svg(IC.chev, 12, 2.5)}</a></div>`;
@@ -193,7 +193,7 @@ function renderGames(games, T){
   }
   box.innerHTML = games.slice(0, 4).map(g => {
     const c = colorFor(g.testId || g.title), exists = T.some(t => t.id === g.testId && (t.questions || []).length);
-    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(g.title))}</span>
+    return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:color-mix(in srgb,${c} 66%,#0B1437)">${esc(abbr(g.title))}</span>
       <span class="dx-row-b"><b>${esc(g.title)}</b><small>${esc(fmtDay(g.at))} · ${g.n} ${plural(g.n, ["гравець", "гравці", "гравців"])}${g.top ? ` · переміг ${esc(g.top.nick)}` : ""}</small></span>
       <span class="dx-qa">${exists ? btn("g", "game", g.testId, "Ще раз", IC2.redo) : ""}</span></div>`;
   }).join("");
@@ -232,7 +232,7 @@ function openPicker(){
     box.innerHTML = rows.length ? rows.map((x, i) => {
       const qn = (x.t.questions || []).length, c = colorFor(x.t.id);
       return `<button type="button" class="dx-pick-it${i === kb ? " kb" : ""}" data-tid="${esc(x.t.id)}">
-        <span class="dx-tile" style="background:${c}1A;color:${c}">${esc(abbr(x.t.title))}</span>
+        <span class="dx-tile" style="background:${c}1A;color:color-mix(in srgb,${c} 66%,#0B1437)">${esc(abbr(x.t.title))}</span>
         <span class="dx-row-b"><b>${esc(x.t.title || "Без назви")}</b><small>${qn} ${plural(qn, ["питання", "питання", "питань"])}${x.p ? ` · грали ${x.p.n} ${plural(x.p.n, ["раз", "рази", "разів"])}, ост. ${esc(fmtDay(x.p.at))}` : ""}</small></span>
         <span class="dx-pick-go">${svg(IC.play, 12)}</span></button>`;
     }).join("") : `<div class="dx-mini-empty">${list.length ? "Нічого не знайдено" : `Немає тестів з питаннями · <button type="button" data-dx="new">створити тест</button>`}</div>`;

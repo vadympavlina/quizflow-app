@@ -3,7 +3,7 @@
    Кольори оцінок — «статусні» (з підписами в легенді), не для серій.
    ═══════════════════════════════════════════════════════════════════════ */
 .rp-page{
-  --ink-900:#0B1437; --ink-700:#24335A; --ink-500:#5B6A8F; --ink-400:#8691AC;
+  --ink-900:#0B1437; --ink-700:#24335A; --ink-500:#5B6A8F; --ink-400:#636E8B;
   --line:#E3E8F2; --line-strong:#CDD6E8; --soft:#F4F6FB; --acc:#3B6BF6; --acc-soft:#EEF3FF;
   --t-best:#15803D; --t-best-bg:#DCFCE7; --t-good:#1E40AF; --t-good-bg:#DBEAFE;
   --t-mid:#B45309;  --t-mid-bg:#FEF3C7;  --t-bad:#B91C1C;  --t-bad-bg:#FEE2E2;
