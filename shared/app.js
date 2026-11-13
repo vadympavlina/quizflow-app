@@ -325,6 +325,76 @@ document.addEventListener("click", e => {
 let _tabRz; addEventListener("resize", () => { clearTimeout(_tabRz); _tabRz = setTimeout(() => qfTabHints(false), 120); });
 [400, 1200, 2500].forEach(ms => setTimeout(() => qfTabHints(ms === 400), ms));
 
+// ─── Шторка «Фільтри» на телефоні ───────────────────────────────────────────
+// На вузьких екранах випадні фільтри не займають пів екрана: у рядку лишається пошук і кнопка
+// «Фільтри» з лічильником активних, а самі списки відкриваються в нижній шторці (змах вниз
+// закриває). Елементи не копіюються, а переносяться (qfDrop продовжує працювати), а на широкому
+// екрані повертаються на своє місце.
+const _FS_MQ = window.matchMedia ? matchMedia("(max-width:1023px)") : null;
+const _FS_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>';
+window.qfFilterSheet = function (cfg) {
+  const items = (cfg.items || []).map(sel => document.querySelector(sel)).filter(Boolean);
+  const anchor = document.querySelector(cfg.anchor);
+  if (!items.length || !anchor) return null;
+  const marks = items.map(el => { const m = document.createComment("qf-fs"); el.parentNode.insertBefore(m, el); return m; });
+  const btn = document.createElement("button");
+  btn.type = "button"; btn.className = "qf-fbtn"; btn.setAttribute("aria-label", "Фільтри"); btn.setAttribute("aria-expanded", "false");
+  btn.innerHTML = _FS_ICON + '<span class="qf-fb-n" hidden>0</span>';
+  if (cfg.before) anchor.parentNode.insertBefore(btn, anchor); else anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+  const ov = document.createElement("div"); ov.className = "qf-fs-ov";
+  const sh = document.createElement("div"); sh.className = "qf-fs"; sh.setAttribute("role", "dialog"); sh.setAttribute("aria-label", cfg.title || "Фільтри");
+  sh.innerHTML = '<div class="qf-fs-h"><b></b><button type="button" class="qf-fs-x">Готово</button></div><div class="qf-fs-b"></div>';
+  sh.querySelector("b").textContent = cfg.title || "Фільтри";
+  const body = sh.querySelector(".qf-fs-b");
+  document.body.appendChild(ov); document.body.appendChild(sh);
+  let moved = false, isOpen = false;
+  const count = () => {
+    const n = items.reduce((a, el) => a + el.querySelectorAll(".qd-btn.set").length, 0);
+    const b = btn.querySelector(".qf-fb-n"); b.textContent = String(n); b.hidden = !n;
+    btn.classList.toggle("set", n > 0);
+  };
+  function place(narrow) {
+    if (narrow && !moved) { items.forEach(el => body.appendChild(el)); moved = true; }
+    else if (!narrow && moved) { items.forEach((el, i) => marks[i].parentNode.insertBefore(el, marks[i].nextSibling)); moved = false; if (isOpen) close(); }
+    btn.hidden = !narrow; count();
+  }
+  function open() {
+    if (isOpen) return; isOpen = true;
+    sh.style.display = "flex"; ov.style.display = "block"; void sh.offsetWidth;
+    sh.classList.add("on"); ov.classList.add("on");
+    btn.setAttribute("aria-expanded", "true");
+    if (window.qfLock) window.qfLock.set("filters", true);
+    setTimeout(() => sh.querySelector(".qf-fs-x").focus({ preventScroll: true }), 80);
+  }
+  function close() {
+    if (!isOpen) return; isOpen = false;
+    sh.classList.remove("on"); ov.classList.remove("on");
+    btn.setAttribute("aria-expanded", "false");
+    if (window.qfLock) window.qfLock.set("filters", false);
+    count();
+    setTimeout(() => { if (!isOpen) { sh.style.display = "none"; ov.style.display = "none"; sh.style.transform = ""; sh.style.transition = ""; ov.style.opacity = ""; ov.style.transition = ""; } }, 300);
+    try { btn.focus({ preventScroll: true }); } catch {}
+  }
+  btn.addEventListener("click", () => (isOpen ? close() : open()));
+  sh.querySelector(".qf-fs-x").addEventListener("click", close);
+  ov.addEventListener("click", close);
+  addEventListener("keydown", e => { if (e.key === "Escape" && isOpen && !document.querySelector('.qd-pop[data-open="1"]')) { e.stopPropagation(); close(); } }, true);
+  if (window.qfDismiss) qfDismiss(sh, { dir: "down", overlay: ov, close, enabled: () => isOpen });
+  new MutationObserver(count).observe(body, { attributes: true, attributeFilter: ["class"], subtree: true, childList: true });
+  if (_FS_MQ) _FS_MQ.addEventListener("change", e => place(e.matches));
+  place(!!(_FS_MQ && _FS_MQ.matches));
+  return { open, close, refresh: count };
+};
+// Конфігурація сторінок: що лишається в рядку, а що йде в шторку
+const _FS_PAGES = [
+  { has: "#att-srch-wrap", anchor: "#att-srch-wrap", items: ["#att-f-test", "#att-f-group", "#att-f-period", "#att-reset"] },
+  { has: "#sp-tabs", anchor: "#sp-fb-meta", before: true, items: ["#sp-f-group", "#sp-f-test", "#sp-f-period", "#sp-reset", "#sp-f-sort"] },
+  { has: "#gb-f-group", anchor: ".rp-search", items: ["#gb-f-group", "#gb-f-test"] },
+  { has: "#lnk-sort", anchor: ".l-search", items: [".l-sort"] },
+];
+function _initFilterSheets() { _FS_PAGES.forEach(c => { if (document.querySelector(c.has)) qfFilterSheet(c); }); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", _initFilterSheets); else _initFilterSheets();
+
 // ─── Modal helpers ─────────────────────────────────────────────────────
 // Стек відкритих модалок: Esc і клік по фону закривають лише верхню,
 // фокус переходить у модалку й повертається на кнопку, що її відкрила,
