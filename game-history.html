@@ -300,7 +300,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
     </label>
     <span class="res-count" id="res-count"></span>
     <div class="gv" id="gv" role="radiogroup" aria-label="Як рахувати приблизну оцінку">
-      <button type="button" role="radio" data-v="acc" title="Кожне питання коштує 12/N балів, сума округлюється вгору">За правильними</button>
+      <button type="button" role="radio" data-v="acc" title="Від 12 мінус бал за кожну помилку">За правильними</button>
       <button type="button" role="radio" data-v="rel" title="Найкращий у грі отримує 12, решта пропорційно до його результату">Відносно класу</button>
       <button type="button" role="radio" data-v="mix" title="70% за правильними й 30% відносно класу">Змішана</button>
     </div>
@@ -392,22 +392,21 @@ const initials = n => { const p = String(n || "").trim().split(/\s+/).filter(Boo
 const medal = r => `<span class="medal r${r}" aria-label="${r} місце">${r}</span>`;
 
 // ─── Приблизна оцінка за 12-бальною шкалою ─────────────────────────────
-// Кожне питання коштує 12 / N балів, сума округлюється вгору. Щоб у малих іграх не зникали високі оцінки (10 при 8 чи 9 питаннях),
-// перші дві помилки з високого результату коштують рівно по балу: 12, 11, 10. З N питань є лише N+1 різних результатів,
-// тож при N < 11 деякі оцінки неминуче не трапляються (4, 5, 9 тощо), але верхні 12, 11, 10 лишаються досяжними.
-const gradeByShare = (correct, qc) => {
-  const wrong = qc - correct, base = Math.ceil(12 * correct / qc - 1e-9);
-  const top = wrong <= 2 && correct / qc >= 0.7 ? 12 - wrong : 0;
-  return Math.min(12, Math.max(1, base, top));
+// Оцінка «падає від 12»: усі відповіді правильні = 12, кожна помилка мінус бал (12, 11, 10, 9, …), тож жодна оцінка зверху не пропускається.
+// У великих іграх (більше 11 питань) помилка коштує менше, 11/N балів, щоб оцінка не впала до 1 після одинадцяти помилок. Нуль правильних = 1.
+const gradeByMistakes = (correct, qc) => {
+  if (correct <= 0) return 1;
+  const w = Math.min(1, 11 / qc);
+  return Math.min(12, Math.max(1, Math.round(12 - w * (qc - correct))));
 };
 const GV_NOTE = {
-  acc: "Кожне питання коштує 12/N балів, сума округлюється вгору; перші дві помилки з високого результату знижують оцінку рівно на бал (12, 11, 10). 12 лише за всі правильні. Швидкість не враховується.",
+  acc: "Починаючи з 12, кожна помилка знижує оцінку на бал: 12, 11, 10, 9… У великих іграх (понад 11 питань) помилка коштує менше. Нуль правильних дає 1. Швидкість не враховується.",
   rel: "Найкращий результат у грі отримує 12, решта пропорційно до нього. Навіть слабка гра дасть комусь 12, тож це оцінка відносно класу.",
   mix: "70% оцінки за правильними відповідями й 30% відносно найкращого в грі. Менше залежить від складності питань.",
 };
 let gradeMode = "acc"; try { const v = localStorage.getItem("qf_gh_gv"); if (GV_NOTE[v]) gradeMode = v; } catch {}
 function gradeOf(r, g, mode = gradeMode){
-  const a = g.qc && r.correct != null ? gradeByShare(r.correct, g.qc) : null;
+  const a = g.qc && r.correct != null ? gradeByMistakes(r.correct, g.qc) : null;
   const b = g.max > 0 ? Math.min(12, Math.max(1, Math.round(12 * r.score / g.max))) : null;
   if (mode === "acc") return a ?? b;
   if (mode === "rel") return b;
