@@ -29,8 +29,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=53">
-<link rel="modulepreload" href="shared/app.js?v=37">
+<link rel="stylesheet" href="shared/styles.css?v=54">
+<link rel="modulepreload" href="shared/app.js?v=39">
 <link rel="modulepreload" href="shared/features.js?v=50">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
@@ -170,6 +170,11 @@
 <style>@keyframes appSpin{to{transform:rotate(360deg)}}
 /* Цілі дотику ≥44 px на сенсорних екранах (WCAG 2.5.5) */
 @media (pointer:coarse){#sec-links .l-title{padding-block:12px;margin-block:-12px}}
+@media (max-width:1023px){
+  #sec-links .l-filters{flex-wrap:wrap}
+  #sec-links .l-search{flex:1 1 0;min-width:0;max-width:none}
+  #sec-links .l-tabs{order:3;flex:1 0 100%}
+}
 </style>
 
 <script src="shared/nav.js?v=33"></script>
@@ -237,7 +242,7 @@ const srch = document.getElementById("lnk-srch"), srchX = document.getElementByI
 srch.addEventListener("input", () => { srchX.hidden = !srch.value; window.renderLinks?.(); });
 srchX.addEventListener("click", () => { srch.value = ""; srchX.hidden = true; srch.focus(); window.renderLinks?.(); });
 
-const { initApp } = await import("./shared/app.js?v=37");
+const { initApp } = await import("./shared/app.js?v=39");
 const featuresP = import("./shared/features.js?v=50");
 
 window.showSec = function(name){
