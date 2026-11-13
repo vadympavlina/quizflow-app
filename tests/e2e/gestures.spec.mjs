@@ -123,3 +123,32 @@ test("бокова панель: змах вправо закриває (qfDismi
   await expect.poll(() => page.evaluate(() => window._closed)).toBe(1);
   expect(errors).toEqual([]);
 });
+
+// Видима прозорість шторки = добуток прозорості її самої й усіх батьків; вона не має падати нижче 1
+const sheetAlpha = page => page.evaluate(() => { let a = 1; for (let n = document.querySelector("#m-folder .mb"); n; n = n.parentElement) a *= +getComputedStyle(n).opacity; return a; });
+
+test("шторка не стає прозорою: ні під час тяги, ні після змаху, ні при закритті кнопкою", async ({ page, errors }) => {
+  await openSheet(page);
+  const box = await page.locator("#m-folder .mb").boundingBox();
+  const cdp = await page.context().newCDPSession(page);
+  const x = box.x + box.width / 2, y = box.y + 14;
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y, id: 1 }] });
+  for (let i = 1; i <= 8; i++) { await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y + i * 25, id: 1 }] }); await page.waitForTimeout(16); }
+  expect(await sheetAlpha(page), "під час тяги").toBe(1);
+  // затемнення фону при цьому слабшає — це нормально
+  const bgMid = await page.evaluate(() => +getComputedStyle(document.getElementById("m-folder")).backgroundColor.match(/[\d.]+/g)[3]);
+  expect(bgMid).toBeLessThan(0.46);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  // далі, поки шторка їде вниз, вона лишається непрозорою
+  const seen = [];
+  for (let i = 0; i < 8; i++) { seen.push(await sheetAlpha(page)); await page.waitForTimeout(30); }
+  expect(Math.min(...seen), "після змаху").toBe(1);
+  await expect.poll(() => sheetOn(page)).toBe(false);
+  // і при закритті кнопкою
+  await openSheet(page);
+  await page.evaluate(() => window.closeM("m-folder"));
+  const seen2 = [];
+  for (let i = 0; i < 8; i++) { seen2.push(await sheetAlpha(page)); await page.waitForTimeout(25); }
+  expect(Math.min(...seen2), "закриття кнопкою").toBe(1);
+  expect(errors).toEqual([]);
+});
