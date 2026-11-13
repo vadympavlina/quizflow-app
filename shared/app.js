@@ -404,6 +404,29 @@ const _FS_PAGES = [
 function _initFilterSheets() { _FS_PAGES.forEach(c => { if (document.querySelector(c.has)) qfFilterSheet(c); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", _initFilterSheets); else _initFilterSheets();
 
+// ─── Випадні меню (.cd-menu) не вилазять за екран ───────────────────────
+// Меню притиснуте до правого (або лівого) краю кнопки, а кнопка може стояти де завгодно, тож на телефоні
+// воно виходило за межі вікна. Після відкриття зсуваємо його (властивість translate, окремо від анімації
+// появи) рівно настільки, щоб воно вмістилось з відступом 8 px; при закритті зсув знімається.
+(function () {
+  const M = 8;
+  function clamp(m) {
+    m.style.translate = "";
+    const r = m.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+    let dx = 0;
+    if (r.left < M) dx = M - r.left; else if (r.right > vw - M) dx = vw - M - r.right;
+    if (dx) m.style.translate = Math.round(dx) + "px 0";
+  }
+  new MutationObserver(list => {
+    for (const rec of list) {
+      const t = rec.target;
+      if (!t.classList || !t.classList.contains("cd-menu")) continue;
+      if (t.classList.contains("open")) clamp(t); else t.style.translate = "";
+    }
+  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["class"] });
+  window.addEventListener("resize", () => document.querySelectorAll(".cd-menu.open").forEach(clamp));
+})();
+
 // ─── Modal helpers ─────────────────────────────────────────────────────
 // Стек відкритих модалок: Esc і клік по фону закривають лише верхню,
 // фокус переходить у модалку й повертається на кнопку, що її відкрила,
