@@ -1390,7 +1390,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:not([
 .fade-l.fade-r{ -webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent); mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent); }
 
 /* Шторка «Фільтри» (телефон): у рядку — пошук і кнопка з лічильником, списки — у нижній шторці */
-.qf-fbtn{ position:relative; flex:0 0 auto; width:46px; height:46px; border-radius:14px; border:1px solid var(--border,#E3E8F2); background:#fff; color:#24335A; display:inline-grid; place-items:center; cursor:pointer; padding:0; }
+.qf-fbtn{ position:relative; flex:0 0 auto; width:44px; height:44px; border-radius:12px; border:1px solid var(--border,#E3E8F2); background:#fff; color:#24335A; display:inline-grid; place-items:center; cursor:pointer; padding:0; }
 .qf-fbtn[hidden]{ display:none; }
 .qf-fbtn.set{ border-color:#93B0F5; background:#EEF3FF; color:#1E3A8A; }
 .qf-fb-n{ position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; padding:0 5px; border-radius:999px; background:#2D5BE3; color:#fff; font:800 11px 'Geist Mono',monospace; display:grid; place-items:center; }
@@ -1411,3 +1411,36 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:not([
 .qf-fs-b button.btn-reset,.qf-fs-b button.sp-reset{ align-self:flex-start; width:auto; min-height:44px; }
 @media (min-width:1024px){ .qf-fbtn,.qf-fs,.qf-fs-ov{ display:none !important; } }
 @media (prefers-reduced-motion:reduce){ .qf-fs,.qf-fs-ov{ transition:none !important; } }
+
+/* ═══ Телефон: однакові пошук, вкладки й кнопка фільтрів на всіх сторінках (еталон — «Посилання») ═══ */
+@media (max-width:1023px){
+  /* Пошук: 44 px, радіус 12 */
+  body #sec-attempts .search-wrap input, body #sec-links .l-search input, body #sec-students .st-search input,
+  body #sec-news .nw-search input, body .rp-search input, body .gh-search input{
+    height:44px; border-radius:12px; font-size:14.5px; box-sizing:border-box;
+  }
+  body #sec-attempts .search-wrap, body #sec-links .l-search, body #sec-students .st-search, body #sec-news .nw-search,
+  body .rp-search, body .gh-search{ flex:1 1 0; min-width:0; max-width:none; width:auto; }
+  body .rp-spacer, body #sec-attempts .f-row .grow, body #sec-attempts .count-r{ display:none; }
+  body #sec-attempts .f-row, body .rp-toolbar{ flex-wrap:nowrap; align-items:center; gap:8px; }
+  /* Вкладки: суцільна плашка, активна — біла */
+  body #sec-attempts .tabs, body #sec-links .l-tabs, body #sec-suspicious .sp-tabs, body #sec-notifications .nf-tabs,
+  body #sec-students .st-seg, body .gh-seg{
+    background:#EBEFF7; border:0; border-radius:12px; padding:3px; gap:2px;
+  }
+  body #sec-attempts .tab, body #sec-links .l-tab, body #sec-suspicious .sp-tab, body #sec-notifications .nf-tab,
+  body #sec-students .st-seg button, body .gh-seg button{
+    height:38px; padding:0 13px; border:0; border-radius:9px; background:transparent; color:var(--ink-500,#5B6A8F);
+    font:700 13px 'Manrope',system-ui,sans-serif; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; flex:0 0 auto;
+  }
+  body #sec-attempts .tab.active, body #sec-links .l-tab.active, body #sec-suspicious .sp-tab.on, body #sec-notifications .nf-tab.on,
+  body #sec-students .st-seg button.on, body .gh-seg button.on{
+    background:#fff; color:var(--ink-900,#0B1437); box-shadow:0 1px 3px rgba(11,20,55,.1);
+  }
+  /* Студенти: пошук першим, потім вкладки й чипи груп */
+  body #sec-students .st-card-h{ display:flex; flex-direction:column; align-items:stretch; gap:10px; }
+  body #sec-students .st-search{ order:1; }
+  body #sec-students .st-seg{ order:2; align-self:flex-start; }
+  body #sec-students .st-chips{ order:3; }
+  body #sec-students .st-meta{ order:4; align-self:flex-end; }
+}
