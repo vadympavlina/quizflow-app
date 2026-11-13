@@ -7,6 +7,47 @@
 // тож під час переходу між сторінками меню не зникає і не «блимає».
 // app.js потім лише звіряє конфіг з базою у фоні та оновлює користувача.
 // ═══════════════════════════════════════════════════════════════════════
+/* ── Блокування прокрутки сторінки під панелями ──────────────────────────────
+   Одна лічильникова блокіровка для модалок, висувного меню й бокових панелей.
+   html{overflow:hidden} + компенсація смуги прокрутки (без стрибка розкладки на ПК),
+   а на телефоні (iOS ігнорує overflow на корені) touchmove поза прокручуваним вмістом
+   панелі скасовується. Прокручувані блоки всередині панелей (і повзунки) працюють. */
+(function () {
+  if (window.qfLock) return;
+  var held = {}, on = false;
+  function guard(e) {
+    var t = e.target;
+    if (t && t.closest && t.closest("input[type=range],[data-no-lock]")) return;
+    for (var n = t; n && n !== document.documentElement; n = n.parentNode) {
+      if (n.nodeType !== 1 || n === document.body) continue;
+      if (!n.closest || !n.closest(".mo,.ai-panel,#sidebar,.qd-pop")) continue;
+      var cs = getComputedStyle(n);
+      if (n.scrollHeight > n.clientHeight + 1 && /auto|scroll/.test(cs.overflowY)) return;
+      if (n.scrollWidth > n.clientWidth + 1 && /auto|scroll/.test(cs.overflowX)) return;
+    }
+    if (e.cancelable) e.preventDefault();
+  }
+  window.qfLock = {
+    set: function (key, v) {
+      if (v) held[key] = 1; else delete held[key];
+      var any = Object.keys(held).length > 0;
+      if (any === on) return;
+      on = any;
+      var de = document.documentElement;
+      if (on) {
+        var sbw = window.innerWidth - de.clientWidth;
+        de.classList.add("qf-lock");
+        if (sbw > 0) de.style.paddingRight = sbw + "px";
+        document.addEventListener("touchmove", guard, { passive: false });
+      } else {
+        de.classList.remove("qf-lock");
+        de.style.paddingRight = "";
+        document.removeEventListener("touchmove", guard, { passive: false });
+      }
+    }
+  };
+})();
+
 (function () {
   "use strict";
   if (window.QFNav) return;
@@ -387,6 +428,7 @@
   function setOpen(open) {
     open = !!open && isNarrow();
     root.classList.toggle("sb-open", open);
+    if (window.qfLock) window.qfLock.set("drawer", open);
     var b = document.getElementById("qtb-menu");
     if (b) b.setAttribute("aria-expanded", String(open));
     hideTip();

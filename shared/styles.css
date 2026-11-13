@@ -651,6 +651,8 @@ textarea.fi{resize:vertical;min-height:72px}
 
 /* ═══ Модалки: спільні покращення ═══════════════════════════════════ */
 body.mo-open{overflow:hidden}
+html.qf-lock{overflow:hidden;overscroll-behavior:none}
+.mo{touch-action:none}.mo .mb,.ai-panel,.qd-pop{touch-action:pan-y}
 .mo .mb:focus-visible,.mo button:focus-visible,.mo .fi:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .mx{padding:26px 26px 22px}
 .mx-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-right:34px}
