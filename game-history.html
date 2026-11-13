@@ -28,11 +28,11 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=51">
-<link rel="modulepreload" href="shared/app.js?v=35">
+<link rel="stylesheet" href="shared/styles.css?v=52">
+<link rel="modulepreload" href="shared/app.js?v=36">
 <style>
 #sec-history{
-  --ink-900:#0B1437;--ink-700:#24335A;--ink-500:#5B6A8F;--ink-400:#8691AC;--ink-300:#CDD6E8;
+  --ink-900:#0B1437;--ink-700:#24335A;--ink-500:#5B6A8F;--ink-400:#636E8B;--ink-300:#CDD6E8;
   --line:#E3E8F2;--surface:#F7F9FC;--white:#fff;--accent:#2563EB;--accent-pale:#EFF6FF;
   font-family:'Manrope',system-ui,sans-serif;color:var(--ink-900);
 }
@@ -150,20 +150,20 @@
 .res-sum{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:#E3E8F2;border-bottom:1px solid #E3E8F2}
 .res-sum > div{background:#F7F9FC;padding:10px 14px}
 .res-sum .v{font:700 16px 'Geist Mono',monospace;color:#0B1437}
-.res-sum .l{font-size:10.5px;color:#8691AC;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.res-sum .l{font-size:10.5px;color:#636E8B;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 .res-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 24px;border-bottom:1px solid #E3E8F2}
 .res-tools .gh-search{max-width:none}
-.res-count{font-size:12px;color:#8691AC;white-space:nowrap}
+.res-count{font-size:12px;color:#636E8B;white-space:nowrap}
 .res-body{overflow-y:auto;flex:1;min-height:120px}
 .res-table{width:100%;border-collapse:separate;border-spacing:0;font-family:'Manrope',sans-serif}
-.res-table th{position:sticky;top:0;z-index:1;background:#FAFBFE;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8691AC;text-align:left;padding:9px 12px;border-bottom:1px solid #E3E8F2}
+.res-table th{position:sticky;top:0;z-index:1;background:#FAFBFE;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#636E8B;text-align:left;padding:9px 12px;border-bottom:1px solid #E3E8F2}
 .res-table td{padding:8px 12px;border-bottom:1px solid #EEF1F7;font-size:13.5px;color:#24335A;vertical-align:middle}
 .res-table tr:last-child td{border-bottom:0}
 .res-table tbody tr:hover td{background:#F7F9FC}
 .res-table .r1 td{background:#FFFBEB}.res-table .r2 td{background:#F8FAFC}.res-table .r3 td{background:#FFF7ED}
 .res-table th:first-child,.res-table td:first-child{padding-left:24px;width:56px}
 .res-table th:last-child,.res-table td:last-child{padding-right:24px;text-align:right}
-.res-rank{font:700 13px 'Geist Mono',monospace;color:#8691AC}
+.res-rank{font:700 13px 'Geist Mono',monospace;color:#636E8B}
 .res-who{display:flex;align-items:center;gap:10px;min-width:0}
 .res-av{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#fff;font:700 10.5px 'Manrope',sans-serif;flex:0 0 auto}
 .res-nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
@@ -181,7 +181,7 @@
 .res-acc .t{font:600 12px 'Geist Mono',monospace;color:#5B6A8F;white-space:nowrap}
 .res-pts{font:700 13.5px 'Geist Mono',monospace;color:#2563EB;white-space:nowrap}
 .res-more{display:block;margin:12px auto}
-.res-none{padding:40px;text-align:center;color:#8691AC;font-size:13px}
+.res-none{padding:40px;text-align:center;color:#636E8B;font-size:13px}
 mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 
 /* ── Швидкий запуск ── */
@@ -196,9 +196,9 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 .ql-row .dot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
 .ql-row .ico{width:36px;height:36px;border-radius:10px;background:#EFF6FF;color:#2563EB;display:grid;place-items:center;flex:0 0 auto}
 .ql-row .t{flex:1;min-width:0;font-weight:700;font-size:14px;color:#0B1437;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ql-row .m{font-size:12px;color:#8691AC;white-space:nowrap}
+.ql-row .m{font-size:12px;color:#636E8B;white-space:nowrap}
 .ql-row .go{background:#0B1437;color:#fff;border-radius:8px;padding:7px 12px;font:700 12px 'Manrope',sans-serif;white-space:nowrap}
-.ql-empty{padding:40px 20px;text-align:center;color:#8691AC;font-size:13px}
+.ql-empty{padding:40px 20px;text-align:center;color:#636E8B;font-size:13px}
 
 /* ── Адаптивність ── */
 @media (max-width:1280px){
@@ -231,7 +231,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 </head>
 <body>
 
-<script src="shared/nav.js?v=31"></script>
+<script src="shared/nav.js?v=32"></script>
 <main class="main">
 <div class="sec" id="sec-history">
   <div class="gh-title">
@@ -289,7 +289,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
   <div class="res-head">
     <button class="mcl" onclick="closeM('m-res')" aria-label="Закрити">×</button>
     <span class="mx-ico t-violet res-ico" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg></span>
-    <div class="res-tt"><h3 id="res-title">Результати гри</h3>
+    <div class="res-tt"><h3 aria-level="2" id="res-title">Результати гри</h3>
     <p id="res-sub"></p></div>
   </div>
   <div class="res-sum" id="res-sum"></div>
@@ -327,7 +327,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
   <div class="res-head">
     <button class="mcl" onclick="closeM('m-ql')" aria-label="Закрити">×</button>
     <span class="mx-ico t-blue res-ico" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
-    <div class="res-tt"><h3 id="ql-title">Створити гру</h3>
+    <div class="res-tt"><h3 aria-level="2" id="ql-title">Створити гру</h3>
     <p>Оберіть тест — і одразу перейдете до налаштувань гри</p></div>
   </div>
   <div class="ql-back" id="ql-back" hidden>
@@ -345,7 +345,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 
 <script type="module">
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-const { initApp, appReady } = await import("./shared/app.js?v=35");
+const { initApp, appReady } = await import("./shared/app.js?v=36");
 await initApp("history", { skipData: true });
 
 const db = getDatabase();
@@ -448,7 +448,7 @@ try {
   const snap = await get(ref(db, `teachers/${uid}/gameHistory`));
   games = snap.exists() ? Object.entries(snap.val()).map(([code, g]) => prep(code, g)) : [];
 } catch (e) {
-  $("games-list").innerHTML = `<div class="gh-empty"><h3>Не вдалося завантажити історію</h3><p>${esc(e.message)}</p><button class="gh-btn" onclick="location.reload()">Спробувати ще раз</button></div>`;
+  $("games-list").innerHTML = `<div class="gh-empty"><h3 aria-level="2">Не вдалося завантажити історію</h3><p>${esc(e.message)}</p><button class="gh-btn" onclick="location.reload()">Спробувати ще раз</button></div>`;
 }
 renderKpis(); buildTestMenu(); render();
 $("sec-history").classList.add("on");
@@ -501,12 +501,12 @@ function render(){
   const host = $("games-list");
   if (!games.length){
     host.innerHTML = `<div class="gh-empty"><div class="i"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg></div>
-      <h3>Ще не проводили жодної гри</h3><p>Запустіть першу гру наживо — результати з'являться тут</p>
+      <h3 aria-level="2">Ще не проводили жодної гри</h3><p>Запустіть першу гру наживо — результати з'являться тут</p>
       <button class="gh-btn primary" data-act="quick" style="margin:0 auto">Створити гру</button></div>`;
     return;
   }
   if (!list.length){
-    host.innerHTML = `<div class="gh-empty"><h3>Нічого не знайдено</h3><p>Спробуйте інший запит або період</p><button class="gh-btn" data-act="reset" style="margin:0 auto">Скинути фільтри</button></div>`;
+    host.innerHTML = `<div class="gh-empty"><h3 aria-level="2">Нічого не знайдено</h3><p>Спробуйте інший запит або період</p><button class="gh-btn" data-act="reset" style="margin:0 auto">Скинути фільтри</button></div>`;
     return;
   }
   const shown = list.slice(0, ui.limit);

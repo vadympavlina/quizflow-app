@@ -162,11 +162,11 @@
   .groups{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px}
   .grp{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05)}
   .grp.ok{background:rgba(16,185,129,.16)}
-  .grp .m{font-family:"Geist Mono",monospace;font-weight:800;width:18px;color:#FCA5A5}
+  .grp .m{display:inline-grid;place-items:center;font-family:"Geist Mono",monospace;font-weight:800;width:18px;color:#FCA5A5}
   .grp.ok .m{color:#86EFAC}
   .grp .v{flex:1;font-size:15px;font-weight:700;overflow-wrap:anywhere}
   .grp .n{font-family:"Geist Mono",monospace;font-size:13px;color:#B8C0E6;white-space:nowrap}
-  .grade-btn{font:800 12px "Geist Mono",monospace;padding:7px 12px;border-radius:9px;border:1.5px solid;cursor:pointer;background:transparent;white-space:nowrap}
+  .grade-btn{display:inline-flex;align-items:center;gap:6px;font:800 12px "Geist Mono",monospace;padding:7px 12px;border-radius:9px;border:1.5px solid;cursor:pointer;background:transparent;white-space:nowrap}
   .grade-btn.accept{border-color:rgba(52,211,153,.5);color:#6EE7B7}
   .grade-btn.accept:hover{background:rgba(16,185,129,.2)}
   .grade-btn.revoke{border-color:rgba(248,113,113,.5);color:#FCA5A5}
@@ -307,6 +307,7 @@ import {
 } from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
+const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const user = await requireTeacher();
 const uid = user.uid;
 const { code } = readParams("code");
@@ -638,10 +639,10 @@ function renderGrading(ans) {
     <div class="groups">${groupsCache.length ? groupsCache.map((g, i) => {
       const ok = g.correct === g.pids.length;
       return `<div class="grp${ok ? " ok" : ""}">
-        <span class="m">${ok ? "✓" : "✗"}</span>
+        <span class="m">${ok ? ICO_OK : ICO_X}</span>
         <span class="v">${g.label ? esc(g.label) : '<i class="muted">порожньо</i>'}</span>
         <span class="n">${g.pids.length} · ${Math.round(g.pids.length / Math.max(total, 1) * 100)}%</span>
-        <button class="grade-btn ${ok ? "revoke" : "accept"}" data-g="${i}">${ok ? "✗ Скасувати" : "✓ Зарахувати"}</button>
+        <button class="grade-btn ${ok ? "revoke" : "accept"}" data-g="${i}">${ok ? ICO_X + " Скасувати" : ICO_OK + " Зарахувати"}</button>
       </div>`;
     }).join("") : `<div class="muted">Ніхто не відповів</div>`}</div>`;
 }
@@ -731,7 +732,7 @@ function applyState(s) {
 function tick() {
   const left = secondsLeft();
   const el = $("timer");
-  $("timer-num").textContent = state.status === "reveal" ? "✓" : Math.ceil(left);
+  if (state.status === "reveal") $("timer-num").innerHTML = ICO_OK; else $("timer-num").textContent = Math.ceil(left);
   el.style.setProperty("--p", state.status === "reveal" ? 0 : (left / timePerQ).toFixed(4));
   el.className = "timer" + (state.status === "paused" ? " paused" : state.status === "reveal" ? "" : left <= 5 ? " danger" : left <= 10 ? " warn" : "");
   if (state.status !== "question") return;

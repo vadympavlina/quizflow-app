@@ -30,7 +30,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 <style>
 :root{
-  --ink:#0B1437;--ink-2:#24335A;--muted:#6B7897;--faint:#8F9AB5;
+  --ink:#0B1437;--ink-2:#24335A;--muted:#5E6A8A;--faint:#66728F;
   --line:#E3E8F2;--line-2:#EEF1F7;--bg:#F4F6FB;--card:#fff;--hover:#F7F9FD;
   --pri:#2D5BE3;--pri-2:#3B6BF6;--pri-soft:#EEF3FF;--pri-line:#C9D7FB;
   --ok:#0E9F6E;--ok-soft:#E3F8EF;--ok-line:#A7E6CC;
@@ -218,7 +218,7 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .box-in{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;padding:0 6px 0 10px;background:#fff;transition:all .15s;max-width:460px}
 .box-in:focus-within{border-color:var(--pri-line);box-shadow:0 0 0 3px rgba(45,91,227,.08)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:12.5px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:var(--ok-soft);color:#0B7A55;font-size:12.5px;font-weight:700}
 .long-info{display:flex;gap:12px;padding:16px;border-radius:14px;background:var(--hover);border:1px dashed var(--line);color:var(--muted);font-size:13.5px;line-height:1.5}
 .long-info b{color:var(--ink-2)}
 
@@ -317,7 +317,7 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .iss{display:flex;gap:9px;align-items:flex-start;text-align:left;padding:8px 10px;border-radius:10px;font-size:12.5px;line-height:1.4;color:#78350F;background:#FFFBEB;border:1px solid #FDECC0;transition:all .15s}
 .iss:hover{border-color:#F7CF70}
 .iss b{font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:6px;background:#FDE68A;color:#78350F;flex-shrink:0}
-.all-good{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--ok-soft);color:var(--ok);font-size:12.5px;font-weight:700}
+.all-good{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--ok-soft);color:#0B7A55;font-size:12.5px;font-weight:700}
 
 /* ── POPOVER ────────────────────────────────────────────────────────── */
 .pop{position:fixed;z-index:500;min-width:200px;max-width:320px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-pop);padding:6px;animation:popIn .14s ease}
@@ -488,9 +488,13 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
 .pop-scrim.is-in{opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
+<style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}
+/* Цілі дотику ≥44 px на сенсорних екранах (WCAG 2.5.5) */
+@media (pointer:coarse){.t-back{width:44px;height:44px}.tb{min-height:44px;min-width:44px}.ql-plus{width:44px;height:44px}.t-title input{min-height:44px}}
+</style>
 </head>
 <body>
+<h1 style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Конструктор тесту</h1>
 
 <header class="top">
   <button class="t-back" data-act="back" title="Назад" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
