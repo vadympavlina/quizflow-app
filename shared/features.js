@@ -1005,7 +1005,7 @@ function buildTestRow(t, idx, stats, showFolder){
       <div class="t-row-sub">${dot}${sub}</div>
     </div>
     <div class="t-la">
-      <button class="t-lb primary" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+      <button class="t-lb" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
       <button class="t-lb live" data-act="live" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
       <button class="t-lb edit" data-act="edit" data-id="${esc(t.id)}" title="Редагувати" aria-label="Редагувати">${I.edit}<span class="t-lb-t">Редагувати</span></button>
       <button class="t-lb icon" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій" title="Більше дій">${I.more}</button>

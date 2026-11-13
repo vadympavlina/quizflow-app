@@ -1383,3 +1383,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:not([
   outline:2px solid var(--primary,#2D5BE3); outline-offset:2px;
 }
 .sb a:focus-visible,.sb button:focus-visible{ outline-color:#fff; }
+
+/* Вкладки, що гортаються вбік: затінення краю показує, що праворуч чи ліворуч є ще */
+.fade-r{ -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),transparent); mask-image:linear-gradient(90deg,#000 calc(100% - 30px),transparent); }
+.fade-l{ -webkit-mask-image:linear-gradient(90deg,transparent,#000 30px); mask-image:linear-gradient(90deg,transparent,#000 30px); }
+.fade-l.fade-r{ -webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent); mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent); }

@@ -296,6 +296,35 @@ window.qfDismiss = function (el, o) {
   }, { passive: true });
 };
 
+// ─── Горизонтальні вкладки: затінення країв і автоцентрування активної ─────
+// Вкладки-фільтри на вузькому екрані гортаються вбік. Затінення на краї показує, що є ще,
+// а активна вкладка прокручується в центр. Без постійних спостерігачів за DOM: оновлюємо
+// після завантаження, при зміні розміру й після кліку всередині вкладок.
+const TAB_SEL = ".tabs,.nf-tabs,.sp-tabs,.l-tabs,.t-rail-list";
+const TAB_ON = ".on,.active,.is-on,.is-active,[aria-selected='true'],[aria-current='true']";
+function _tabHint(el, center) {
+  const max = el.scrollWidth - el.clientWidth;
+  if (center && max > 4) {
+    const a = el.querySelector(TAB_ON);
+    if (a) el.scrollLeft = Math.max(0, Math.min(max, a.offsetLeft - (el.clientWidth - a.offsetWidth) / 2));
+  }
+  el.classList.toggle("fade-l", el.scrollLeft > 4);
+  el.classList.toggle("fade-r", max > 4 && el.scrollLeft < max - 4);
+}
+function qfTabHints(center) {
+  document.querySelectorAll(TAB_SEL).forEach(el => {
+    if (!el._qfTab) { el._qfTab = true; el.addEventListener("scroll", () => _tabHint(el, false), { passive: true }); }
+    _tabHint(el, center);
+  });
+}
+window.qfTabHints = qfTabHints;
+document.addEventListener("click", e => {
+  const box = e.target.closest && e.target.closest(TAB_SEL);
+  if (box) setTimeout(() => _tabHint(box, true), 60);
+});
+let _tabRz; addEventListener("resize", () => { clearTimeout(_tabRz); _tabRz = setTimeout(() => qfTabHints(false), 120); });
+[400, 1200, 2500].forEach(ms => setTimeout(() => qfTabHints(ms === 400), ms));
+
 // ─── Modal helpers ─────────────────────────────────────────────────────
 // Стек відкритих модалок: Esc і клік по фону закривають лише верхню,
 // фокус переходить у модалку й повертається на кнопку, що її відкрила,
