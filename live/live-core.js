@@ -232,11 +232,34 @@ export const textAnswers = (correct, type) => type === "number"
   ? (String(correct ?? "").trim() ? [String(correct).trim()] : [])
   : String(correct ?? "").split(/\s*(?:або|or|\||\/|,)\s*/i).map(x => x.trim()).filter(Boolean);
 
-const normText = (s) => String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[’ʼ`]/g, "'");
+// Порівняння текстових відповідей не залежить від регістру, пробілів, лапок, крапок на кінці, апострофів і дефісів:
+// «Івано-Франківськ» = «івано франківськ», «Кобзар» = «"Кобзар".»
+const normText = (s) => String(s ?? "").trim().toLowerCase()
+  .replace(/[’ʼ`‘´]/g, "'").replace(/[«»"“”„]/g, "").replace(/[-‐‑–—_]+/g, " ")
+  .replace(/[.,;:!?()…]+/g, " ").replace(/\s+/g, " ").trim();
+// Відстань Левенштейна для допуску описок (лише для довгих слів)
+function editDist(a, b) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 3;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// Допуск описок: слово від 6 літер — одна помилка, від 12 — дві; короткі й ті, де є цифри, лише точно
+export const typoLimit = (v) => /\d/.test(v) ? 0 : v.length >= 12 ? 2 : v.length >= 6 ? 1 : 0;
 // Правильних відповідей у текстовому питанні може бути кілька: «Київ / м. Київ», «HTML, або HyperText…».
 // Роздільники ті самі, що в конструкторі й у тесті: «/», «|», кома, «або», «or».
 export const textVariants = (correct) => String(correct ?? "").split(/\s*(?:або|or|\||\/|,)\s*/i).map(normText).filter(Boolean);
-const toNum = (s) => parseFloat(String(s ?? "").trim().replace(",", "."));
+// Число: «3,5», «1 000», «5 см» — так; «5 6», «1e5», «5-6» — ні (раніше parseFloat мовчки брав початок рядка)
+const toNum = (s) => {
+  const t = String(s ?? "").trim().replace(/(\d)[\s\u00A0](?=\d{3}(\D|$))/g, "$1");
+  const m = t.match(/^([+-]?\d+(?:[.,]\d+)?)\s*([^\d\s.,+-][^\d]*)?$/);
+  return m ? parseFloat(m[1].replace(",", ".")) : NaN;
+};
 // Набір індексів варіантів: без дублікатів і сміття. Firebase інколи віддає
 // масив як об'єкт {0:1,1:2} — теж приймаємо.
 export function asIndexList(v) {
@@ -261,7 +284,9 @@ export function checkCorrect(q, correct, value) {
     case "number": { const c = toNum(correct), u = toNum(value); return !isNaN(c) && !isNaN(u) && Math.abs(c - u) < 1e-9; }
     case "text": {
       const v = normText(value);
-      return v !== "" && (v === normText(correct) || textVariants(correct).includes(v));
+      if (v === "") return false;
+      const vars = [normText(correct), ...textVariants(correct)];
+      return vars.some(w => w === v || (w !== "" && typoLimit(w) > 0 && editDist(w, v) <= typoLimit(w)));
     }
     default: {
       // single: рівно один вибраний варіант і він правильний
@@ -291,23 +316,29 @@ export function denseRank(list, key = "score") {
 // Підсумки гри з вузла answers: { pid: { score, correct, answered } }
 export function tallyAnswers(allAnswers) {
   const out = {};
-  Object.values(allAnswers || {}).forEach(qA => {
-    Object.entries(qA || {}).forEach(([pid, a]) => {
-      const t = out[pid] || (out[pid] = { score: 0, correct: 0, answered: 0 });
+  // питання йдуть за номером: серія = правильні підряд до останнього відповіді гравця
+  Object.keys(allAnswers || {}).map(Number).sort((x, y) => x - y).forEach(qi => {
+    const qA = allAnswers[qi] || allAnswers[String(qi)] || {};
+    Object.entries(qA).forEach(([pid, a]) => {
+      const t = out[pid] || (out[pid] = { score: 0, correct: 0, answered: 0, streak: 0 });
       t.score += Number(a?.points) || 0;
-      if (a?.isCorrect) t.correct++;
+      if (a?.isCorrect) { t.correct++; t.streak++; } else if (typeof a?.isCorrect === "boolean") t.streak = 0;
       t.answered++;
     });
   });
   return out;
 }
 
+// Порядок серед рівних за результатом не за алфавітом (інакше «Аня» завжди вище за «Ярика»),
+// а стабільний «випадковий» за кодом гравця: однаковий на всіх екранах.
+function tieKey(pid) { let h = 2166136261; for (const ch of String(pid)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+
 export function standings(players, allAnswers) {
   const tally = tallyAnswers(allAnswers);
   const list = Object.entries(players || {})
     .filter(([, p]) => p && p.active !== false)
-    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", hat: p.hat || "", glasses: p.glasses || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0 }) }))
-    .sort((a, b) => b.score - a.score || b.correct - a.correct || a.nickname.localeCompare(b.nickname, "uk"));
+    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", hat: p.hat || "", glasses: p.glasses || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0, streak: 0 }) }))
+    .sort((a, b) => b.score - a.score || b.correct - a.correct || tieKey(a.pid) - tieKey(b.pid));
   return denseRank(list);
 }
 
@@ -319,7 +350,7 @@ export function rankMap(list) {
   let prevRankScore = null, lastScore = null, lastRank = 0;
   list.forEach(p => {
     if (p.rank !== lastRank) { prevRankScore = lastScore; lastRank = p.rank; lastScore = p.score; }
-    out[p.pid] = { r: p.rank, s: p.score, g: p.rank > 1 && prevRankScore != null ? prevRankScore - p.score : 0, n: list.length };
+    out[p.pid] = { r: p.rank, s: p.score, k: p.correct, st: p.streak || 0, g: p.rank > 1 && prevRankScore != null ? prevRankScore - p.score : 0, n: list.length };
   });
   return out;
 }
@@ -332,6 +363,21 @@ export function seededOrder(n, seedStr) {
   const order = Array.from({ length: n }, (_, i) => i);
   for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   return order;
+}
+
+
+// Варіанти на кшталт «Усе вищеперелічене», «Жоден із варіантів», «А і Б» мають сенс лише на своєму місці: не перемішуємо
+const PINNED_RE = /^\s*(?:(?:усе|все|всі|усі)\s+(?:вище|вищевказан\S*|вищеперелічен\S*|вищенаведен\S*|наведен\S*|перелічен\S*|з\s+перелічен\S*|з\s+вищеперелічен\S*|відповіді|варіанти|правильн\S*)|(?:жоден|жодна|жодне|жодні)(?:\s+(?:з|із)(?![\p{L}]).*)?\s*$|(?:немає|нема)\s+правильн\S*|(?:обидва|обидві|обоє)(?![\p{L}])|[а-дa-d]\s*(?:і|й|та|,|\+|and)\s*[а-дa-d]\s*[.)]?\s*$)/iu;
+export const isPinnedOption = (t) => PINNED_RE.test(String(t ?? ""));
+// Порядок показу варіантів: решта перемішується, закріплені лишаються на своїх місцях
+export function optionOrder(options, seedStr) {
+  const n = (options || []).length;
+  const pinned = new Set(); (options || []).forEach((o, i) => { if (isPinnedOption(o)) pinned.add(i); });
+  const free = []; for (let i = 0; i < n; i++) if (!pinned.has(i)) free.push(i);
+  const mixed = seededOrder(free.length, seedStr).map(k => free[k]);
+  const out = []; let f = 0;
+  for (let i = 0; i < n; i++) out.push(pinned.has(i) ? i : mixed[f++]);
+  return out;
 }
 
 // ─── Підписки ──────────────────────────────────────────────────────────

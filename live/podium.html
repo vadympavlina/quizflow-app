@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=8">
+<link rel="modulepreload" href="live-core.js?v=9">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -155,7 +155,7 @@
 import {
   db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, standings, THEMES, DEFAULT_THEME, plural, fmtNum, HOME_URL, serverNow,
-} from "./live-core.js?v=8";
+} from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -170,6 +170,9 @@ if (room.hostUid && room.hostUid !== user.uid) fatal("Це не ваша кім�
 const totalQ = (room.questions || []).length;
 const list = standings(room.players, room.answers);
 const showPodium = room.options?.podium !== false;
+// «Точність»: на фінальному екрані кількість правильних, а не бали
+const acc = room.scoring === "correct";
+const shown = p => acc ? `${p.correct} / ${totalQ}` : fmtNum(p.score);
 
 $("test-title").textContent = room.testTitle || "Гру завершено";
 document.title = `Фінал · ${room.testTitle || code} · QuizFlow Live`;
@@ -195,13 +198,13 @@ if (!list.length) {
     const g = groups[rank], tied = g.length > 1;
     const body = tied
       ? `<div class="tie-badge">Нічия · ${g.length} ${plural(g.length, "гравець", "гравці", "гравців")}</div>
-         <div class="pod-score-shared">${fmtNum(g[0].score)}</div>
+         <div class="pod-score-shared">${shown(g[0])}</div>
          <div class="pod-players">${g.map(p => `<div class="pod-player">${av(p)}
            <div style="min-width:0"><div class="name">${esc(p.nickname)}</div><div class="sub">${p.correct} / ${totalQ} правильно</div></div></div>`).join("")}</div>`
       : `${av(g[0])}
          <div class="name">${esc(g[0].nickname)}</div>
-         <div class="score">${fmtNum(g[0].score)}</div>
-         <div class="extra">${g[0].correct} / ${totalQ} правильно</div>`;
+         <div class="score">${shown(g[0])}</div>
+         <div class="extra">${acc ? `${totalQ ? Math.round(g[0].correct / totalQ * 100) : 0}% правильно` : `${g[0].correct} / ${totalQ} правильно`}</div>`;
     return `<div class="pod-col pod-${rank}">
       ${rank === 1 ? '<span class="crown"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h20l-2-11-5 5-3-7-3 7-5-5z"/></svg></span>' : ""}
       <div class="pod-card"><div class="pod-body">${body}</div>
@@ -229,7 +232,7 @@ $("standings-list").innerHTML = rest.length ? `<div class="row head"><div>#</div
     <div class="stat g">${p.correct}</div>
     <div class="stat r">${p.answered - p.correct}</div>
     <div class="stat s">${Math.max(0, totalQ - p.answered)}</div>
-    <div class="score">${fmtNum(p.score)}</div>
+    <div class="score">${shown(p)}</div>
   </div>`).join("") : "";
 
 function confetti() {
@@ -252,9 +255,9 @@ function confetti() {
 $("csv-btn").hidden = !list.length;
 $("csv-btn").addEventListener("click", () => {
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Місце", "Учасник", "Правильно", "Помилки", "Пропущено", "Бали", ...Array.from({ length: totalQ }, (_, i) => `П${i + 1}`)];
-  const rows = list.map(p => [p.rank, p.nickname, p.correct, p.answered - p.correct, Math.max(0, totalQ - p.answered), p.score,
-    ...Array.from({ length: totalQ }, (_, i) => { const a = room.answers?.[i]?.[p.pid]; return !a ? "—" : a.isCorrect ? `✓ ${a.points || 0}` : "✗"; })]);
+  const head = ["Місце", "Учасник", "Правильно", "Помилки", "Пропущено", ...(acc ? [] : ["Бали"]), ...Array.from({ length: totalQ }, (_, i) => `П${i + 1}`)];
+  const rows = list.map(p => [p.rank, p.nickname, p.correct, p.answered - p.correct, Math.max(0, totalQ - p.answered), ...(acc ? [] : [p.score]),
+    ...Array.from({ length: totalQ }, (_, i) => { const a = room.answers?.[i]?.[p.pid]; return !a ? "—" : a.isCorrect ? (acc ? "✓" : `✓ ${a.points || 0}`) : "✗"; })]);
   const csv = "\ufeff" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));

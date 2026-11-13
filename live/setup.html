@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=8">
+<link rel="modulepreload" href="live-core.js?v=9">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -193,7 +193,7 @@
         <h2 class="lv-card-h"><span class="n">2</span>Нарахування балів</h2>
         <div class="choice" id="scoring" role="radiogroup" aria-label="Нарахування балів">
           <button type="button" role="radio" data-v="speed"><b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>За швидкість</b><small>500–1000 балів: хто швидше відповів правильно — отримує більше</small></button>
-          <button type="button" role="radio" data-v="correct"><b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><polyline points="20 6 9 17 4 12"/></svg>За правильність</b><small>1000 балів за кожну правильну відповідь, час не важливий</small></button>
+          <button type="button" role="radio" data-v="correct"><b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><polyline points="20 6 9 17 4 12"/></svg>Точність</b><small>Без балів і рейтингу під час гри: учні бачать лише «правильно» й серію, місця — наприкінці</small></button>
         </div>
       </section>
 
@@ -247,7 +247,7 @@
 import { PLAY_HOME,
   db, ref, get, update, requireTeacher, readParams, fatal, toast, safeStore,
   THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, pageUrl, esc, plural, pickCount, confirmDlg,
-} from "./live-core.js?v=8";
+} from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -434,7 +434,7 @@ function renderSummary() {
   // Реалістична оцінка: таймер + ~8 с на розбір відповіді й перехід
   const mins = Math.max(1, Math.round(questions.length * (state.time + 8) / 60));
   $("sum-dur").textContent = `${mins} хв`;
-  $("sum-score").textContent = state.scoring === "speed" ? "швидкість" : "правильність";
+  $("sum-score").textContent = state.scoring === "speed" ? "швидкість" : "точність";
 }
 
 renderTime(); renderScoring(); renderTheme(); renderOpts();
