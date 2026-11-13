@@ -96,8 +96,8 @@ html.sb-boot .sb, html.sb-boot .sb *, html.sb-boot .main{ transition:none !impor
   width:26px; height:26px; border-radius:50%;
   display:grid; place-items:center; cursor:pointer;
   color:#3B4A7A; background:#fff;
-  border:1px solid rgba(13,19,64,.08);
-  box-shadow:0 4px 12px -2px rgba(8,12,38,.25), 0 0 0 4px var(--bg,#f0f3fa);
+  border:0;
+  box-shadow:0 4px 12px -2px rgba(8,12,38,.3);
   transition:transform .2s var(--sb-ease), color .15s, background .15s, box-shadow .15s;
 }
 .sb-toggle:hover{ color:#fff; background:var(--sb-accent-2); transform:scale(1.08); }
@@ -1210,7 +1210,7 @@ html.has-sb #app-loader::before{ content:""; position:absolute; z-index:-1; back
 /* Кнопка згортання: у розгорнутому меню — тиха в шапці, у згорнутому — «язичок» на краю */
 html:not(.sb-c) .sb:not(.collapsed) .sb-toggle{ top:24px; right:14px; width:30px; height:30px; border-radius:9px; background:transparent; border:0; box-shadow:none; color:rgba(226,232,255,.5); }
 html:not(.sb-c) .sb:not(.collapsed) .sb-toggle:hover{ background:rgba(255,255,255,.1); color:#fff; transform:none; }
-.sb.collapsed .sb-toggle, html.sb-c .sb .sb-toggle{ box-shadow:0 4px 12px -2px rgba(8,12,38,.28), 0 0 0 4px var(--frame); }
+.sb.collapsed .sb-toggle, html.sb-c .sb .sb-toggle{ box-shadow:0 4px 12px -2px rgba(8,12,38,.3); }
 /* Розділи — звичайним текстом, без ліній */
 .nav-sec{ height:30px; padding:0 12px; font:700 12.5px 'Manrope',system-ui,sans-serif; letter-spacing:0; text-transform:none; color:rgba(226,232,255,.45); }
 .nav-sec::after{ display:none; }
