@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=8">
+<link rel="modulepreload" href="live-core.js?v=9">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -186,6 +186,17 @@
   .lr .d{font-family:"Geist Mono",monospace;font-size:12px;color:#86EFAC;font-weight:700}
   .lr .s{font-family:"Geist Mono",monospace;font-weight:800;font-size:16px}
 
+  /* ── Результат класу («Точність») ── */
+  .cls{display:flex;flex-direction:column;gap:14px}
+  .cls-pct{display:flex;align-items:baseline;gap:12px}
+  .cls-pct b{font-family:"Geist Mono",monospace;font-size:clamp(44px,5vw,72px);font-weight:800;line-height:1;color:#fff}
+  .cls-pct span{font-size:15px;font-weight:700;color:#B8C0E6}
+  .cls-bar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.1);gap:2px}
+  .cls-bar i{display:block;min-width:0}.cls-bar .g{background:#34D399}.cls-bar .r{background:#F87171}.cls-bar .n{background:#64748B}
+  .cls-n{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;font-weight:600;color:#B8C0E6}
+  .cls-n i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}.cls-n .g{background:#34D399}.cls-n .r{background:#F87171}.cls-n .n{background:#64748B}
+  .cls-n b{color:#fff;font-family:"Geist Mono",monospace}
+
   /* ── Нижня панель ── */
   .footer{position:relative;flex:0 0 auto;z-index:4;background:#070B26;border-top:1px solid rgba(255,255,255,.1);padding:10px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .footer .stat{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:700;color:#B8C0E6}
@@ -268,7 +279,7 @@
   <div class="reveal-grid" id="reveal-grid">
     <div class="panel grading" id="grading"></div>
     <div class="panel">
-      <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg>Лідери <small id="leaders-sub"></small></h3>
+      <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg><span id="leaders-t">Лідери</span> <small id="leaders-sub"></small></h3>
       <div class="leaders" id="leaders"></div>
     </div>
   </div>
@@ -293,7 +304,7 @@ import {
   OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=8";
+} from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -315,6 +326,8 @@ const questions = Array.isArray(room.questions) ? room.questions : Object.values
 const totalQ = questions.length;
 const timePerQ = Number(room.timePerQ) || 20;
 const scoring = room.scoring || "correct";
+// Режим «Точність»: на екрані класу без балів і рейтингу, лише правильно/неправильно й відсоток класу
+const acc = scoring === "correct";
 const answerKey = keySnap?.val() || {};
 // Старі кімнати ще тримали correct прямо в питанні
 const keyFor = (qi) => answerKey[qi] ?? questions[qi]?.correct ?? null;
@@ -650,6 +663,7 @@ $("grading").addEventListener("click", async (e) => {
 });
 
 function renderLeaders() {
+  if (acc) return renderClassResult();
   const list = standings(players, allAnswers);
   $("footer-top").textContent = list[0] && list[0].score > 0 ? list[0].nickname : "—";
   const qi = state.currentQ;
@@ -664,6 +678,24 @@ function renderLeaders() {
       <span class="s">${fmtNum(p.score)}</span>
     </div>`;
   }).join("") : `<div class="muted">Немає гравців</div>`;
+}
+
+// «Точність»: замість лідерів — результат класу за поточне питання
+function classCounts(qi, answers = allAnswers[qi]) {
+  const list = Object.entries(answers || {}).filter(([pid]) => isActive(players[pid]) || answers[pid]);
+  const right = list.filter(([, a]) => a?.isCorrect === true).length, got = list.length;
+  const total = Math.max(got, Object.values(players || {}).filter(p => isActive(p)).length);
+  return { right, wrong: got - right, none: Math.max(0, total - got), got, total, pct: got ? Math.round(right / got * 100) : null };
+}
+function renderClassResult() {
+  const qi = state.currentQ, c = classCounts(qi);
+  $("leaders-t").textContent = "Результат класу"; $("leaders-sub").textContent = `${qi + 1}-е питання`;
+  $("footer-top").closest(".stat").style.display = "none";
+  $("leaders").innerHTML = c.got ? `<div class="cls">
+      <div class="cls-pct"><b>${c.pct}%</b><span>відповіли правильно</span></div>
+      <div class="cls-bar" role="img" aria-label="Правильно ${c.right}, помилок ${c.wrong}, без відповіді ${c.none}"><i class="g" style="flex:${c.right}"></i><i class="r" style="flex:${c.wrong}"></i><i class="n" style="flex:${c.none}"></i></div>
+      <div class="cls-n"><span><i class="g"></i>Правильно <b>${c.right}</b></span><span><i class="r"></i>Помилка <b>${c.wrong}</b></span><span><i class="n"></i>Без відповіді <b>${c.none}</b></span></div>
+    </div>` : `<div class="muted">Ніхто не відповів</div>`;
 }
 
 // ─── Застосування стану ────────────────────────────────────────────────
@@ -746,7 +778,7 @@ function reveal() {
       upd[`rooms/${code}/answers/${qi}/${pid}/points`] = r.points;
     });
     withRanks(qi, upd);
-    upd[`rooms/${code}/revealed/${qi}`] = { correct: keyFor(qi), at: serverNow() };
+    upd[`rooms/${code}/revealed/${qi}`] = { correct: keyFor(qi), at: serverNow(), pct: pctAfter(qi, upd) };
     upd[`rooms/${code}/status`] = "reveal";
     upd[`rooms/${code}/pausedLeft`] = null;
     await update(ref(db), upd);
@@ -755,7 +787,7 @@ function reveal() {
 
 // Додає до запису таблицю місць після цього питання (з урахуванням щойно
 // виставлених балів) — телефони учнів показують «ви на 3-му місці».
-function withRanks(qi, upd) {
+function answersWith(qi, upd) {
   const pre = `rooms/${code}/answers/${qi}/`;
   const cur = { ...(allAnswers[qi] || {}) };
   Object.entries(upd).forEach(([k, v]) => {
@@ -763,7 +795,15 @@ function withRanks(qi, upd) {
     const [pid, field] = k.slice(pre.length).split("/");
     cur[pid] = { ...(cur[pid] || {}), [field]: v };
   });
+  return cur;
+}
+// Відсоток класу, що відповів правильно: його бачать учні в режимі «Точність»
+function pctAfter(qi, upd) { return classCounts(qi, answersWith(qi, upd)).pct; }
+function withRanks(qi, upd) {
+  const cur = answersWith(qi, upd);
   upd[`rooms/${code}/ranks`] = rankMap(standings(players, { ...allAnswers, [qi]: cur }));
+  // після ручного зарахування розкритого питання оновлюємо й відсоток
+  if (state.status === "reveal") upd[`rooms/${code}/revealed/${qi}/pct`] = classCounts(qi, cur).pct;
 }
 
 function next() {
@@ -799,6 +839,7 @@ async function saveHistory() {
   await set(ref(db, `teachers/${uid}/gameHistory/${code}`), {
     code, testId: room.testId || "", testTitle: room.testTitle || "",
     playedAt, playerCount: list.length, questionCount: totalQ,
+    scoring,
     results: list.map(p => ({ nickname: p.nickname, score: p.score, correct: p.correct })),
   });
   // Легкий запис для адмінки (без результатів гравців)

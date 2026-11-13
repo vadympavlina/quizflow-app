@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=8">
+<link rel="modulepreload" href="live-core.js?v=9">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -162,7 +162,7 @@
 import {
   db, ref, get, update, onValue, requireTeacher, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, joinUrl, HOME_URL, serverNow, isActive, isOnline, confirmDlg,
-} from "./live-core.js?v=8";
+} from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -201,7 +201,7 @@ $("game-title").textContent = testTitle || "—";
 document.title = `Лобі ${code.slice(0, 4)} ${code.slice(4)} · QuizFlow Live`;
 $("stat-q").textContent = (questions || []).length;
 $("stat-time").textContent = timePerQ || 20;
-$("stat-scoring").textContent = scoring === "speed" ? "бали за швидкість" : "бали за правильність";
+$("stat-scoring").textContent = scoring === "speed" ? "бали за швидкість" : "точність, без балів";
 $("stat-shuffle").hidden = !options?.shuffle;
 
 $("copy-btn").addEventListener("click", async () => {
