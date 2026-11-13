@@ -1408,6 +1408,9 @@ a, button, [role="button"], [role="tab"], summary, label, input, select, textare
 .qd-pop.out{ animation:qdOut .1s ease forwards; pointer-events:none; }
 @keyframes qdOut{ to{ opacity:0; transform:translateY(-3px) scale(.985); } }
 @media (max-width:1023px){
+  /* Шторка не бліднішає: гасне лише затемнення фону, сама модалка їде вниз повністю непрозорою */
+  .mo{ opacity:1; background-color:rgba(11,20,55,0); transition:background-color .2s ease; }
+  .mo.on{ background-color:rgba(11,20,55,.46); }
   .mo .mb{ transform:translate3d(0,100%,0); transition:transform .34s cubic-bezier(.2,.8,.2,1); }
   .mo.on .mb{ transform:none; }
   .mo:not(.on) .mb{ transition-duration:.2s; transition-timing-function:cubic-bezier(.4,0,1,1); }

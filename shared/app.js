@@ -232,14 +232,22 @@ window.qfDismiss = function (el, o) {
     }
     return false;
   }
+  // Затемнення: o.dim — гасимо лише колір фону підкладки, а не всю підкладку (разом із шторкою всередині,
+  // яка інакше теж ставала б прозорою). Без o.dim підкладка окремий елемент, гасимо її прозорість.
+  const bgOf = v => {
+    if (!v._qfBg) { const m = getComputedStyle(v).backgroundColor.match(/[\d.]+/g) || [0, 0, 0, 0.5]; v._qfBg = { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? +m[3] : 1 }; }
+    return v._qfBg;
+  };
+  const dimTo = (v, k) => { if (o.dim) { const c = bgOf(v); v.style.backgroundColor = `rgba(${c.r},${c.g},${c.b},${c.a * k})`; } else v.style.opacity = String(k); };
+  const dimTrans = () => (o.dim ? "background-color" : "opacity");
   function paint(d) {
     const m = d > 0 ? d : d * 0.15;                                 // проти жесту — опір, а не жорсткий стоп
     el.style.transform = vert ? `translate3d(0,${m * sgn}px,0)` : `translate3d(${m * sgn}px,0,0)`;
-    const v = ovl(); if (v) v.style.opacity = String(Math.max(0, 1 - Math.max(0, d) / (size() * 1.1)));
+    const v = ovl(); if (v) dimTo(v, Math.max(0, 1 - Math.max(0, d) / (size() * 1.1)));
   }
   function reset() {
     el.style.transition = ""; el.style.transform = ""; el.style.willChange = "";
-    const v = ovl(); if (v) { v.style.transition = ""; v.style.opacity = ""; }
+    const v = ovl(); if (v) { v.style.transition = ""; v.style.opacity = ""; v.style.backgroundColor = ""; v._qfBg = null; }
   }
   function cleanup() {
     el.removeEventListener("touchmove", move); el.removeEventListener("touchend", end); el.removeEventListener("touchcancel", end);
@@ -256,7 +264,7 @@ window.qfDismiss = function (el, o) {
       if (d < 12) return;                                                          // поріг активації
       st.drag = true; st.off = d;
       el.style.transition = "none"; el.style.willChange = "transform";
-      const v = ovl(); if (v) v.style.transition = "none";
+      const v = ovl(); if (v) { bgOf(v); v.style.transition = "none"; }
     }
     if (e.cancelable) e.preventDefault();                                          // тепер це наш жест, сторінка не прокручується
     const dist = d - st.off, dt = e.timeStamp - st.lt;
@@ -275,12 +283,13 @@ window.qfDismiss = function (el, o) {
     if (reduce()) { reset(); if (far) o.close(); return; }
     if (far) {
       el.style.transition = "transform .22s cubic-bezier(.4,0,1,1)";
-      if (v) { v.style.transition = "opacity .22s ease"; v.style.opacity = "0"; }
+      if (v) { v.style.transition = dimTrans() + " .22s ease"; dimTo(v, 0); }
       el.style.transform = vert ? `translate3d(0,${sgn * 100}%,0)` : `translate3d(${sgn * 100}%,0,0)`;
-      setTimeout(() => { o.close(); setTimeout(reset, 60); }, 190);
+      // reset — коли підкладка вже сховалась (closeM ховає її через 260 мс), щоб нічого не блимнуло
+      setTimeout(() => { o.close(); setTimeout(reset, o.dim ? 320 : 60); }, 190);
     } else {
       el.style.transition = "transform .3s cubic-bezier(.2,.8,.2,1)";
-      if (v) { v.style.transition = "opacity .3s ease"; v.style.opacity = ""; }
+      if (v) { v.style.transition = dimTrans() + " .3s ease"; if (o.dim) dimTo(v, 1); else v.style.opacity = ""; }
       el.style.transform = "";
       setTimeout(reset, 320);
     }
@@ -415,7 +424,7 @@ window.openM = function (id) {
   void el.offsetWidth;          // reflow — щоб спрацювала анімація появи
   el.classList.add("on");
   // Телефон: модалка — нижня шторка, її можна змахнути вниз
-  if (mb) qfDismiss(mb, { dir: "down", overlay: el, close: () => closeM(id), enabled: () => matchMedia("(max-width:1023px)").matches });
+  if (mb) qfDismiss(mb, { dir: "down", overlay: el, dim: true, close: () => closeM(id), enabled: () => matchMedia("(max-width:1023px)").matches });
   _syncBodyLock();
   // Фокус: [autofocus] → перше порожнє поле → перша кнопка
   setTimeout(() => {
@@ -433,7 +442,7 @@ window.closeM = function (id) {
   const i = _mStack.findIndex(m => m.el === el);
   const entry = i >= 0 ? _mStack.splice(i, 1)[0] : null;
   _syncBodyLock();
-  setTimeout(() => { if (!el.classList.contains("on")) el.style.display = "none"; }, 260);
+  setTimeout(() => { if (!el.classList.contains("on")) el.style.display = "none"; }, 300);
   try { if (entry?.opener && document.contains(entry.opener)) entry.opener.focus({ preventScroll: true }); } catch {}
 };
 document.addEventListener("click", e => {

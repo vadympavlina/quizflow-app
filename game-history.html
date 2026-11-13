@@ -28,8 +28,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=56">
-<link rel="modulepreload" href="shared/app.js?v=39">
+<link rel="stylesheet" href="shared/styles.css?v=57">
+<link rel="modulepreload" href="shared/app.js?v=40">
 <style>
 #sec-history{
   --ink-900:var(--qf-ink-900);--ink-700:var(--qf-ink-700);--ink-500:var(--qf-ink-500);--ink-400:var(--qf-ink-400);--ink-300:var(--qf-line-strong);
@@ -351,7 +351,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 
 <script type="module">
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-const { initApp, appReady } = await import("./shared/app.js?v=39");
+const { initApp, appReady } = await import("./shared/app.js?v=40");
 await initApp("history", { skipData: true });
 
 const db = getDatabase();
