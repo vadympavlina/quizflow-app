@@ -28,6 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="modulepreload" href="live-core.js?v=9">
+<link rel="modulepreload" href="results-fx.js?v=1">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -37,125 +38,61 @@
 <style>
   [hidden]{display:none !important}
   *,*::before,*::after{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  :root{
-    --bg:#F6F5FB; --card:#FFFFFF; --card-2:#F0EEFB; --card-line:#E2DFF3;
-    --ink:#201C33; --ink-dim:#6B6480; --accent:#5B4FE8; --accent-ink:#FFFFFF;
-    --gold:#C9971A; --silver:#8A8DA0; --bronze:#B0693C; --good:#2F9E62; --bad:#D14343;
-  }
-  body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;overflow-x:hidden}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.6;background-image:radial-gradient(rgba(32,28,51,.06) 1px, transparent 1px);background-size:28px 28px}
-  .band{position:absolute;inset:0 0 auto 0;height:340px;z-index:0;opacity:.14;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
-
-  .confetti{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
-  .confetti i{position:absolute;width:7px;height:15px;top:-20px;border-radius:1px;opacity:.9;animation:fall linear forwards}
-  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-
-  .header{text-align:center;padding:40px 20px 10px;position:relative;z-index:2}
-  .header .meta{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-dim);margin-bottom:14px;padding:6px 14px;border:1px solid var(--card-line);border-radius:999px;background:var(--card)}
-  .header .meta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
-  .header h1{font-size:clamp(34px,5vw,60px);font-weight:700;letter-spacing:-.03em;margin:0;line-height:1.05}
-  .header h1 span{color:var(--accent)}
-  .header .quiz{margin-top:10px;font-size:16px;color:var(--ink-dim)}
-
-  .podium-wrap{position:relative;z-index:2;display:flex;gap:18px;justify-content:center;max-width:1180px;margin:44px auto 12px;padding:0 24px;align-items:flex-end}
-  .pod-col{display:flex;flex-direction:column;align-items:center;width:320px;max-width:100%;position:relative;opacity:0;animation:rise .8s cubic-bezier(.22,1,.36,1) forwards}
-  .pod-3{animation-delay:.3s}.pod-2{animation-delay:1.1s}.pod-1{animation-delay:1.9s}
-  @keyframes rise{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
-  .podium-wrap.single .pod-col{width:440px}
-  .pod-card{width:100%;background:var(--card);border:2px solid var(--card-line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 14px 28px -12px rgba(32,28,64,.18)}
-  .pod-1 .pod-card{border-color:var(--gold);box-shadow:0 20px 44px -14px rgba(201,151,26,.45)}
-  .pod-2 .pod-card{border-color:var(--silver)}
-  .pod-3 .pod-card{border-color:var(--bronze)}
-  .pod-body{padding:24px 20px;text-align:center}
-  .pod-1 .pod-body{padding-top:32px}
-  .av img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;pointer-events:none;-webkit-user-drag:none}
-  .av svg{width:100%;height:100%;display:block;border-radius:inherit;pointer-events:none}
-  .pod-body > .av{width:76px;height:76px;border-radius:14px;margin:0 auto 14px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:26px}
-  .pod-1 .pod-body > .av{width:92px;height:92px;font-size:32px}
-  .pod-body .name{font-size:21px;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}
-  .pod-body .score{margin-top:8px;font-family:"Geist Mono",monospace;font-size:32px;font-weight:700;letter-spacing:-.02em}
-  .pod-body .extra{margin-top:6px;font-size:12.5px;color:var(--ink-dim);font-weight:500}
-  .tie-badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--accent-ink);background:var(--accent);padding:4px 12px;border-radius:6px;margin-bottom:12px}
-  .pod-score-shared{font-family:"Geist Mono",monospace;font-size:28px;font-weight:700;margin-bottom:14px}
-  .pod-players{display:flex;flex-direction:column;gap:9px;max-height:220px;overflow-y:auto;text-align:left}
-  .pod-player{display:flex;align-items:center;gap:10px}
-  .pod-player .av{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12.5px;flex:0 0 auto}
-  .pod-player .name{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pod-player .sub{font-size:11px;color:var(--ink-dim)}
-  .pod-rank{display:flex;align-items:center;justify-content:center;gap:9px;padding:16px 20px;font-family:"Geist Mono",monospace;font-weight:700;color:#fff}
-  .pod-rank .num{font-size:26px;line-height:1}
-  .pod-rank .lbl{font-size:11px;font-weight:600;opacity:.9}
-  .pod-1 .pod-rank{background:var(--gold);padding:44px 20px}
-  .pod-1 .pod-rank .num{font-size:38px}
-  .pod-2 .pod-rank{background:var(--silver);padding:26px 20px}
-  .pod-3 .pod-rank{background:var(--bronze);padding:12px 20px}
-  .crown{position:absolute;top:-30px;left:50%;transform:translateX(-50%);color:#FBBF24;line-height:0;z-index:2;animation:bob 2s ease-in-out infinite 2.6s}
-  @keyframes bob{50%{transform:translateX(-50%) translateY(-6px) rotate(-6deg)}}
-
-  .standings{max-width:1000px;margin:52px auto 40px;padding:0 24px;position:relative;z-index:2}
-  .standings h2{font-size:18px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid var(--card-line)}
-  .standings h2 small{margin-left:auto;font-size:13px;font-weight:500;color:var(--ink-dim)}
-  .standings[hidden]{display:none}
-  .row{display:grid;grid-template-columns:48px 1fr repeat(3,80px) 110px;gap:14px;align-items:center;border-bottom:1px solid var(--card-line);padding:12px 6px}
-  .row.head{font-size:11px;font-weight:600;color:var(--ink-dim);letter-spacing:.06em;text-transform:uppercase;padding-top:14px}
-  .row:not(.head):hover{background:rgba(91,79,232,.045)}
-  .row .rank{font-family:"Geist Mono",monospace;font-size:16px;font-weight:700;color:var(--ink-dim);text-align:center}
-  .row .who{display:flex;align-items:center;gap:12px;min-width:0}
-  .row .av{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12.5px;flex:0 0 auto}
-  .row .name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .stat{font-family:"Geist Mono",monospace;font-size:14px;font-weight:700;text-align:center}
-  .row .stat.g{color:var(--good)} .row .stat.r{color:var(--bad)} .row .stat.s{color:var(--ink-dim)}
-  .row .score{font-family:"Geist Mono",monospace;font-size:17px;font-weight:700;text-align:right;color:var(--accent)}
-
-  .footer-cta{text-align:center;padding:0 20px 60px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:2}
-  .btn{background:var(--card);border:2px solid var(--card-line);color:var(--ink);padding:13px 20px;border-radius:10px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
-  .btn:hover{border-color:var(--accent)}
-  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:5px 5px 0 rgba(91,79,232,.22)}
-  .empty{text-align:center;color:var(--ink-dim);padding:40px 20px;position:relative;z-index:2}
-
-  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  @media (prefers-reduced-motion: reduce){ *{animation:none !important} .pod-col{opacity:1} .confetti{display:none} }
-  @media (max-width: 820px){
-    .podium-wrap{flex-direction:column;align-items:stretch}
-    .pod-col{width:100% !important}
-    .pod-1{order:1}.pod-2{order:2}.pod-3{order:3}
-    .pod-rank{padding:12px 20px !important}
-    .row{grid-template-columns:36px 1fr 80px;gap:10px}
-    .row .stat{display:none}
+  html,body{margin:0;padding:0;background:#0F1844}
+  :root{--navy:#0F1844;--navy2:#22338A;--amb:#F59E0B;--amb2:#DC8A00;--blu:#2F5BE0;--blu2:#2449BD;--grn:#0E9F6E;--grn2:#0B8459}
+  body{font-family:Manrope,system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .T{position:relative;min-height:100vh;display:grid;grid-template-columns:1.5fr 1fr;grid-template-rows:minmax(260px,1fr) minmax(260px,1fr) auto;grid-template-areas:"w s2" "w s3" "r r";background:var(--navy)}
+  .T.np2{grid-template-areas:"w s2" "w s2" "r r"}
+  .T.np1,.T.np0{grid-template-columns:1fr;grid-template-rows:minmax(420px,1fr) auto;grid-template-areas:"w" "r"}
+  .p{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:30px 40px}
+  .p.w{grid-area:w;color:var(--navy);--rc:rgba(15,24,68,.45)}.p.s2{grid-area:s2}.p.s3{grid-area:s3}
+  .p .bg{position:absolute;inset:0}.p.w .bg{background:var(--amb)}.p.s2 .bg{background:var(--blu)}.p.s3 .bg{background:var(--grn)}
+  .p .num{position:absolute;right:-.03em;bottom:-.17em;font-weight:900;line-height:1;letter-spacing:-.07em;z-index:1;pointer-events:none;transform-origin:70% 60%}
+  .p.w .num{font-size:min(760px,92vh);color:var(--amb2);right:10px}.p.s2 .num,.p.s3 .num{font-size:min(380px,46vh)}.p.s2 .num{color:var(--blu2)}.p.s3 .num{color:var(--grn2)}
+  .p>.in{position:relative;z-index:2;max-width:100%}
+  .p .nm{font-weight:900;letter-spacing:-.045em;line-height:.92;overflow-wrap:anywhere}
+  .p.w .nm{font-size:clamp(56px,min(8.2vw,13vh),124px);max-width:92%}.p.s2 .nm,.p.s3 .nm{font-size:clamp(32px,min(3.6vw,6vh),54px);max-width:80%}
+  .p.multi .nm{margin-bottom:.08em}.p.w.multi .nm{font-size:clamp(34px,min(4.4vw,7vh),66px)}.p.s2.multi .nm,.p.s3.multi .nm{font-size:clamp(24px,min(2.4vw,4vh),36px)}
+  .tie{font-weight:800;font-size:15px;margin-bottom:12px;opacity:.9}
+  .p .sc{display:flex;align-items:baseline;gap:12px;margin-top:16px;font-family:"Geist Mono",monospace;font-weight:800;font-variant-numeric:tabular-nums}
+  .p.w .sc{font-size:clamp(34px,min(4vw,7vh),56px)}.p.s2 .sc,.p.s3 .sc{font-size:clamp(24px,min(2.2vw,4vh),30px);margin-top:10px}
+  .p .sc small{font-family:Manrope,system-ui,sans-serif;font-size:.36em;font-weight:700;opacity:.8}
+  .pips{display:flex;gap:4px;margin-top:16px;max-width:min(100%,560px)}.pips i{flex:1;max-width:22px;height:8px;background:currentColor;transform-origin:left}.pips i.x{background:none;box-shadow:inset 0 0 0 2px currentColor;opacity:.55}.pips i.n{opacity:.25}
+  .p.s2 .pips i,.p.s3 .pips i{height:6px;max-width:16px}.p.s2 .pips,.p.s3 .pips{margin-top:12px}
+  .p .gap{margin-top:10px;font-weight:700;font-size:14.5px;opacity:.88}
+  .hdr{position:absolute;left:40px;top:30px;z-index:3;color:var(--navy);font-weight:800;font-size:16px;line-height:1.35;max-width:min(520px,45vw)}.hdr span{font-weight:700;opacity:.7;display:block;font-size:14px}
+  .r{grid-area:r;background:var(--navy);padding:22px 40px 26px;display:grid;grid-template-columns:repeat(3,1fr);column-gap:48px;align-content:start}
+  .T.np0 .r{grid-template-columns:repeat(2,1fr)}
+  .r .row{position:relative;display:grid;grid-template-columns:34px 1fr auto;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.14);font-weight:700;font-size:17px}
+  .r .row .f{position:absolute;left:0;bottom:-1px;height:3px;width:var(--w);background:#3E57C4;transform-origin:left}
+  .r .row>span{position:relative;min-width:0}.r .k{font-family:"Geist Mono",monospace;color:#8FA2E8}.r .nmr{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.r .s{font-family:"Geist Mono",monospace;font-weight:800}
+  .acts{position:absolute;right:20px;top:18px;z-index:5;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:56%}
+  .acts .btn{font:700 13px Manrope,system-ui,sans-serif;color:#fff;background:rgba(15,24,68,.6);border:0;padding:9px 13px;text-decoration:none;cursor:pointer}
+  .acts .btn:hover{background:rgba(15,24,68,.85)}.acts .btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .acts .btn.primary{background:#fff;color:var(--navy)}
+  .empty{grid-area:w;display:grid;place-items:center;font-weight:800;font-size:22px;color:#C9D3F5;padding:60px 20px;text-align:center}
+  @media (max-width:800px){
+    .T,.T.np2{display:block;min-height:0}
+    .p{min-height:250px;padding:22px 20px}.p.w{min-height:420px}
+    .p.w .num{font-size:420px}.p.s2 .num,.p.s3 .num{font-size:280px}
+    .p.w .nm{font-size:clamp(44px,13vw,70px)}.p.s2 .nm,.p.s3 .nm{font-size:clamp(30px,9vw,44px);max-width:85%}
+    .p.w .sc{font-size:34px}
+    .hdr{left:20px;top:20px;max-width:70%}
+    .r,.T.np0 .r{grid-template-columns:1fr;padding:18px 20px 10px}
+    .acts{position:static;max-width:none;justify-content:center;padding:6px 20px 28px;background:var(--navy)}
   }
 </style>
 <style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
 </head>
 <body>
-<div class="band" id="band"></div>
-<div class="confetti" id="confetti"></div>
-
-<div class="header">
-  <div class="meta">QuizFlow Live · Фінальні результати</div>
-  <h1><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-5px;margin-right:10px;color:#FCD34D"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg><span id="test-title">—</span></h1>
-  <div class="quiz" id="game-meta">&nbsp;</div>
-</div>
-
-<div class="podium-wrap" id="podium-wrap"></div>
-
-<div class="standings" id="standings">
-  <h2 id="standings-h">Усі гравці <small id="total-lbl"></small></h2>
-  <div id="standings-list"></div>
-</div>
-
-<div class="footer-cta">
-  <a class="btn" id="history-btn" href="../game-history"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Історія ігор</a>
-  <a class="btn" id="again-btn" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M4 12a8 8 0 0113.7-5.7L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 01-13.7 5.7L4 16"/><path d="M4 20v-4h4"/></svg>Зіграти ще раз</a>
-  <button class="btn" id="csv-btn" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Результати CSV</button>
-  <button class="btn btn-primary" id="end-btn">Завершити гру</button>
-</div>
+<div id="app"></div>
 
 <script type="module">
 import {
   db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
-  esc, initialsOf, avatarColor, avatarFill, avatarInner, standings, THEMES, DEFAULT_THEME, plural, fmtNum, HOME_URL, serverNow,
+  esc, standings, plural, fmtNum, HOME_URL, serverNow,
 } from "./live-core.js?v=9";
+import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, finishAll, reduced, POP, EO } from "./results-fx.js?v=1";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -172,93 +109,123 @@ const list = standings(room.players, room.answers);
 const showPodium = room.options?.podium !== false;
 // «Точність»: на фінальному екрані кількість правильних, а не бали
 const acc = room.scoring === "correct";
+const val = p => acc ? p.correct : p.score;
 const shown = p => acc ? `${p.correct} / ${totalQ}` : fmtNum(p.score);
-
-$("test-title").textContent = room.testTitle || "Гру завершено";
+const mx = Math.max(1, ...list.map(val));
+const title = room.testTitle || "Гру завершено";
+const meta = `${totalQ} ${plural(totalQ, "питання", "питання", "питань")} · ${list.length} ${plural(list.length, "гравець", "гравці", "гравців")}`;
 document.title = `Фінал · ${room.testTitle || code} · QuizFlow Live`;
-$("game-meta").textContent = `${totalQ} ${plural(totalQ, "питання", "питання", "питань")} · ${list.length} ${plural(list.length, "гравець", "гравці", "гравців")}`;
-$("band").style.background = (THEMES[room.theme?.grad] || THEMES[DEFAULT_THEME.grad]).css;
+
+const pips = p => `<div class="pips">${Array.from({ length: totalQ }, (_, i) => {
+  const a = room.answers?.[i]?.[p.pid];
+  return `<i class="${!a ? "n" : a.isCorrect ? "" : "x"}"></i>`;
+}).join("")}</div>`;
+const ptsWord = acc ? "" : "балів";
+const diffText = (p, top) => {
+  const d = val(top) - val(p);
+  if (!d) return "";
+  return acc ? `на ${d} ${plural(d, "відповідь", "відповіді", "відповідей")} менше` : `${fmtNum(d)} ${plural(d, "бал", "бали", "балів")} до 1 місця`;
+};
+
+// Групи за місцем (нічия — кілька гравців з однаковим місцем)
+const groups = {};
+list.forEach(p => { (groups[p.rank] ||= []).push(p); });
+const ranks = showPodium ? Object.keys(groups).map(Number).filter(r => r <= 3).sort((a, b) => a - b) : [];
+const top = list[0];
+const CLS = ["w", "s2", "s3"];
+
+function panel(rank, i) {
+  const g = groups[rank], tied = g.length > 1;
+  if (!tied) {
+    const p = g[0];
+    return `<div class="p ${CLS[i]}"><div class="bg"></div><span class="num">${rank}</span><div class="in">
+      <div class="nm">${split(p.nickname)}</div>
+      <div class="sc"><span class="odo">${odo(shown(p))}</span><small>${ptsWord}</small></div>
+      ${totalQ ? pips(p) : ""}
+      <div class="gap">${i === 0 ? (acc ? `${totalQ ? Math.round(p.correct / totalQ * 100) : 0}% правильно` : `${p.correct} з ${totalQ} правильно`) : esc(diffText(p, top))}</div></div></div>`;
+  }
+  const shownNames = g.slice(0, 6), more = g.length - shownNames.length;
+  return `<div class="p ${CLS[i]} multi"><div class="bg"></div><span class="num">${rank}</span><div class="in">
+    <div class="tie">Нічия · ${g.length} ${plural(g.length, "гравець", "гравці", "гравців")}</div>
+    ${shownNames.map(p => `<div class="nm">${split(p.nickname)}</div>`).join("")}${more > 0 ? `<div class="nm">${split("+" + more)}</div>` : ""}
+    <div class="sc"><span class="odo">${odo(shown(g[0]))}</span><small>${ptsWord}</small></div>
+    <div class="gap">${i === 0 ? `${g[0].correct} з ${totalQ} правильно` : esc(diffText(g[0], top))}</div></div></div>`;
+}
+
+const rest = showPodium ? list.filter(p => p.rank > 3) : list;
+const np = ranks.length;
+const acts = `<div class="acts">
+  <a class="btn" id="history-btn" href="../game-history">Історія ігор</a>
+  <a class="btn" id="again-btn" href="#">Зіграти ще раз</a>
+  <button class="btn" id="csv-btn" type="button">Завантажити CSV</button>
+  <button class="btn" id="snd-btn" type="button"></button>
+  <button class="btn" id="replay-btn" type="button">Показати ще раз</button>
+  <button class="btn primary" id="end-btn" type="button">Завершити гру</button></div>`;
+
+$("app").innerHTML = `<div class="T np${np}" id="T">
+  ${!list.length ? `<div class="empty">У грі не було учасників</div>`
+    : np ? ranks.map((r, i) => panel(r, i)).join("")
+    : `<div class="p w"><div class="bg"></div><div class="in"><div class="nm">${split(title)}</div><div class="gap">${esc(meta)}</div></div></div>`}
+  ${np ? `<div class="hdr">${esc(title)}<span>${esc(meta)}</span></div>` : ""}
+  <div class="r" id="rows">${rest.map(p => `<div class="row" style="--w:${val(p) / mx * 100}%"><span class="k">${p.rank}</span><span class="nmr">${esc(p.nickname)}</span><span class="s">${shown(p)}</span><span class="f"></span></div>`).join("")}</div>
+  ${acts}</div>`;
+if (!rest.length) $("rows").hidden = true;
+
 if (room.testId) $("again-btn").href = `setup?testId=${encodeURIComponent(room.testId)}`;
 else $("again-btn").hidden = true;
+$("csv-btn").hidden = !list.length;
+$("replay-btn").hidden = !list.length;
+const sndLabel = () => { $("snd-btn").textContent = SND.on ? "Звук: вкл" : "Звук: вимк"; };
+sndLabel();
+$("snd-btn").addEventListener("click", () => { SND.toggle(); sndLabel(); });
+addEventListener("pointerdown", () => SND.init(), { once: true });
+$("replay-btn").addEventListener("click", () => { SND.init(); run(); });
 
-const av = (p, extra = "") => `<div class="av"${extra} style="background:${avatarFill(p.nickname, p.avatar)}">${avatarInner(p.nickname, p.avatar, p)}</div>`;
-
-if (!list.length) {
-  $("podium-wrap").outerHTML = `<div class="empty">У грі не було учасників</div>`;
-  $("standings").hidden = true;
-} else if (showPodium) {
-  const groups = {};
-  list.forEach(p => { (groups[p.rank] ||= []).push(p); });
-  const ranks = Object.keys(groups).map(Number).filter(r => r <= 3).sort((a, b) => a - b);
-  // Класичний порядок 2-1-3
-  const display = ranks.length === 3 ? [ranks[1], ranks[0], ranks[2]] : ranks.length === 2 ? [ranks[1], ranks[0]] : ranks;
-  const pod = $("podium-wrap");
-  pod.classList.toggle("single", display.length === 1);
-  pod.innerHTML = display.map(rank => {
-    const g = groups[rank], tied = g.length > 1;
-    const body = tied
-      ? `<div class="tie-badge">Нічия · ${g.length} ${plural(g.length, "гравець", "гравці", "гравців")}</div>
-         <div class="pod-score-shared">${shown(g[0])}</div>
-         <div class="pod-players">${g.map(p => `<div class="pod-player">${av(p)}
-           <div style="min-width:0"><div class="name">${esc(p.nickname)}</div><div class="sub">${p.correct} / ${totalQ} правильно</div></div></div>`).join("")}</div>`
-      : `${av(g[0])}
-         <div class="name">${esc(g[0].nickname)}</div>
-         <div class="score">${shown(g[0])}</div>
-         <div class="extra">${acc ? `${totalQ ? Math.round(g[0].correct / totalQ * 100) : 0}% правильно` : `${g[0].correct} / ${totalQ} правильно`}</div>`;
-    return `<div class="pod-col pod-${rank}">
-      ${rank === 1 ? '<span class="crown"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h20l-2-11-5 5-3-7-3 7-5-5z"/></svg></span>' : ""}
-      <div class="pod-card"><div class="pod-body">${body}</div>
-      <div class="pod-rank"><span class="num">${rank}</span><span class="lbl">місце</span></div></div>
-    </div>`;
-  }).join("");
-  // Медальні кольори аватарів у переможців
-  pod.querySelectorAll(".pod-1 .pod-body > .av").forEach(e => e.style.background = "var(--gold)");
-  pod.querySelectorAll(".pod-2 .pod-body > .av").forEach(e => e.style.background = "var(--silver)");
-  pod.querySelectorAll(".pod-3 .pod-body > .av").forEach(e => e.style.background = "var(--bronze)");
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setTimeout(confetti, 2100);
-} else {
-  $("podium-wrap").remove();
+// ── Церемонія: 3 → 2 → 1 ──
+function run() {
+  cancelAll();
+  const Tel = $("T");
+  const panels = [...Tel.querySelectorAll(".p")];
+  const hdr = Tel.querySelector(".hdr"), rows = [...Tel.querySelectorAll(".r .row")];
+  if (reduced() || !panels.length) return;
+  SND.begin();
+  const times = np === 3 ? [3000, 1650, 350] : np === 2 ? [1700, 350] : [700];
+  panels.forEach((p, i) => {
+    const t = times[i] ?? 350, win = i === 0 && np > 0, bg = p.querySelector(".bg"), num = p.querySelector(".num"), inn = p.querySelector(".in");
+    const cx = win ? "80%" : "84%", cy = win ? "72%" : "70%";
+    A(bg, [{ clipPath: `circle(0% at ${cx} ${cy})` }, { clipPath: `circle(150% at ${cx} ${cy})` }], { duration: win ? 900 : 700, delay: t, easing: "cubic-bezier(.7,0,.2,1)" });
+    A(num, [{ transform: "scale(2.6) rotate(-8deg)", opacity: 0 }, { transform: "scale(1) rotate(0)", opacity: 1 }], { duration: win ? 650 : 520, delay: t + 220, easing: POP });
+    rings(p, cx, cy, t + 520, win ? 4 : 3, win ? 60 : 34);
+    A(inn, [{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay: t + 300 });
+    p.querySelectorAll(".nm").forEach((n, k) => letters(n, t + 420 + k * 120));
+    odometer(p.querySelector(".odo"), t + 520, win ? 1900 : 1200);
+    A(p.querySelector(".gap"), [{ opacity: 0 }, { opacity: .88 }], { duration: 500, delay: t + 1300 });
+    p.querySelectorAll(".pips i").forEach((e, j) => A(e, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 300, delay: t + 900 + j * 45 }));
+    if (win) {
+      flash(.85, 420, t + 520); shake(Tel, 1.2, 520, t + 520);
+      SND.thump(t + 540, 1, 90); SND.chord(t + 540, [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6], .07); SND.ping(t + 700, NOTE.C6, .1); SND.ping(t + 950, NOTE.G5 * 2, .06);
+    } else {
+      shake(Tel, .4, 300, t + 520); SND.thump(t + 540, .7, i === 1 ? 140 : 120); SND.ping(t + 560, i === 1 ? NOTE.E5 : NOTE.D5, .08);
+    }
+  });
+  const after = (times[0] ?? 350) + 1300;
+  if (hdr) A(hdr, [{ opacity: 0 }, { opacity: 1 }], { duration: 700, delay: after });
+  rows.forEach((r, i) => {
+    A(r, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 500, delay: after + i * 70 });
+    A(r.querySelector(".f"), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 1100, delay: after + 200 + i * 70, easing: "cubic-bezier(.2,.8,.2,1)" });
+  });
+  Tel.onclick = e => { if (!e.target.closest(".acts")) finishAll(); };
 }
-
-// Таблиця: без подіуму — усі гравці, з подіумом — ті, хто не потрапив у топ-3
-const rest = showPodium ? list.filter(p => p.rank > 3) : list;
-if (list.length && !rest.length) $("standings").hidden = true;
-$("total-lbl").textContent = `${list.length} ${plural(list.length, "учасник", "учасники", "учасників")}`;
-if (showPodium) $("standings-h").firstChild.textContent = "Інші гравці ";
-$("standings-list").innerHTML = rest.length ? `<div class="row head"><div>#</div><div>Гравець</div><div class="stat">Прав.</div><div class="stat">Помил.</div><div class="stat">Пропуск</div><div style="text-align:right">Бали</div></div>` + rest.map(p =>
-  `<div class="row">
-    <div class="rank">${p.rank}</div>
-    <div class="who">${av(p)}<div class="name">${esc(p.nickname)}</div></div>
-    <div class="stat g">${p.correct}</div>
-    <div class="stat r">${p.answered - p.correct}</div>
-    <div class="stat s">${Math.max(0, totalQ - p.answered)}</div>
-    <div class="score">${shown(p)}</div>
-  </div>`).join("") : "";
-
-function confetti() {
-  const colors = ["#5B4FE8", "#C9971A", "#B0693C", "#2F9E62", "#8A7CF0", "#EF4444"];
-  const host = $("confetti");
-  for (let i = 0; i < 120; i++) {
-    const p = document.createElement("i");
-    p.style.left = Math.random() * 100 + "%";
-    p.style.background = colors[i % colors.length];
-    p.style.animationDelay = Math.random() * 2.5 + "s";
-    p.style.animationDuration = 3 + Math.random() * 3 + "s";
-    p.style.transform = `rotate(${Math.random() * 360}deg)`;
-    host.appendChild(p);
-  }
-  setTimeout(() => { host.innerHTML = ""; }, 9000);
-}
+(document.fonts?.ready || Promise.resolve()).then(() => requestAnimationFrame(run));
 
 // CSV для Excel: BOM + «;» (українська локаль). На відміну від історії ігор,
 // тут є розбір по кожному питанню — кімната ще зберігає всі відповіді.
-$("csv-btn").hidden = !list.length;
 $("csv-btn").addEventListener("click", () => {
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const head = ["Місце", "Учасник", "Правильно", "Помилки", "Пропущено", ...(acc ? [] : ["Бали"]), ...Array.from({ length: totalQ }, (_, i) => `П${i + 1}`)];
-  const rows = list.map(p => [p.rank, p.nickname, p.correct, p.answered - p.correct, Math.max(0, totalQ - p.answered), ...(acc ? [] : [p.score]),
+  const rowsCsv = list.map(p => [p.rank, p.nickname, p.correct, p.answered - p.correct, Math.max(0, totalQ - p.answered), ...(acc ? [] : [p.score]),
     ...Array.from({ length: totalQ }, (_, i) => { const a = room.answers?.[i]?.[p.pid]; return !a ? "—" : a.isCorrect ? (acc ? "✓" : `✓ ${a.points || 0}`) : "✗"; })]);
-  const csv = "\ufeff" + [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
+  const csv = "\ufeff" + [head, ...rowsCsv].map(r => r.map(q).join(";")).join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   a.download = `${(room.testTitle || "Гра").replace(/[\\/:*?"<>|]+/g, " ").trim().slice(0, 60)} — ${new Date().toLocaleDateString("uk-UA")} (${code}).csv`;
