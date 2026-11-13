@@ -29,9 +29,9 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="shared/styles.css?v=49">
-<link rel="modulepreload" href="shared/app.js?v=33">
-<link rel="modulepreload" href="shared/features.js?v=46">
+<link rel="stylesheet" href="shared/styles.css?v=50">
+<link rel="modulepreload" href="shared/app.js?v=34">
+<link rel="modulepreload" href="shared/features.js?v=47">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    ПОСИЛАННЯ — сторінка (scoped під #sec-links). Модалки — у shared/styles.css
@@ -169,7 +169,7 @@
 </div>
 <style>@keyframes appSpin{to{transform:rotate(360deg)}}</style>
 
-<script src="shared/nav.js?v=29"></script>
+<script src="shared/nav.js?v=30"></script>
 <main class="main">
 
   <div class="sec on" id="sec-links">
@@ -234,8 +234,8 @@ const srch = document.getElementById("lnk-srch"), srchX = document.getElementByI
 srch.addEventListener("input", () => { srchX.hidden = !srch.value; window.renderLinks?.(); });
 srchX.addEventListener("click", () => { srch.value = ""; srchX.hidden = true; srch.focus(); window.renderLinks?.(); });
 
-const { initApp } = await import("./shared/app.js?v=33");
-const featuresP = import("./shared/features.js?v=46");
+const { initApp } = await import("./shared/app.js?v=34");
+const featuresP = import("./shared/features.js?v=47");
 
 window.showSec = function(name){
   const pageMap = { dashboard: "./", tests: "tests", attempts: "attempts", links: "links", analytics: "analytics", gradebook: "gradebook",
