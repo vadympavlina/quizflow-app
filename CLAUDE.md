@@ -22,7 +22,7 @@
 - Правила бази, Cloudflare Worker пошти, `docs/` і генератори іконок та прев'ю лишаються в старому репозиторії `quizflow` (інфраструктура). Після змін правил їх треба вручну опублікувати в консолі Firebase.
 - Після змін у `shared/*.js|css` піднімати `?v=` у всіх HTML цього репозиторію, де файл підключено.
 - Іконки — `assets/icons/<teacher|game>/` і `/favicon.ico`. Набір `teacher` — талісман (синя качечка): генерується тут з `assets/icons/teacher/mascot.webp` командою `cd tests && npm run icons:mascot` (нове зображення: замінити файл, виконати скрипт, підняти `?v=` у посиланнях на іконки). Логотип у меню — `assets/icons/teacher/duck.webp` (`shared/nav.js`). Набір `game` — з репозиторію `quizflow` (`npm run icons`).
-- Прев'ю посилань (Open Graph) — метатеги в `<head>` і `assets/og/teacher.jpg і game.jpg`; генеруються в `quizflow` (`npm run og`).
+- Прев'ю посилань (Open Graph) — метатеги в `<head>` і `assets/og/teacher.jpg і game.jpg`; генеруються в `quizflow` (`npm run og`). Після нових картинок піднімайте `?v=` в `og:image`/`twitter:image` усіх сторінок (месенджери кешують прев'ю за адресою); формат і наявність тегів перевіряє `tests/e2e/og.spec.mjs`.
 
 ## Спільні файли (копії між репозиторіями)
 Сайт — без збірки, тому спільні файли скопійовані. Змінили один — перенесіть у всі копії й підніміть `?v=`.
