@@ -16,7 +16,9 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}`,
     viewport: { width: 1440, height: 900 },
     screenshot: "only-on-failure",
-    ...(process.env.PW_CHROMIUM ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } } : {}),
+    // Звук у тестах дозволений без жесту (інакше фінальна церемонія чекала б на дотик); сценарій «звук заблоковано» —
+    // окремий файл results-audio-blocked.spec.mjs зі своїм прапорцем
+    launchOptions: { args: ["--autoplay-policy=no-user-gesture-required"], ...(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}) },
   },
   webServer: {
     command: `python3 -m http.server ${PORT} --bind 127.0.0.1 --directory ..`,
