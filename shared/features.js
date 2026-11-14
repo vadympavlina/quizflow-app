@@ -9,7 +9,7 @@ import { NEWS_CATS, sanitizeNewsHtml, newsPlainText, newsExcerpt, readMinutes, c
 import { buildQuestions, qVersionKey } from "./qorder.js?v=1";
 import { trackAI, tokensOf } from "./ai-usage.js?v=3";
 import { assertAiQuota } from "./caps.js?v=4";
-import { callAIRaw as aiCallRaw } from "./ai-call.js?v=1";
+import { callAIRaw as aiCallRaw } from "./ai-call.js?v=2";
 
 const { db, ref, get, set, push, update, remove, onValue, off } = window._fb;
 const _arr = v => Array.isArray(v) ? v : Object.values(v || {});
@@ -2218,9 +2218,9 @@ async function callGroq(messages, maxTokens=800, temp=0.5, feature="analysis"){
   await assertAiQuota(db, _uid, window.QF_CAPS?.limits?.aiPerMonth);   // ліміт з адмінки → «Можливості»
   try{
     const { text, data } = await callAIRaw(messages, maxTokens, temp, feature);
-    trackAI(db, _uid, feature, { tokens: tokensOf(data) });
+    if (!data?._worker) trackAI(db, _uid, feature, { tokens: tokensOf(data) });   // через воркер облік веде він
     return text;
-  }catch(e){ trackAI(db, _uid, feature, { ok: false }); throw e; }
+  }catch(e){ if (!e?.viaWorker) trackAI(db, _uid, feature, { ok: false }); throw e; }
 }
 // Сам виклик провайдера — у shared/ai-call.js (спільний з адмінкою)
 function callAIRaw(messages, maxTokens, temp, feature){

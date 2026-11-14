@@ -728,6 +728,7 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { trackAI, tokensOf } from "./shared/ai-usage.js?v=3";
+import { callAIRaw as sharedAI } from "./shared/ai-call.js?v=2";
 import { loadCaps, assertAiQuota, CAP_FLAGS } from "./shared/caps.js?v=4";
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1438,33 +1439,13 @@ async function callAI(prompt, maxTokens = 800, temperature = .5){
   await assertAiQuota(db, UID, CAPS?.limits?.aiPerMonth);   // ліміт з адмінки → «Можливості»
   try {
     const { text, data } = await callAIRaw(prompt, maxTokens, temperature);
-    trackAI(db, UID, "generation", { tokens: tokensOf(data) });
+    if (!data?._worker) trackAI(db, UID, "generation", { tokens: tokensOf(data) });   // через воркер облік веде він
     return text;
-  } catch (e) { trackAI(db, UID, "generation", { ok: false }); throw e; }
+  } catch (e) { if (!e?.viaWorker) trackAI(db, UID, "generation", { ok: false }); throw e; }
 }
-async function callAIRaw(prompt, maxTokens, temperature){
-  if (AI.provider === "gemini"){
-    if (!AI.geminiKey) throw new Error("Не налаштовано ключ Gemini");
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI.geminiModel}:generateContent?key=${AI.geminiKey}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: UA_SYSTEM }] },
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature, ...(/flash/i.test(AI.geminiModel) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) }
-      })
-    });
-    const d = await res.json().catch(() => ({}));
-    if (!res.ok || d.error) throw new Error("Gemini: " + (d.error?.message || res.status));
-    return { text: (d.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join(""), data: d };
-  }
-  if (!AI.groqKey) throw new Error("AI не налаштовано: немає ключа Groq");
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${AI.groqKey}` },
-    body: JSON.stringify({ model: AI.groqModel, messages: [{ role: "system", content: UA_SYSTEM }, { role: "user", content: prompt }], max_tokens: maxTokens, temperature })
-  });
-  if (!res.ok){ const t = await res.text().catch(() => ""); throw new Error(`Groq ${res.status}${res.status === 429 ? ": забагато запитів, спробуйте за хвилину" : t ? ": " + t.slice(0, 160) : ""}`); }
-  const d = await res.json();
-  return { text: d.choices?.[0]?.message?.content || "", data: d };
+// Сам виклик (воркер або провайдер напряму) — у shared/ai-call.js
+function callAIRaw(prompt, maxTokens, temperature){
+  return sharedAI(db, [{ role: "user", content: prompt }], { maxTokens, temp: temperature, feature: "generation", system: UA_SYSTEM });
 }
 function parseJSON(raw, open){
   const close = open === "[" ? "]" : "}";
