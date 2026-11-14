@@ -8,7 +8,8 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, push, update, remove, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { loadCaps, CAP_FLAGS, CAP_LIMITS, pluralUk } from "./caps.js?v=3";
+import { loadCaps, CAP_FLAGS, CAP_LIMITS, pluralUk } from "./caps.js?v=4";
+import { PERMS, PAGE_PERMS, LEGACY_FLAG_PERM } from "./perms.js?v=1";
 import { limitNotice } from "./notices.js?v=2";
 
 // ─── Firebase ──────────────────────────────────────────────────────────
@@ -84,38 +85,65 @@ export const uid  = _fbUser.uid;
 window._user = _user;
 window._uid  = uid;
 
-// ─── Можливості й ліміти (адмінка → «Можливості») ─────────────────────────
-// Завантажуються у фоні; поки не завантажились — нічого не блокуємо.
-export const capsReady = loadCaps(db, { ..._user, features: _userDb.features }).then(c => (window.QF_CAPS = c)).catch(() => null);
-// Чи дозволена функція. Якщо ні — пояснює викладачу чому.
-window.qfCan = (flag) => {
-  const c = window.QF_CAPS;
-  if (!c || c.flags[flag] !== false) return true;
-  toast(`«${CAP_FLAGS[flag]?.label || flag}» вимкнено адміністратором`, "err");
+// ─── Дозволи й ліміти (адмінка → «Ролі», «Можливості») ──────────────────────
+// Що можна викладачу, вирішує shared/perms.js: особисті налаштування → ролі → для всіх.
+// Дозволи кешуємо в браузері, щоб меню й кнопки з'являлись одразу, ще до відповіді бази.
+const PERMS_KEY = "qf_perms_cache";
+const cachedPerms = () => { try { const c = JSON.parse(localStorage.getItem(PERMS_KEY) || "null"); return c && c.id === _user.id ? c : null; } catch { return null; } };
+export const capsReady = loadCaps(db, { ..._user, features: _userDb.features, readOnly: _userDb.readOnly }).then(c => {
+  window.QF_CAPS = c;
+  try { localStorage.setItem(PERMS_KEY, JSON.stringify({ id: _user.id, perms: c.perms, readOnly: c.readOnly })); } catch {}
+  window.QFNav?.setPerms?.(c.perms);
+  return c;
+}).catch(() => null);
+// Ключ дозволу за назвою: сам дозвіл, id сторінки меню або старий прапорець (games, export, import)
+const permKey = need => PERMS[need] ? need : PAGE_PERMS[need] || LEGACY_FLAG_PERM[need] || null;
+// Чи можна. Поки дозволи не завантажились, беремо кеш; без кешу не блокуємо.
+window.can = (need) => {
+  const k = permKey(need);
+  if (!k) return true;
+  const perms = window.QF_CAPS?.perms || cachedPerms()?.perms;
+  return !perms || perms[k] !== false;
+};
+window.qfAllowed = window.can;
+// Те саме, але із поясненням, якщо ні (для дій за кліком)
+window.qfCan = (need) => {
+  if (window.can(need)) return true;
+  const k = permKey(need);
+  toast(window.QF_CAPS?.readOnly && PERMS[k]?.write ? "Акаунт у режимі перегляду: зміни вимкнено" : `«${PERMS[k]?.label || need}» недоступно для вашого акаунта`, "err");
   return false;
 };
-// Чи доступне право: id сторінки меню (tests, links, attempts…) або функція (games, export, import).
-window.qfAllowed = (need) => {
-  if (!need) return true;
-  if (CAP_FLAGS[need]) { const c = window.QF_CAPS; return !c || c.flags[need] !== false; }
-  return !window.QFNav?.canOpen || window.QFNav.canOpen(need);
-};
-// Елемент з data-needs="tests links" показуємо, лише коли дозволено все перелічене. Недоступну дію
-// не показуємо взагалі, а не відповідаємо тостом після кліку.
+// Елемент з data-needs="tests.edit links.manage" показуємо, лише коли дозволено все перелічене.
+// Недоступну дію не показуємо взагалі, а не відповідаємо тостом після кліку.
 window.qfApplyAccess = (root = document) => {
   root.querySelectorAll("[data-needs]").forEach(el => {
-    const ok = el.dataset.needs.split(/\s+/).every(window.qfAllowed);
+    const ok = el.dataset.needs.split(/\s+/).every(window.can);
     if (el.hidden === !ok && el.classList.contains("qf-noperm") === !ok) return;
     el.classList.toggle("qf-noperm", !ok);
     el.hidden = !ok;
   });
 };
+// Режим «лише перегляд»: пояснювальна смужка вгорі сторінки
+function syncReadOnlyBanner() {
+  const on = window.QF_CAPS?.readOnly ?? cachedPerms()?.readOnly;
+  let b = document.getElementById("qf-readonly");
+  if (!on) { b?.remove(); return; }
+  if (b) return;
+  const main = document.querySelector("main.main") || document.querySelector(".main");
+  if (!main) return;
+  b = document.createElement("div");
+  b.id = "qf-readonly"; b.setAttribute("role", "status");
+  b.textContent = "Акаунт у режимі перегляду: змінювати дані не можна. Якщо це помилка, зверніться до адміністратора.";
+  b.style.cssText = "margin:0 0 12px;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;background:#FFF4DB;color:#7A4A00;border:1px solid #F3DDA3";
+  const qtb = main.querySelector("#qtb");
+  qtb ? qtb.after(b) : main.prepend(b);
+}
 {
   const st = document.createElement("style");
   st.textContent = ".qf-noperm{display:none!important}";
   document.head.appendChild(st);
   let raf = 0;
-  const run = () => { raf = 0; window.qfApplyAccess(); };
+  const run = () => { raf = 0; window.qfApplyAccess(); syncReadOnlyBanner(); };
   const kick = () => { if (!raf) raf = requestAnimationFrame(run); };
   capsReady.then(kick);
   new MutationObserver(kick).observe(document.body, { childList: true, subtree: true });
@@ -550,7 +578,7 @@ function ensureNavScript() {
   if (window.QFNav) return Promise.resolve();
   return new Promise(res => {
     const s = document.createElement("script");
-    s.src = new URL("./nav.js?v=18", import.meta.url).href;
+    s.src = new URL("./nav.js?v=19", import.meta.url).href;
     s.onload = s.onerror = () => res();
     document.head.appendChild(s);
   });
@@ -564,12 +592,13 @@ async function loadSidebar(activePage) {
   nav.setActive(activePage);
   nav.setUser(_user);
   refreshNavConfig().then(() => recheckAccess(activePage)).catch(() => {});
+  await capsReady;            // сторінку відкриваємо лише після того, як відомо, що викладачу можна
   if (!pageOpen(activePage)) { showNoAccess(); throw Object.assign(new Error("Немає доступу до сторінки"), { code: "qf/no-access" }); }
 }
 
 // ─── Доступ до сторінки за роллю ───────────────────────────────────────────
 // Меню лише ховає пункт, тож сама сторінка теж питає, чи можна її відкрити.
-function pageOpen(page) { return !window.QFNav?.canOpen || window.QFNav.canOpen(page); }
+function pageOpen(page) { return window.can(page); }
 function showNoAccess() {
   if (document.getElementById("qf-noaccess")) return;
   ldr(false);

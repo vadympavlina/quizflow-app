@@ -8,7 +8,7 @@
 import { NEWS_CATS, sanitizeNewsHtml, newsPlainText, newsExcerpt, readMinutes, catOf, isPublished } from "./news-utils.js?v=1";
 import { buildQuestions, qVersionKey } from "./qorder.js?v=1";
 import { trackAI, tokensOf } from "./ai-usage.js?v=3";
-import { assertAiQuota } from "./caps.js?v=3";
+import { assertAiQuota } from "./caps.js?v=4";
 import { callAIRaw as aiCallRaw } from "./ai-call.js?v=1";
 
 const { db, ref, get, set, push, update, remove, onValue, off } = window._fb;
@@ -444,7 +444,7 @@ function _nfView(n, aMap){
   }
   if (n.attemptId && !a && kind !== "shared") chips.push(`<span class="chip muted">спробу видалено</span>`);
 
-  const open = kind === "shared" ? _nfSafeId(n.sharedTestId) : !!a;
+  const open = kind === "shared" ? (_nfSafeId(n.sharedTestId) && (!window.can || window.can("tests.view"))) : (!!a && (!window.can || window.can("attempts.view")));
   return { id: n.id, ts: n.ts, aid: n.attemptId || null, kind, warn, lv, ico, tag, title, text, chips: chips.join(""), open };
 }
 
@@ -984,8 +984,8 @@ function buildTestCard(t, idx, stats, showFolder){
     <div class="t-qc-foot">
       <span class="t-qc-date"${t.createdAt ? ` title="Створено ${_fmtDate(t.createdAt)}"` : ""}>${t.createdAt ? _fmtDate(t.createdAt) : ""}</span>
       <div class="t-qc-foot-actions">
-        <button class="t-edit-btn" data-act="link" data-needs="links" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
-        <button class="t-edit-btn live" data-act="live" data-needs="games" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
+        <button class="t-edit-btn" data-act="link" data-needs="links.manage" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+        <button class="t-edit-btn live" data-act="live" data-needs="games.run" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
         <button class="t-menu-btn" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій">${I.more}</button>
       </div>
     </div>
@@ -1005,8 +1005,8 @@ function buildTestRow(t, idx, stats, showFolder){
       <div class="t-row-sub">${dot}${sub}</div>
     </div>
     <div class="t-la">
-      <button class="t-lb" data-act="link" data-needs="links" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
-      <button class="t-lb live" data-act="live" data-needs="games" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
+      <button class="t-lb" data-act="link" data-needs="links.manage" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+      <button class="t-lb live" data-act="live" data-needs="games.run" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
       <button class="t-lb edit" data-act="edit" data-id="${esc(t.id)}" title="Редагувати" aria-label="Редагувати">${I.edit}<span class="t-lb-t">Редагувати</span></button>
       <button class="t-lb icon" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій" title="Більше дій">${I.more}</button>
     </div>
@@ -1054,7 +1054,7 @@ function _railHtml(scope, live, orphans){
   const row = (id, ico, name, n) => `<button class="t-rr${scope === id ? " on" : ""}" data-act="open-folder" data-id="${esc(id)}" ${scope === id ? 'aria-current="true"' : ""}>
       ${ico}<span class="t-rr-name">${esc(name)}</span><span class="t-rr-n">${n}</span></button>`;
   const dot = col => `<i class="t-rr-dot" style="background:${col}"></i>`;
-  return `<div class="t-rail-h"><span>Папки</span><button class="t-rail-add" data-act="new-folder" title="Нова папка" aria-label="Нова папка">${I.plus}</button></div>
+  return `<div class="t-rail-h"><span>Папки</span><button class="t-rail-add" data-act="new-folder" data-needs="tests.edit" title="Нова папка" aria-label="Нова папка">${I.plus}</button></div>
     <div class="t-rail-list">
       ${row("all", `<span class="t-rr-ico">${_ALL_ICO}</span>`, "Усі тести", live.length)}
       ${folders.map(f => row(f.id, dot(_folderColor(f)), f.name, live.filter(t => t.folderId === f.id).length)).join("")}
@@ -1096,8 +1096,8 @@ renderTests = function(q){
       <div class="t-empty-title">Ще немає тестів</div>
       <div class="t-empty-hint">Створіть перший тест або папку для курсу</div>
       <div style="display:flex;gap:8px;justify-content:center">
-        <button class="t-btn" data-act="new-folder">${I.folder}Нова папка</button>
-        <button class="t-btn primary" data-act="add-test" data-id="">${I.plus}Новий тест</button>
+        <button class="t-btn" data-act="new-folder" data-needs="tests.edit">${I.folder}Нова папка</button>
+        <button class="t-btn primary" data-act="add-test" data-needs="tests.edit" data-id="">${I.plus}Новий тест</button>
       </div>
     </div></div>`;
     return;
@@ -1112,8 +1112,8 @@ renderTests = function(q){
   const head = hasFolders ? `<div class="t-scope">
       <div class="t-scope-t"><h2>${esc(name)}</h2></div>
       ${folder ? `<div class="t-scope-a">
-        <button class="t-btn ghost" data-act="folder-edit" data-id="${esc(folder.id)}">${I.edit}Змінити</button>
-        <button class="t-btn ghost danger" data-act="folder-delete" data-id="${esc(folder.id)}">${I.del}Видалити</button>
+        <button class="t-btn ghost" data-act="folder-edit" data-needs="tests.edit" data-id="${esc(folder.id)}">${I.edit}Змінити</button>
+        <button class="t-btn ghost danger" data-act="folder-delete" data-needs="tests.edit" data-id="${esc(folder.id)}">${I.del}Видалити</button>
       </div>` : ""}
     </div>` : "";
   const emptyT = all.length ? null : folder ? "У папці ще немає тестів" : "Тут ще немає тестів";
@@ -1146,7 +1146,7 @@ function _openTMenu(anchor, html){
   m.querySelector("[data-act]:not([disabled])")?.focus({ preventScroll: true });
 }
 function _testMenuHtml(t){
-  const NEED = { edit: "tests", link: "links", live: "games", "live-setup": "games", move: "tests", dup: "tests", share: "tests", delete: "tests" };
+  const NEED = { edit: "tests.edit", link: "links.manage", live: "games.run", "live-setup": "games.run", move: "tests.edit", dup: "tests.edit", share: "tests.share", delete: "tests.edit" };
   const it = (act, icon, label, extra = "") => `<button class="t-fm-item${extra}" role="menuitem" data-act="${act}" data-id="${esc(t.id)}"${NEED[act] ? ` data-needs="${NEED[act]}"` : ""}>${icon}<span>${label}</span></button>`;
   return `<div class="t-fm-head" title="${esc(t.title)}">${esc(t.title)}</div>
     ${it("edit", I.edit, "Редагувати")}
@@ -1756,7 +1756,7 @@ function _atRow(r){
   const gc = _attGradeColors(a.grade12);
   const grade = a.grade12 != null
     ? `<span class="grade-chip" style="background:${gc.bg};color:${gc.fg}">${a.grade12}</span>${r.pct != null ? `<span class="pct">${r.pct}%</span>` : ""}`
-    : a.status === "pending_review" ? `<button class="review-btn" data-aact="view" data-id="${a.id}">Оцінити</button>` : `<span class="muted mono">—</span>`;
+    : a.status === "pending_review" ? `<button class="review-btn" data-aact="view" data-needs="attempts.review" data-id="${a.id}">Оцінити</button>` : `<span class="muted mono">—</span>`;
   const c = a.score?.correct, tot = a.score?.total ?? (r.t?.questions?.length || null);
   const correct = c != null && tot ? `<div class="cor"><span class="mono">${c}/${tot}</span><i><b style="width:${Math.round(c / tot * 100)}%"></b></i></div>` : `<span class="muted mono">—</span>`;
   let status = `<span class="pill ${st.cls}">${st.label}</span>`;
@@ -1778,7 +1778,7 @@ function _atRow(r){
     <td>${status}</td>
     <td><div class="row-actions">
       <button class="ic-btn" title="Переглянути" data-aact="view" data-id="${a.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-      <button class="ic-btn danger" title="Видалити" data-aact="del" data-id="${a.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      <button class="ic-btn danger" title="Видалити" data-aact="del" data-needs="attempts.review" data-id="${a.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
     </div></td>
   </tr>`;
 }
@@ -2087,7 +2087,7 @@ renderLinks = function(){
       <div class="l-empty-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.5 1.5"/><path d="M14 11a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.5-1.5"/></svg></div>
       <div class="l-empty-title">${q ? "Нічого не знайдено" : !links.length ? "Ще немає посилань" : tab === "scheduled" ? "Немає запланованих посилань" : tab === "closed" ? "Немає закритих посилань" : "Немає активних посилань"}</div>
       <div class="l-empty-hint">${q ? "Спробуйте інший запит" : !links.length ? "Оберіть тест, вкажіть групу — і надішліть студентам посилання або QR-код" : filtered ? "Змініть вкладку або створіть нове посилання" : ""}</div>
-      ${!q ? `<button class="l-btn primary" data-lact="new" style="margin:0 auto">${_lic("plus")}Нове посилання</button>` : ""}
+      ${!q ? `<button class="l-btn primary" data-lact="new" data-needs="links.manage" style="margin:0 auto">${_lic("plus")}Нове посилання</button>` : ""}
     </div>`;
     return;
   }
@@ -2136,9 +2136,9 @@ function _linkCard(l, st, s = {}, now){
   } else when = { ic: "clock", cls: "muted", text: "Без терміну" };
 
   const warnHtml = issue ? `<div class="lk-warn">${_lic("alert", 13)}<span>${issue.text}</span>${
-      issue.kind === "draft" || issue.kind === "closed" ? `<button data-lact="publish" data-id="${l.id}">Опублікувати тест</button>`
+      issue.kind === "draft" || issue.kind === "closed" ? `<button data-lact="publish" data-needs="links.manage" data-id="${l.id}">Опублікувати тест</button>`
       : issue.kind === "empty" ? `<a href="constructor?id=${encodeURIComponent(l.testId)}">Додати питання</a>` : ""}</div>`
-    : st === "full" ? `<div class="lk-warn">${_lic("users", 13)}<span>Усі ${max} місць зайнято — нові студенти не зайдуть</span><button data-lact="edit" data-id="${l.id}">Збільшити ліміт</button></div>`
+    : st === "full" ? `<div class="lk-warn">${_lic("users", 13)}<span>Усі ${max} місць зайнято — нові студенти не зайдуть</span><button data-lact="edit" data-needs="links.manage" data-id="${l.id}">Збільшити ліміт</button></div>`
     : "";
 
   return `<article class="lnk-card is-${st}${issue ? " has-issue" : ""}" data-id="${l.id}">
@@ -2168,10 +2168,10 @@ function _linkCard(l, st, s = {}, now){
       <button class="l-res" data-lact="results" data-id="${l.id}">Результати${_lic("arrow", 13)}</button>
       <div class="l-foot-actions">
         <button class="l-icon-btn" data-lact="qr" data-id="${l.id}" title="QR-код">${_lic("qr")}</button>
-        <button class="l-icon-btn" data-lact="dup" data-id="${l.id}" title="Копія для іншої групи">${_lic("dup")}</button>
-        <button class="l-icon-btn" data-lact="edit" data-id="${l.id}" title="Редагувати">${_lic("edit")}</button>
-        <button class="l-icon-btn" data-lact="toggle" data-id="${l.id}" title="${open ? "Закрити доступ" : "Відкрити знову"}">${_lic(open ? "lock" : "unlock")}</button>
-        <button class="l-icon-btn danger" data-lact="del" data-id="${l.id}" title="Видалити">${_lic("trash")}</button>
+        <button class="l-icon-btn" data-lact="dup" data-needs="links.manage" data-id="${l.id}" title="Копія для іншої групи">${_lic("dup")}</button>
+        <button class="l-icon-btn" data-lact="edit" data-needs="links.manage" data-id="${l.id}" title="Редагувати">${_lic("edit")}</button>
+        <button class="l-icon-btn" data-lact="toggle" data-needs="links.manage" data-id="${l.id}" title="${open ? "Закрити доступ" : "Відкрити знову"}">${_lic(open ? "lock" : "unlock")}</button>
+        <button class="l-icon-btn danger" data-lact="del" data-needs="links.manage" data-id="${l.id}" title="Видалити">${_lic("trash")}</button>
       </div>
     </div>
   </article>`;
@@ -2207,6 +2207,7 @@ function _bindLinksPage(){
 
 // Обгортка: рахуємо кожне звернення (успіх / помилка) для адмінки
 async function callGroq(messages, maxTokens=800, temp=0.5, feature="analysis"){
+  if (window.QF_CAPS?.perms?.ai === false) throw Object.assign(new Error("AI-функції недоступні для вашого акаунта."), { code: "qf/ai-off" });
   await assertAiQuota(db, _uid, window.QF_CAPS?.limits?.aiPerMonth);   // ліміт з адмінки → «Можливості»
   try{
     const { text, data } = await callAIRaw(messages, maxTokens, temp, feature);
@@ -2454,6 +2455,7 @@ window.G = {
   },
   // Модалка папки: без id — нова папка, з id — перейменування/колір
   openFolderModal(editId){
+    if (window.qfCan && !window.qfCan("tests.edit")) return;
     const f = editId ? folders.find(x => x.id === editId) : null;
     window._editFolderId = f ? f.id : null;
     $("m-folder-title").textContent = f ? "Редагувати папку" : "Нова папка";
@@ -2531,6 +2533,7 @@ window.G = {
 
   // Перемістити тест у папку
   openMoveModal(testId){
+    if (window.qfCan && !window.qfCan("tests.edit")) return;
     const t = tests.find(x => x.id === testId); if (!t) return;
     window._moveTestId = testId;
     $("move-test-name").textContent = t.title;
@@ -2561,6 +2564,7 @@ window.G = {
 
   // Копія тесту (чернетка в тій самій папці)
   async duplicateTest(testId){
+    if (window.qfCan && !window.qfCan("tests.edit")) return;
     const t = tests.find(x => x.id === testId); if (!t) return;
     if (window.qfLimit && !window.qfLimit("maxTests", tests.filter(x => x.status !== "archived").length)) return;
     try{
@@ -2576,6 +2580,7 @@ window.G = {
 
   // Tests
   openTestInFolder(fid){
+    if (window.qfCan && !window.qfCan("tests.edit")) return;
     if (window.qfLimit && !window.qfLimit("maxTests", tests.filter(x => x.status !== "archived").length)) return;
     _fid = fid && folders.some(f => f.id === fid) ? fid : null;
     ["nt-n", "nt-d", "nt-tg"].forEach(k => { const el = $(k); if (el){ el.value = ""; el.classList.remove("er"); } });
@@ -2633,7 +2638,7 @@ window.G = {
   _gm: null,
   // chips/segmented: делегований клік (прив'язується один раз)
   gameModal(testId){
-    if (window.qfCan && !window.qfCan("games")) return;
+    if (window.qfCan && !window.qfCan("games.run")) return;
     const t = tests.find(x => x.id === testId); if (!t) return;
     const all = _arr(t.questions);
     const qs = all.filter(q => q && ["single", "multi", "text", "number"].includes(q.type || "single"));
@@ -2702,7 +2707,7 @@ window.G = {
   },
   startLiveGame(testId){
     document.querySelectorAll("[id^='tmenu-']").forEach(m=>m.style.display="none");
-    if (window.qfCan && !window.qfCan("games")) return;
+    if (window.qfCan && !window.qfCan("games.run")) return;
     window.open(`live/setup?testId=${testId}`,"_blank","noopener");
   },
   async doDelTest(mode="archive"){
@@ -2776,6 +2781,7 @@ window.G = {
 
   // ─── Посилання: модалка створення / редагування ─────────────────────
   _lnkForm(mode, l = null, testId = null){
+    if (window.qfCan && !window.qfCan("links.manage")) return;
     const edit = mode === "edit";
     if (!edit && window.qfLimit && !window.qfLimit("maxActiveLinks", links.filter(x => _isOpenState(linkState(x))).length)) return;
     window._editLinkId = edit ? l.id : null;
@@ -3668,7 +3674,7 @@ window.G = {
         aiBlock = `<div class="ad-ai"><div class="ad-ai-h"><span class="ad-ai-ico">${_svg(_IC.spark, 18)}</span>
             <div class="ad-ai-t"><b>Розбір від ШІ</b><small>${aiText ? "Що студент не зрозумів і що варто повторити" : canAnalyse ? "Короткий персональний розбір помилок студента" : hasGrade ? "Спершу оцініть відкриті відповіді" : "Стане доступним після виставлення оцінки"}</small></div>
             ${aiText ? `<button type="button" class="ad-ai-btn" onclick="G.personalAnalysis('${esc(a.id)}')">Відкрити</button>`
-              : canAnalyse ? `<button type="button" class="ad-ai-btn pri" onclick="G.personalAnalysis('${esc(a.id)}')">${_svg(_IC.spark, 13)} Згенерувати</button>` : ""}
+              : canAnalyse ? `<button type="button" class="ad-ai-btn pri" data-needs="ai" onclick="G.personalAnalysis('${esc(a.id)}')">${_svg(_IC.spark, 13)} Згенерувати</button>` : ""}
           </div>${aiText ? `<div class="ad-ai-body" onclick="G.personalAnalysis('${esc(a.id)}')">${esc(aiText.replace(/\s+/g, " ").trim())}</div>` : ""}</div>`;
       }
 
@@ -3789,7 +3795,7 @@ window.G = {
       if(window._adCur===attId && document.getElementById("m-attempt")?.classList.contains("on")) G.viewAtt(attId);
     }catch(e){
       G._aiPanelOpen(attId, `<div class="ai-err">${_svg(_IC.x, 16)}<div><b>Не вдалося отримати розбір</b><span>${esc(e.message)}</span></div></div>
-        <button type="button" class="btn bs" onclick="G.personalAnalysis('${esc(attId)}', true)">${_svg(_IC.refresh, 14)} Спробувати ще раз</button>`, true);
+        <button type="button" class="btn bs" data-needs="ai" onclick="G.personalAnalysis('${esc(attId)}', true)">${_svg(_IC.refresh, 14)} Спробувати ще раз</button>`, true);
     }
   },
 
@@ -4074,8 +4080,8 @@ window.G = {
           <td class="t-mono">${stats.get(t.id)?.cnt || 0}</td>
           <td class="t-mono t-muted" style="white-space:nowrap">${_fmtDate(t.archivedAt || t.updatedAt) || "—"}</td>
           <td><div style="display:flex;gap:6px;justify-content:flex-end">
-            <button class="t-btn" data-act="restore" data-id="${esc(t.id)}">${I.restore}Відновити</button>
-            <button class="t-btn ghost danger" data-act="purge" data-id="${esc(t.id)}" title="Видалити назавжди">${I.del}Видалити</button>
+            <button class="t-btn" data-act="restore" data-needs="tests.edit" data-id="${esc(t.id)}">${I.restore}Відновити</button>
+            <button class="t-btn ghost danger" data-act="purge" data-needs="tests.edit" data-id="${esc(t.id)}" title="Видалити назавжди">${I.del}Видалити</button>
           </div></td>
         </tr>`;
       }).join("")}</tbody>
@@ -4425,6 +4431,7 @@ window.G = {
   },
 
   async openShareModal(testId, testTitle){
+    if (window.qfCan && !window.qfCan("tests.share")) return;
     G._shareTestId = testId;
     G._shareSelectedUid = null;
     G._shareUsers = [];
@@ -4455,6 +4462,7 @@ window.G = {
   },
 
   async doShareTest(){
+    if (window.qfCan && !window.qfCan("tests.share")) return;
     const errEl=document.getElementById("share-err");
     if(!G._shareSelectedUid){ errEl.textContent="Оберіть викладача"; return; }
     const test=tests.find(t=>t.id===G._shareTestId);
@@ -4699,6 +4707,7 @@ window.G = {
   },
 
   async setManualGrade(attId, grade){
+    if (window.qfCan && !window.qfCan("attempts.review")) return;
     const a=attempts.find(x=>x.id===attId);
     if(!a) return;
     const btn=document.querySelector(`[onclick="G.setManualGrade('${attId}',${grade})"]`);

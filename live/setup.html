@@ -245,7 +245,7 @@
 
 <script type="module">
 import { PLAY_HOME,
-  db, ref, get, update, requireTeacher, readParams, fatal, toast, safeStore,
+  db, ref, get, update, requireTeacher, requirePerm, readParams, fatal, toast, safeStore,
   THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, pageUrl, esc, plural, pickCount, confirmDlg,
 } from "./live-core.js?v=9";
 
@@ -258,10 +258,9 @@ $("join-hint").textContent = PLAY_HOME.replace(/^https?:\/\//, "");
 {
   const [svc, prof] = await Promise.all([get(ref(db, "settings/status")).then(s => s.val()).catch(() => null), get(ref(db, `users/${uid}`)).then(s => s.val() || {}).catch(() => ({}))]);
   if (svc?.gamesOff === true && prof.role !== "admin") fatal(svc.message || "Ігри тимчасово недоступні: тривають технічні роботи.");
-  // Можливості з адмінки: ігри можуть бути вимкнені для цього викладача
-  const { loadCaps } = await import("../shared/caps.js?v=3");
-  const caps = await loadCaps(db, prof);
-  if (caps.flags.games === false) fatal("Ігри наживо вимкнено для вашого акаунта. Зверніться до адміністратора.");
+  // Права з адмінки: ігри можуть бути вимкнені для цього викладача (або акаунт лише для перегляду)
+  const caps = await requirePerm(uid, "games.run");
+  if (caps?.readOnly) fatal("Акаунт у режимі перегляду: запускати ігри не можна. Зверніться до адміністратора.");
 }
 
 const { testId } = readParams("testId");
