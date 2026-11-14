@@ -164,6 +164,12 @@
   }
 
   // Сторінка → дозвіл (дзеркало PAGE_PERMS із shared/perms.js; збіг перевіряє тест perms.spec)
+  var FILE_ALIASES = {"game-history":"history"};
+  function pagePerm(it) {
+    if (PAGE_PERMS[it.id]) return PAGE_PERMS[it.id];
+    var f = String(it.file || "").split(/[?#]/)[0].replace(/^\.?\//, "").replace(/\.html$/, "");
+    return PAGE_PERMS[FILE_ALIASES[f] || f] || null;
+  }
   var PAGE_PERMS = {"tests":"tests.view","constructor":"tests.edit","links":"links.view","attempts":"attempts.view","history":"games.history","students":"students.view","gradebook":"gradebook.view","analytics":"analytics.view","suspicious":"suspicious.view","online":"online.view","notifications":"notifications.view","news":"news.view"};
   var PERMS_KEY = "qf_perms_cache";
 
@@ -184,7 +190,7 @@
       if (!it || it.enabled === false) return false;
       if (user.role === "admin") return true;
       // Дозволи вже враховують і ролі, і старі обмеження пунктів меню
-      if (state.perms) { var k = !it.protected && PAGE_PERMS[it.id]; return !k || state.perms[k] !== false; }
+      if (state.perms) { var k = !it.protected && pagePerm(it); return !k || state.perms[k] !== false; }
       if (Array.isArray(it.roleIds) && it.roleIds.length > 0) {
         var mine = user.customRoleIds || [];
         return it.roleIds.some(function (r) { return mine.indexOf(r) >= 0; });

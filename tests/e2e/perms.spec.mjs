@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 // shared/perms.js — браузерний ES-модуль без package.json поруч; для Node вантажимо його вміст як модуль
 const src = fs.readFileSync(new URL("../../shared/perms.js", import.meta.url), "utf8");
-const { resolvePerms, normalizeCfg, pageAllowed, conflicts, PERM_KEYS, WRITE_KEYS, PERMS, IMPLIES, PAGE_PERMS } =
+const { resolvePerms, normalizeCfg, pageAllowed, conflicts, PERM_KEYS, WRITE_KEYS, PERMS, IMPLIES, PAGE_PERMS, pagePerm } =
   await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
 
 const T = (cfg, profile, nav) => resolvePerms(cfg, profile, nav).perms;
@@ -154,4 +154,12 @@ test("ключі дозволів у базі без крапки: tests.view �
   expect(p["tests.view"]).toBe(true);        // з tests_edit через залежність
   expect(p["games.run"]).toBe(false);
   expect(resolvePerms(cfg, { role: "teacher" }).perms["tests.view"]).toBe(false);
+});
+
+test("пункт меню з довільним id визначається за файлом сторінки", () => {
+  expect(pagePerm({ id: "x1", file: "game-history" })).toBe("games.history");
+  expect(pagePerm({ id: "n2", file: "news.html" })).toBe("news.view");
+  expect(pagePerm({ id: "history", file: "whatever" })).toBe("games.history");
+  expect(pagePerm({ id: "d", file: "./" })).toBeNull();
+  expect(pagePerm({ id: "o", file: "https://x.y/z" })).toBeNull();
 });
