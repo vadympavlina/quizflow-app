@@ -142,3 +142,16 @@ test("закрили сторінку «Тести» для всіх: типов
   expect(author["tests.edit"]).toBe(true);
   expect(author["tests.view"]).toBe(true);                 // залежність видана разом із правом
 });
+
+test("ключі дозволів у базі без крапки: tests.view ↔ tests_view, читання приймає обидва записи", async () => {
+  const mod = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
+  expect(mod.storeKey("tests.view")).toBe("tests_view");
+  expect(mod.storeKey("ai")).toBe("ai");
+  PERM_KEYS.forEach(k => { expect(/[.$#\[\]\/]/.test(mod.storeKey(k)), k).toBe(false); expect(mod.permFromStore(mod.storeKey(k)), k).toBe(k); });
+  expect(Object.keys(mod.encodePerms({ "games.run": true, ai: false, junk: 1 })).sort()).toEqual(["ai", "games_run"]);
+  const cfg = { v: 2, perms: { tests_view: false, "games.run": false }, roles: { r: { perms: { tests_edit: true } } } };
+  const p = resolvePerms(cfg, { role: "teacher", customRoleIds: { r: true } }).perms;
+  expect(p["tests.view"]).toBe(true);        // з tests_edit через залежність
+  expect(p["games.run"]).toBe(false);
+  expect(resolvePerms(cfg, { role: "teacher" }).perms["tests.view"]).toBe(false);
+});
