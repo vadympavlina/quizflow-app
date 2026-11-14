@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=58">
-<link rel="modulepreload" href="shared/app.js?v=42">
+<link rel="modulepreload" href="shared/app.js?v=43">
 <style>
 #sec-history{
   --ink-900:var(--qf-ink-900);--ink-700:var(--qf-ink-700);--ink-500:var(--qf-ink-500);--ink-400:var(--qf-ink-400);--ink-300:var(--qf-line-strong);
@@ -237,7 +237,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 </head>
 <body>
 
-<script src="shared/nav.js?v=34"></script>
+<script src="shared/nav.js?v=35"></script>
 <main class="main">
 <div class="sec" id="sec-history">
   <div class="gh-title">
@@ -351,7 +351,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 
 <script type="module">
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-const { initApp, appReady } = await import("./shared/app.js?v=42");
+const { initApp, appReady } = await import("./shared/app.js?v=43");
 await initApp("history", { skipData: true });
 
 const db = getDatabase();
@@ -566,7 +566,7 @@ function openMenu(btn, g){
   m.innerHTML = `
     ${g.hasResults ? `<button role="menuitem" data-act="open" data-code="${esc(g.code)}">${I('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>')}Усі результати</button>
     <button role="menuitem" data-act="csv" data-needs="export" data-code="${esc(g.code)}">${I('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}Експорт у CSV</button>` : ""}
-    ${g.testId ? `<button role="menuitem" data-act="replay" data-needs="games" data-code="${esc(g.code)}">${I('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>')}Зіграти цей тест ще раз</button>` : ""}
+    ${g.testId ? `<button role="menuitem" data-act="replay" data-needs="games.run" data-code="${esc(g.code)}">${I('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>')}Зіграти цей тест ще раз</button>` : ""}
     <hr><button role="menuitem" class="d" data-act="del" data-code="${esc(g.code)}">${I('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>')}Видалити з історії</button>`;
   document.body.appendChild(m);
   const r = btn.getBoundingClientRect();
@@ -696,7 +696,7 @@ document.addEventListener("click", e => {
     case "open":   closeMenu(); if (g) openResults(g); break;
     case "menu":   if (menuFor === el) closeMenu(); else if (g) openMenu(el, g); break;
     case "csv":    closeMenu(); if (g && (!window.qfCan || window.qfCan("export"))) exportCsv(g); break;
-    case "replay": closeMenu(); if (g?.testId && (!window.qfCan || window.qfCan("games"))) location.href = `live/setup?testId=${encodeURIComponent(g.testId)}`; break;
+    case "replay": closeMenu(); if (g?.testId && (!window.qfCan || window.qfCan("games.run"))) location.href = `live/setup?testId=${encodeURIComponent(g.testId)}`; break;
     case "del":    closeMenu(); if (g) askDelete(g); break;
     case "more":   ui.limit += 20; render(); break;
     case "res-more": resLimit += 200; renderResults(); break;
@@ -757,7 +757,7 @@ function qlAction(el){
   const a = el.dataset.ql;
   if (a === "back"){ qlFolder = null; $("ql-search").value = ""; renderQl(); $("ql-search").focus(); }
   else if (a === "folder"){ qlFolder = el.dataset.id; $("ql-search").value = ""; renderQl(); $("ql-search").focus(); }
-  else if (a === "test" && (!window.qfCan || window.qfCan("games"))) location.href = `live/setup?testId=${encodeURIComponent(el.dataset.id)}`;
+  else if (a === "test" && (!window.qfCan || window.qfCan("games.run"))) location.href = `live/setup?testId=${encodeURIComponent(el.dataset.id)}`;
 }
 $("ql-search").addEventListener("input", () => qlTests && renderQl());
 </script>

@@ -113,7 +113,7 @@
 
 <script type="module">
 import {
-  db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
+  db, ref, get, update, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, standings, plural, fmtNum, HOME_URL, serverNow,
 } from "./live-core.js?v=9";
 import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, reduced, POP, EO } from "./results-fx.js?v=2";
@@ -205,10 +205,10 @@ else $("again-btn").hidden = true;
 $("csv-btn").hidden = !list.length;
 $("replay-btn").hidden = !list.length;
 // Можливості з адмінки: недоступні дії не показуємо (у фоні, показ результатів не затримуємо)
-import("../shared/caps.js?v=3").then(async ({ loadCaps }) => {
-  const caps = await loadCaps(db, (await get(ref(db, `users/${user.uid}`))).val() || {});
-  if (caps.flags.export === false) $("csv-btn").hidden = true;
-  if (caps.flags.games === false) $("again-btn").hidden = true;
+requirePerm(user.uid, "games.run", "games.history").then(caps => {
+  if (!caps) return;
+  if (caps.perms.export === false) $("csv-btn").hidden = true;
+  if (caps.perms["games.run"] === false) $("again-btn").hidden = true;
 }).catch(() => {});
 const sndLabel = () => { $("snd-btn").textContent = SND.on ? "Звук: вкл" : "Звук: вимк"; };
 sndLabel();

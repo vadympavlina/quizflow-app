@@ -500,6 +500,19 @@ export function fatal(msg, backHref = HOME_URL) {
   throw new Error(msg);
 }
 
+// Чи дозволено викладачу (дозволи з адмінки). Достатньо будь-якого з перелічених.
+// Недоступна сторінка за прямим посиланням показує пояснення замість гри.
+export async function requirePerm(uid, ...perms) {
+  let caps = null;
+  try {
+    const { loadCaps } = await import("../shared/caps.js?v=4");
+    const prof = (await get(ref(db, `users/${uid}`))).val() || {};
+    caps = await loadCaps(db, { ...prof, role: prof.role || "teacher" });
+  } catch { return null; }                       // базу не прочитали — не блокуємо
+  if (!perms.some(p => caps.perms[p] !== false)) fatal("Ця дія недоступна для вашого акаунта. Зверніться до адміністратора.");
+  return caps;
+}
+
 export const safeStore = {
   get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },

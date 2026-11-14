@@ -29,8 +29,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=58">
-<link rel="modulepreload" href="shared/app.js?v=42">
-<link rel="modulepreload" href="shared/features.js?v=51">
+<link rel="modulepreload" href="shared/app.js?v=43">
+<link rel="modulepreload" href="shared/features.js?v=53">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    СПРОБИ — scoped під #sec-attempts. Дропдауни — qfDrop (shared/styles.css)
@@ -228,7 +228,7 @@
 @media (max-width:1023px){#sec-attempts .f-row{flex-wrap:nowrap}#sec-attempts .f-row .search-wrap{flex:1 1 0;min-width:0;max-width:none;width:auto}}
 </style>
 
-<script src="shared/nav.js?v=34"></script>
+<script src="shared/nav.js?v=35"></script>
 <main class="main">
 
   <div class="sec on" id="sec-attempts">
@@ -284,8 +284,8 @@
       <div class="bulk" id="att-bulk" hidden>
         <span id="att-bulk-n"></span><span class="grow"></span>
         <button data-aact="bulk-export" data-needs="export">Експорт CSV</button>
-        <button class="danger" data-aact="bulk-del">Видалити</button>
-        <button data-aact="bulk-clear">Зняти виділення</button>
+        <button class="danger" data-aact="bulk-del" data-needs="attempts.review">Видалити</button>
+        <button data-aact="bulk-clear" data-needs="attempts.review">Зняти виділення</button>
       </div>
 
       <div class="tbl-wrap">
@@ -317,8 +317,8 @@
 <div id="modals-root"></div>
 
 <script type="module">
-const { initApp } = await import("./shared/app.js?v=42");
-const featuresP = import("./shared/features.js?v=51");
+const { initApp } = await import("./shared/app.js?v=43");
+const featuresP = import("./shared/features.js?v=53");
 
 window.showSec = function(name){
   const pageMap = { dashboard: "./", tests: "tests", attempts: "attempts", links: "links", analytics: "analytics", gradebook: "gradebook",

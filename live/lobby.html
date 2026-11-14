@@ -160,12 +160,13 @@
 
 <script type="module">
 import {
-  db, ref, get, update, onValue, requireTeacher, readParams, isValidCode, fatal, toast,
+  db, ref, get, update, onValue, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, joinUrl, HOME_URL, serverNow, isActive, isOnline, confirmDlg,
 } from "./live-core.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
+await requirePerm(user.uid, "games.run");
 const { code } = readParams("code");
 if (!isValidCode(code)) fatal("Невірний код кімнати");
 

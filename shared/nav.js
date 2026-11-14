@@ -163,18 +163,29 @@
     return (!seg || seg === "." || seg === "index") ? "" : seg;
   }
 
+  // Сторінка → дозвіл (дзеркало PAGE_PERMS із shared/perms.js; збіг перевіряє тест perms.spec)
+  var PAGE_PERMS = {"tests":"tests.view","constructor":"tests.edit","links":"links.view","attempts":"attempts.view","history":"games.history","students":"students.view","gradebook":"gradebook.view","analytics":"analytics.view","suspicious":"suspicious.view","online":"online.view","notifications":"notifications.view","news":"news.view"};
+  var PERMS_KEY = "qf_perms_cache";
+
   var state = {
     nav: null,           // масив секцій, з якого намальовано меню
     user: readJson(USER_CACHE_KEY) || {},
     active: null,
+    perms: null,         // {дозвіл: bool}: з кешу, потім з бази (app.js → setPerms)
   };
+  (function () {
+    var c = readJson(PERMS_KEY);
+    if (c && c.perms && state.user.id && c.id === state.user.id) state.perms = c.perms;
+  })();
 
   function visibleItems(sec, user) {
     var items = Array.isArray(sec.items) ? sec.items : [];
     return items.filter(function (it) {
       if (!it || it.enabled === false) return false;
+      if (user.role === "admin") return true;
+      // Дозволи вже враховують і ролі, і старі обмеження пунктів меню
+      if (state.perms) { var k = !it.protected && PAGE_PERMS[it.id]; return !k || state.perms[k] !== false; }
       if (Array.isArray(it.roleIds) && it.roleIds.length > 0) {
-        if (user.role === "admin") return true;
         var mine = user.customRoleIds || [];
         return it.roleIds.some(function (r) { return mine.indexOf(r) >= 0; });
       }
@@ -224,10 +235,10 @@
       "</button>" +
       '<nav class="sb-scroll">' + sections + "</nav>" +
       '<div class="sb-bottom">' +
-        '<button type="button" class="sb-new" id="sb-new" data-needs="tests" onclick="sbNewTest()" data-tip="Новий тест" aria-label="Новий тест">' +
+        '<button type="button" class="sb-new" id="sb-new" data-needs="tests.edit" onclick="sbNewTest()" data-tip="Новий тест" aria-label="Новий тест">' +
           icon("plus", 2.4) + '<span class="sb-new-t">Новий тест</span></button>' +
         '<div class="sb-icon-strip">' +
-          '<a href="live" target="_blank" rel="noopener" data-tip="Live-моніторинг (нова вкладка)" aria-label="Live-моніторинг (нова вкладка)" class="ni ni-live" data-needs="games">' +
+          '<a href="live" target="_blank" rel="noopener" data-tip="Live-моніторинг (нова вкладка)" aria-label="Live-моніторинг (нова вкладка)" class="ni ni-live" data-needs="online.view">' +
             '<span class="sb-ico">' + icon("zap") + '</span><span class="ni-label">Live</span></a>' +
           '<a href="https://admin.quizflow.space/" id="admin-panel-btn" target="_blank" rel="noopener" data-tip="Адмін-панель (нова вкладка)" aria-label="Адмін-панель (нова вкладка)" class="ni ni-admin"' + (isAdmin ? "" : " hidden") + ">" +
             '<span class="sb-ico">' + icon("shield") + '</span><span class="ni-label">Адмін</span></a>' +
@@ -326,6 +337,7 @@
   // Дані користувача після авторизації: оновлюємо підвал і, якщо змінились ролі, пункти меню
   function setUser(u) {
     var next = {
+      id: u.id || state.user.id || "",
       name: u.name || "", surname: u.surname || "", login: u.login || "", email: u.email || "",
       role: u.role || "teacher", customRoleIds: u.customRoleIds || [],
     };
@@ -639,28 +651,16 @@
   }
   window.addEventListener("pageshow", function () { setOpen(false); });
 
-  // Чи може поточний користувач відкрити сторінку (id пункту меню). Пункт з roleIds бачать лише ці
-  // ролі й адміністратор; прихований у меню (enabled:false) пункт не блокуємо — це лише меню.
-  function canOpen(pageId) {
-    var nav = state.nav || readJson(NAV_CACHE_KEY) || DEFAULT_NAV;
-    var user = state.user || {};
-    if (user.role === "admin") return true;
-    for (var i = 0; i < nav.length; i++) {
-      var items = Array.isArray(nav[i] && nav[i].items) ? nav[i].items : [];
-      for (var j = 0; j < items.length; j++) {
-        var it = items[j];
-        if (!it || it.id !== pageId || it.protected) continue;
-        if (Array.isArray(it.roleIds) && it.roleIds.length > 0) {
-          var mine = user.customRoleIds || [];
-          return it.roleIds.some(function (r) { return mine.indexOf(r) >= 0; });
-        }
-      }
-    }
-    return true;
+  // Дозволи з бази: перемальовуємо меню, якщо вони змінились
+  function setPerms(perms) {
+    if (!perms || JSON.stringify(perms) === JSON.stringify(state.perms)) return;
+    state.perms = perms;
+    if (document.getElementById("sidebar")) render(state.nav);
+    document.dispatchEvent(new Event("qf:access"));
   }
 
   window.QFNav = {
-    canOpen: canOpen,
+    setPerms: setPerms,
     render: render, setUser: setUser, setNav: setNav, setActive: setActive,
     setCollapsed: setCollapsed, isCollapsed: function () { return collapsed; },
     DEFAULT_NAV: DEFAULT_NAV,

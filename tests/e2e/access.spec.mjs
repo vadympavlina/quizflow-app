@@ -84,13 +84,13 @@ test("вимкнені «Ігри» й «Експорт» прибирають �
   await expect(page.locator("#dx-q")).toBeVisible();
   await expect(page.locator('#dx-q [data-dx="game"]')).toBeHidden();
   for (const el of await page.locator('[data-dx="game"]').all()) await expect(el).toBeHidden();
-  await expect(page.locator(".ni-live")).toBeHidden();
   await expect(page.locator('#dx-q [data-dx="test"]')).toBeVisible();          // посилання лишається
   await page.goto("/tests");
   await expect(page.locator(".t-edit-btn[data-act=link], .t-lb[data-act=link]").first()).toBeVisible();
   for (const el of await page.locator('[data-act="live"]').all()) await expect(el).toBeHidden();
   await page.goto("/attempts");
   await expect(page.locator('[data-aact="export"]').first()).toBeHidden();
+  await expect(page.locator("#qtb-extras .qtb-btn", { hasText: "Експорт" })).toBeHidden();
   await page.goto("/gradebook");
   await expect(page.locator("#gb-export-csv")).toBeHidden();
   expect(errors).toEqual([]);
@@ -121,4 +121,97 @@ test("екран результатів гри: без «Експорту» і �
   await page.goto("/live/podium?code=12345678");
   await expect(page.locator("#again-btn")).toBeHidden();
   await expect(page.locator("#csv-btn")).toBeHidden();
+});
+
+// ── Нова модель дозволів (settings/features.v = 2) ─────────────────────────────
+const v2 = (roles, extra = {}, user = {}) => {
+  const d = rich(Date.now());
+  d.users.t1 = { ...d.users.t1, customRoleIds: { r: true }, ...user };
+  d.roles = { r: { name: "Роль" } };
+  d.settings = { features: { v: 2, roles: { r: { perms: roles } }, ...extra } };
+  return d;
+};
+const GAMES_ONLY = { "tests.view": false, "tests.edit": false, "tests.import": false, "tests.share": false, "links.manage": false, "links.view": false, "games.run": true };
+const TESTS_ONLY = { "games.run": false, "games.history": false, "online.view": false };
+
+test("роль «лише ігри»: сторінки тестів немає, а гру запустити можна", async ({ page, errors }) => {
+  await seed(page, v2(GAMES_ONLY), "t1");
+  await page.goto("/");
+  await expect(page.locator("#dx-q")).toBeVisible();
+  await expect(page.locator('#dx-q [data-dx="game"]')).toBeVisible();
+  await expect(page.locator('[data-dx="new"]').first()).toBeHidden();
+  await expect(page.locator('#dx-q [data-dx="test"]')).toBeHidden();
+  await expect(page.locator('#dx-q a[href="tests"]')).toBeHidden();
+  await expect(page.locator("#sb-new")).toBeHidden();
+  await expect(page.locator("#sidebar a[data-page=tests]")).toHaveCount(0);
+  await expect(page.locator("#sidebar a[data-page=links]")).toHaveCount(0);
+  await expect(page.locator("#sidebar a[data-page=history]")).toBeVisible();
+  // тести для вибору гри лишаються
+  await expect(page.locator(".dx-card.t")).toBeVisible();
+  for (const el of await page.locator('.dx-card.t [data-dxa="edit"], .dx-card.t [data-dxa="link"]').all()) await expect(el).toBeHidden();
+  await page.goto("/tests");
+  await expect(page.locator("#qf-noaccess")).toBeVisible();
+  await page.goto("/constructor?id=x");
+  await expect(page.getByText("Конструктор недоступний")).toBeVisible();
+  await page.goto("/links");
+  await expect(page.locator("#qf-noaccess")).toBeVisible();
+  expect(errors.filter(e => !/no-access|Немає доступу/.test(e))).toEqual([]);
+});
+
+test("роль «лише тести»: ігор і моніторингу немає", async ({ page, errors }) => {
+  await seed(page, v2(TESTS_ONLY), "t1");
+  await page.goto("/");
+  await expect(page.locator("#dx-q")).toBeVisible();
+  await expect(page.locator('#dx-q [data-dx="game"]')).toBeHidden();
+  await expect(page.locator("#sidebar a[data-page=history]")).toHaveCount(0);
+  await expect(page.locator(".ni-live")).toBeHidden();
+  await expect(page.locator('#dx-q [data-dx="test"]')).toBeVisible();
+  await page.goto("/game-history");
+  await expect(page.locator("#qf-noaccess")).toBeVisible();
+  await page.goto("/live?x=1");
+  await expect(page.getByText("Live-моніторинг недоступний")).toBeVisible();
+  await page.goto("/live/setup?testId=T1");
+  await expect(page.getByText("Ця дія недоступна")).toBeVisible();
+  expect(errors.filter(e => !/no-access|Немає доступу|Ця дія|Live-моніторинг/.test(e))).toEqual([]);
+});
+
+test("режим «лише перегляд»: сторінки відкриваються, дій зі змінами немає, є пояснення", async ({ page, errors }) => {
+  await seed(page, v2({}, {}, { readOnly: true }), "t1");
+  await page.goto("/tests");
+  await expect(page.locator("#qf-noaccess")).toHaveCount(0);
+  await expect(page.locator("#qf-readonly")).toBeVisible();
+  await expect(page.locator("#t-new-test")).toBeHidden();
+  for (const el of await page.locator('[data-act="live"], [data-act="link"]').all()) await expect(el).toBeHidden();
+  await page.goto("/constructor?id=x");
+  await expect(page.getByText("Конструктор недоступний")).toBeVisible();
+  await page.goto("/attempts");
+  await expect(page.locator("#qtb-extras .qtb-btn", { hasText: "Експорт" })).toBeVisible();   // експорт — це перегляд
+  expect(errors.filter(e => !/no-access|Немає доступу/.test(e))).toEqual([]);
+});
+
+test("особисте налаштування сильніше за роль", async ({ page }) => {
+  await seed(page, v2({ "games.run": false }, {}, { features: { perms: { "games.run": true } } }), "t1");
+  await page.goto("/");
+  await expect(page.locator('#dx-q [data-dx="game"]')).toBeVisible();
+});
+
+test("дозволи з кешу працюють одразу, без мерехтіння меню", async ({ page }) => {
+  await seed(page, v2(GAMES_ONLY), "t1");
+  await page.goto("/");
+  await expect(page.locator("#sidebar a[data-page=history]")).toBeVisible();
+  const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("qf_perms_cache")));
+  expect(cached.perms["tests.view"]).toBe(false);
+  expect(cached.perms["games.run"]).toBe(true);
+});
+
+test("без дозволу на AI у конструкторі немає генерації питань", async ({ page, errors }) => {
+  const d = v2({ ai: false });
+  await seed(page, d, "t1");
+  await page.goto("/constructor?id=T2");
+  await expect(page.locator(".tb")).not.toHaveCount(0);
+  for (const el of await page.locator('[data-act="ai"]').all()) await expect(el).toBeHidden();
+  await seed(page, v2({}), "t1");
+  await page.goto("/constructor?id=T2");
+  await expect(page.locator('.tb[data-act="ai"]')).toBeVisible();
+  expect(errors).toEqual([]);
 });

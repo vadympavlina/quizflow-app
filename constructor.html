@@ -728,7 +728,7 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { trackAI, tokensOf } from "./shared/ai-usage.js?v=3";
-import { loadCaps, assertAiQuota, CAP_FLAGS } from "./shared/caps.js?v=3";
+import { loadCaps, assertAiQuota, CAP_FLAGS } from "./shared/caps.js?v=4";
 
 // ═══════════════════════════════════════════════════════════════════════
 // FIREBASE + AUTH
@@ -750,7 +750,22 @@ const UID = user.uid;
 const tp  = p => `teachers/${UID}/${p}`;
 // Можливості й ліміти з адмінки (імпорт, AI на місяць) — у фоні
 let CAPS = null;
-get(ref(db, `users/${UID}`)).then(s => loadCaps(db, s.val() || {})).then(c => { CAPS = c; }).catch(() => {});
+{
+  const prof = (await get(ref(db, `users/${UID}`)).catch(() => null))?.val() || {};
+  CAPS = await loadCaps(db, { ...prof, role: prof.role || "teacher" }).catch(() => null);
+  // AI вимкнено — кнопки генерації не показуємо
+  if (CAPS && CAPS.perms.ai === false) { const st = document.createElement("style"); st.textContent = '[data-act="ai"],.tb.ai{display:none!important}'; document.head.appendChild(st); }
+  // Конструктор відкривається лише тим, кому можна створювати й редагувати тести
+  if (CAPS && CAPS.perms["tests.edit"] === false) {
+  document.body.innerHTML = `<div style="min-height:100vh;display:grid;place-items:center;padding:24px;font-family:Manrope,system-ui,sans-serif;background:#EEF2FB;text-align:center">
+    <div style="max-width:380px"><div style="width:56px;height:56px;margin:0 auto 16px;border-radius:16px;display:grid;place-items:center;background:#fff;color:#5B6577"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <h1 style="font-size:20px;font-weight:800;margin:0 0 8px;color:#0F1C47">Немає доступу</h1>
+    <p style="font-size:14px;line-height:1.6;color:#5B6577;margin:0 0 20px">Конструктор недоступний для вашої ролі. Якщо він вам потрібен, зверніться до адміністратора.</p>
+    <a href="./" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:12px;background:#2D5BE3;color:#fff;font-weight:700;text-decoration:none">На головну</a></div></div>`;
+  throw new Error("no-access");
+
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // ДОВІДНИКИ
@@ -1414,11 +1429,12 @@ const aiReady = (async () => {
     if (t?.exists() && t.val().aiGeneration !== undefined) AI.gen = t.val().aiGeneration !== false;
   } catch (e){ console.warn("AI settings:", e.message); }
 })();
-const aiBlocked = () => !AI.enabled ? "AI вимкнено адміністратором." : !AI.gen ? "Генерацію питань вимкнено адміністратором." : "";
+const aiBlocked = () => CAPS?.perms?.ai === false ? "AI-функції недоступні для вашого акаунта." : !AI.enabled ? "AI вимкнено адміністратором." : !AI.gen ? "Генерацію питань вимкнено адміністратором." : "";
 
 const UA_SYSTEM = "Ти — розумний асистент викладача. ОБОВ'ЯЗКОВО відповідай ВИКЛЮЧНО українською мовою. Жодних інших мов, ієрогліфів або нерозпізнаного тексту.";
 // Обгортка: рахуємо кожне звернення (успіх / помилка) для адмінки
 async function callAI(prompt, maxTokens = 800, temperature = .5){
+  if (CAPS?.perms?.ai === false) throw Object.assign(new Error("AI-функції недоступні для вашого акаунта."), { code: "qf/ai-off" });
   await assertAiQuota(db, UID, CAPS?.limits?.aiPerMonth);   // ліміт з адмінки → «Можливості»
   try {
     const { text, data } = await callAIRaw(prompt, maxTokens, temperature);
