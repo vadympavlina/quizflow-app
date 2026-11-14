@@ -57,6 +57,9 @@ export const SND={ctx:null,on:(()=>{try{return localStorage.getItem("qf_snd")!==
   const b=this.ctx.createBuffer(1,this.ctx.sampleRate,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;this.nb=b}catch(e){this.ctx=null}}
   if(this.ctx&&this.ctx.state==="suspended")this.ctx.resume().catch(()=>{})},
  ok(){return this.on&&this.ctx&&this.ctx.state==="running"},
+ // Створює аудіо одразу й чекає, поки браузер дозволить звук (після кліку на попередній сторінці того ж сайту дозволяє одразу).
+ // true — звук піде; false — браузер блокує (сторінку відкрили напряму, iOS), тоді звук з'явиться після першого дотику.
+ async ready(ms){this.init();const c=this.ctx;if(!c)return false;if(c.state!=="running"){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,ms||400))])}catch{}}return c.state==="running"},
  begin(){this.t0=this.ctx?this.ctx.currentTime+.08:0},
  osc(type,f0,f1,ms,dur,vol){if(!this.ok())return;const c=this.ctx,t=this.t0+ms/1000,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1!==f0)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(this.bus);o.start(t);o.stop(t+dur+.05)},
  noise(ms,dur,vol,f0,f1,type,q,rise){if(!this.ok())return;const c=this.ctx,t=this.t0+ms/1000,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=this.nb;s.loop=true;f.type=type||"bandpass";f.Q.value=q||1;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);if(rise){g.gain.exponentialRampToValueAtTime(vol,t+dur*.92);g.gain.exponentialRampToValueAtTime(.0001,t+dur)}else{g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur)}s.connect(f);f.connect(g);g.connect(this.bus);s.start(t);s.stop(t+dur+.05)},

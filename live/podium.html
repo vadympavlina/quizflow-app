@@ -28,7 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="modulepreload" href="live-core.js?v=9">
-<link rel="modulepreload" href="results-fx.js?v=1">
+<link rel="modulepreload" href="results-fx.js?v=2">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -110,7 +110,7 @@ import {
   db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
   esc, standings, plural, fmtNum, HOME_URL, serverNow,
 } from "./live-core.js?v=9";
-import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, reduced, POP, EO } from "./results-fx.js?v=1";
+import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, reduced, POP, EO } from "./results-fx.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -202,7 +202,7 @@ const sndLabel = () => { $("snd-btn").textContent = SND.on ? "Звук: вкл" 
 sndLabel();
 $("snd-btn").addEventListener("click", () => { SND.toggle(); sndLabel(); });
 addEventListener("pointerdown", () => SND.init(), { once: true });
-$("replay-btn").addEventListener("click", () => { SND.init(); run(); });
+$("replay-btn").addEventListener("click", async () => { await SND.ready(150); run(); });   // resume() асинхронний: без очікування перший повтор мовчав
 
 // ── Церемонія: 3 → 2 → 1 ──
 function run() {
@@ -239,7 +239,12 @@ function run() {
   });
   // Клік по екрану анімацію НЕ перериває: її легко скасувати випадково, а переглянути ще раз можна кнопкою «Показати ще раз»
 }
-(document.fonts?.ready || Promise.resolve()).then(() => requestAnimationFrame(run));
+// Звук: аудіо створюється одразу, а не на першому кліку (раніше церемонія без кліку йшла мовчки). Якщо браузер блокує звук
+// (сторінку відкрили напряму), церемонія йде без нього, а підказка пояснює, як його почути.
+Promise.all([document.fonts?.ready || Promise.resolve(), SND.ready(150)]).then(([, audioOk]) => {
+  requestAnimationFrame(run);
+  if (!audioOk && SND.on && list.length) setTimeout(() => toast("Щоб почути звук, натисніть «Показати ще раз»"), 1200);
+});
 
 // CSV для Excel: BOM + «;» (українська локаль). На відміну від історії ігор,
 // тут є розбір по кожному питанню — кімната ще зберігає всі відповіді.
