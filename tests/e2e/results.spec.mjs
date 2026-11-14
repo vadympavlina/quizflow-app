@@ -113,10 +113,8 @@ test("фінал: клік мишкою не переривав анімацію
   await page.setViewportSize({ width: 1280, height: 800 });
   await seed(page, dbWith(room("speed")), "t1");
   await page.goto("/live/podium?code=12345678");
-  await page.waitForTimeout(500);
   const running = () => page.evaluate(() => document.getAnimations().filter(a => a.playState === "running").length);
-  const before = await running();
-  expect(before, "анімація йде").toBeGreaterThan(0);
+  await expect.poll(running, { message: "анімація стартує", timeout: 4000 }).toBeGreaterThan(0);
   // кліки по різних місцях екрана, у тому числі по самому плакату
   for (const [x, y] of [[300, 300], [900, 200], [640, 700], [1100, 500]]) { await page.mouse.click(x, y); await page.waitForTimeout(60); }
   expect(await running(), "після кліків анімація досі йде").toBeGreaterThan(0);
@@ -130,5 +128,33 @@ test("фінал: клік мишкою не переривав анімацію
   await page.locator("#replay-btn").click();
   await page.waitForTimeout(300);
   expect(await running()).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
+// Звук фіналу: Web Audio не стартує без жесту користувача. Рахуємо створені осцилятори — це і є озвучення церемонії.
+const countOsc = () => { window.__osc = 0; const P = (window.BaseAudioContext || window.AudioContext).prototype, o = P.createOscillator; P.createOscillator = function () { window.__osc++; return o.apply(this, arguments); }; };
+
+test("фінал: після кліку на попередній сторінці церемонія йде зі звуком сама, без нового кліку", async ({ page, errors }) => {
+  await page.addInitScript(countOsc);
+  await seed(page, dbWith(room("speed")), "t1");
+  await page.mouse.click(5, 5);                                            // користувач щойно клікав (кнопка гри)
+  await page.evaluate(() => { location.href = "/live/podium?code=12345678"; });
+  await page.waitForTimeout(3500);
+  expect(await page.evaluate(() => window.__osc), "звуки церемонії створюються").toBeGreaterThan(0);
+  await expect(page.getByText("Щоб почути звук")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("фінал: сторінку відкрито напряму (браузер блокує звук) — підказка, а після «Показати ще раз» звук є", async ({ page, errors }) => {
+  await page.addInitScript(countOsc);
+  await seed(page, dbWith(room("speed")), "t1");
+  await page.goto("/live/podium?code=12345678");
+  await expect(page.getByText("Щоб почути звук")).toBeVisible({ timeout: 4000 });
+  expect(await page.evaluate(() => window.__osc), "без жесту звуку немає").toBe(0);
+  await page.mouse.move(600, 300); await page.mouse.move(620, 310);
+  await page.waitForTimeout(600);
+  await page.locator("#replay-btn").click();
+  await page.waitForTimeout(2500);
+  expect(await page.evaluate(() => window.__osc), "після кліку звук пішов").toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
