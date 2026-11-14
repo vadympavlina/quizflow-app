@@ -984,8 +984,8 @@ function buildTestCard(t, idx, stats, showFolder){
     <div class="t-qc-foot">
       <span class="t-qc-date"${t.createdAt ? ` title="Створено ${_fmtDate(t.createdAt)}"` : ""}>${t.createdAt ? _fmtDate(t.createdAt) : ""}</span>
       <div class="t-qc-foot-actions">
-        <button class="t-edit-btn" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
-        <button class="t-edit-btn live" data-act="live" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
+        <button class="t-edit-btn" data-act="link" data-needs="links" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+        <button class="t-edit-btn live" data-act="live" data-needs="games" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
         <button class="t-menu-btn" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій">${I.more}</button>
       </div>
     </div>
@@ -1005,8 +1005,8 @@ function buildTestRow(t, idx, stats, showFolder){
       <div class="t-row-sub">${dot}${sub}</div>
     </div>
     <div class="t-la">
-      <button class="t-lb" data-act="link" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
-      <button class="t-lb live" data-act="live" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
+      <button class="t-lb" data-act="link" data-needs="links" data-id="${esc(t.id)}" title="Нове посилання для студентів">${I.link}Посилання</button>
+      <button class="t-lb live" data-act="live" data-needs="games" data-id="${esc(t.id)}" title="Запустити гру наживо">${I.play}Гра</button>
       <button class="t-lb edit" data-act="edit" data-id="${esc(t.id)}" title="Редагувати" aria-label="Редагувати">${I.edit}<span class="t-lb-t">Редагувати</span></button>
       <button class="t-lb icon" data-act="menu" data-id="${esc(t.id)}" aria-haspopup="menu" aria-label="Більше дій" title="Більше дій">${I.more}</button>
     </div>
@@ -1146,7 +1146,8 @@ function _openTMenu(anchor, html){
   m.querySelector("[data-act]:not([disabled])")?.focus({ preventScroll: true });
 }
 function _testMenuHtml(t){
-  const it = (act, icon, label, extra = "") => `<button class="t-fm-item${extra}" role="menuitem" data-act="${act}" data-id="${esc(t.id)}">${icon}<span>${label}</span></button>`;
+  const NEED = { edit: "tests", link: "links", live: "games", "live-setup": "games", move: "tests", dup: "tests", share: "tests", delete: "tests" };
+  const it = (act, icon, label, extra = "") => `<button class="t-fm-item${extra}" role="menuitem" data-act="${act}" data-id="${esc(t.id)}"${NEED[act] ? ` data-needs="${NEED[act]}"` : ""}>${icon}<span>${label}</span></button>`;
   return `<div class="t-fm-head" title="${esc(t.title)}">${esc(t.title)}</div>
     ${it("edit", I.edit, "Редагувати")}
     ${it("link", I.link, "Нове посилання для студентів")}

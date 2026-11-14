@@ -224,10 +224,10 @@
       "</button>" +
       '<nav class="sb-scroll">' + sections + "</nav>" +
       '<div class="sb-bottom">' +
-        '<button type="button" class="sb-new" id="sb-new" onclick="sbNewTest()" data-tip="Новий тест" aria-label="Новий тест">' +
+        '<button type="button" class="sb-new" id="sb-new" data-needs="tests" onclick="sbNewTest()" data-tip="Новий тест" aria-label="Новий тест">' +
           icon("plus", 2.4) + '<span class="sb-new-t">Новий тест</span></button>' +
         '<div class="sb-icon-strip">' +
-          '<a href="live" target="_blank" rel="noopener" data-tip="Live-моніторинг (нова вкладка)" aria-label="Live-моніторинг (нова вкладка)" class="ni ni-live">' +
+          '<a href="live" target="_blank" rel="noopener" data-tip="Live-моніторинг (нова вкладка)" aria-label="Live-моніторинг (нова вкладка)" class="ni ni-live" data-needs="games">' +
             '<span class="sb-ico">' + icon("zap") + '</span><span class="ni-label">Live</span></a>' +
           '<a href="https://admin.quizflow.space/" id="admin-panel-btn" target="_blank" rel="noopener" data-tip="Адмін-панель (нова вкладка)" aria-label="Адмін-панель (нова вкладка)" class="ni ni-admin"' + (isAdmin ? "" : " hidden") + ">" +
             '<span class="sb-ico">' + icon("shield") + '</span><span class="ni-label">Адмін</span></a>' +
@@ -317,6 +317,7 @@
     setActive(state.active);
     watchBadges(sb);
     mountTopbar(); syncTopbar(); syncBell();
+    document.dispatchEvent(new Event("qf:access"));
     return sb;
   }
 
@@ -638,7 +639,28 @@
   }
   window.addEventListener("pageshow", function () { setOpen(false); });
 
+  // Чи може поточний користувач відкрити сторінку (id пункту меню). Пункт з roleIds бачать лише ці
+  // ролі й адміністратор; прихований у меню (enabled:false) пункт не блокуємо — це лише меню.
+  function canOpen(pageId) {
+    var nav = state.nav || readJson(NAV_CACHE_KEY) || DEFAULT_NAV;
+    var user = state.user || {};
+    if (user.role === "admin") return true;
+    for (var i = 0; i < nav.length; i++) {
+      var items = Array.isArray(nav[i] && nav[i].items) ? nav[i].items : [];
+      for (var j = 0; j < items.length; j++) {
+        var it = items[j];
+        if (!it || it.id !== pageId || it.protected) continue;
+        if (Array.isArray(it.roleIds) && it.roleIds.length > 0) {
+          var mine = user.customRoleIds || [];
+          return it.roleIds.some(function (r) { return mine.indexOf(r) >= 0; });
+        }
+      }
+    }
+    return true;
+  }
+
   window.QFNav = {
+    canOpen: canOpen,
     render: render, setUser: setUser, setNav: setNav, setActive: setActive,
     setCollapsed: setCollapsed, isCollapsed: function () { return collapsed; },
     DEFAULT_NAV: DEFAULT_NAV,

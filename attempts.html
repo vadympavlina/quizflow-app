@@ -29,8 +29,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=58">
-<link rel="modulepreload" href="shared/app.js?v=41">
-<link rel="modulepreload" href="shared/features.js?v=50">
+<link rel="modulepreload" href="shared/app.js?v=42">
+<link rel="modulepreload" href="shared/features.js?v=51">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    СПРОБИ — scoped під #sec-attempts. Дропдауни — qfDrop (shared/styles.css)
@@ -228,7 +228,7 @@
 @media (max-width:1023px){#sec-attempts .f-row{flex-wrap:nowrap}#sec-attempts .f-row .search-wrap{flex:1 1 0;min-width:0;max-width:none;width:auto}}
 </style>
 
-<script src="shared/nav.js?v=33"></script>
+<script src="shared/nav.js?v=34"></script>
 <main class="main">
 
   <div class="sec on" id="sec-attempts">
@@ -239,7 +239,7 @@
         <p id="att-count-label">Усі проходження тестів студентами · оновлюється в реальному часі</p>
       </div>
       <div class="pt-r">
-        <button class="l-btn" data-aact="export" data-qtb title="Завантажити спроби за поточним фільтром">
+        <button class="l-btn" data-aact="export" data-needs="export" data-qtb title="Завантажити спроби за поточним фільтром">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Експорт CSV
         </button>
@@ -283,7 +283,7 @@
 
       <div class="bulk" id="att-bulk" hidden>
         <span id="att-bulk-n"></span><span class="grow"></span>
-        <button data-aact="bulk-export">Експорт CSV</button>
+        <button data-aact="bulk-export" data-needs="export">Експорт CSV</button>
         <button class="danger" data-aact="bulk-del">Видалити</button>
         <button data-aact="bulk-clear">Зняти виділення</button>
       </div>
@@ -317,8 +317,8 @@
 <div id="modals-root"></div>
 
 <script type="module">
-const { initApp } = await import("./shared/app.js?v=41");
-const featuresP = import("./shared/features.js?v=50");
+const { initApp } = await import("./shared/app.js?v=42");
+const featuresP = import("./shared/features.js?v=51");
 
 window.showSec = function(name){
   const pageMap = { dashboard: "./", tests: "tests", attempts: "attempts", links: "links", analytics: "analytics", gradebook: "gradebook",
