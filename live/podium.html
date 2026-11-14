@@ -110,7 +110,7 @@ import {
   db, ref, get, update, requireTeacher, readParams, isValidCode, fatal, toast,
   esc, standings, plural, fmtNum, HOME_URL, serverNow,
 } from "./live-core.js?v=9";
-import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, finishAll, reduced, POP, EO } from "./results-fx.js?v=1";
+import { A, SND, NOTE, split, odo, letters, odometer, fade, flash, shake, rings, cancelAll, reduced, POP, EO } from "./results-fx.js?v=1";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -237,7 +237,7 @@ function run() {
     A(r, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 500, delay: after + i * 70 });
     A(r.querySelector(".f"), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 1100, delay: after + 200 + i * 70, easing: "cubic-bezier(.2,.8,.2,1)" });
   });
-  Tel.onclick = e => { if (!e.target.closest(".acts")) finishAll(); };
+  // Клік по екрану анімацію НЕ перериває: її легко скасувати випадково, а переглянути ще раз можна кнопкою «Показати ще раз»
 }
 (document.fonts?.ready || Promise.resolve()).then(() => requestAnimationFrame(run));
 

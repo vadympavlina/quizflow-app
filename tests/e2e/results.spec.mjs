@@ -108,3 +108,27 @@ test("фінал: усі, хто ділить місце, видно по іме
   expect(await page.evaluate(() => { const t = document.querySelector(".p.w .tied"); return t.scrollWidth <= t.clientWidth + 2; }), "імена не вилазять вбік").toBe(true);
   expect(errors).toEqual([]);
 });
+
+test("фінал: клік мишкою не переривав анімацію (її не можна скасувати випадково), «Показати ще раз» запускає знову", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seed(page, dbWith(room("speed")), "t1");
+  await page.goto("/live/podium?code=12345678");
+  await page.waitForTimeout(500);
+  const running = () => page.evaluate(() => document.getAnimations().filter(a => a.playState === "running").length);
+  const before = await running();
+  expect(before, "анімація йде").toBeGreaterThan(0);
+  // кліки по різних місцях екрана, у тому числі по самому плакату
+  for (const [x, y] of [[300, 300], [900, 200], [640, 700], [1100, 500]]) { await page.mouse.click(x, y); await page.waitForTimeout(60); }
+  expect(await running(), "після кліків анімація досі йде").toBeGreaterThan(0);
+  // сама доходить до кінця
+  await page.waitForTimeout(9000);
+  expect(await running()).toBe(0);
+  await expect(page.locator(".p.w .nm")).toBeVisible();
+  // повторний показ запускається кнопкою
+  await page.mouse.move(700, 300); await page.mouse.move(720, 310);   // кнопки ховаються, коли ними не користуються; рух миші повертає
+  await page.waitForTimeout(600);
+  await page.locator("#replay-btn").click();
+  await page.waitForTimeout(300);
+  expect(await running()).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
