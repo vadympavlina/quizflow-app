@@ -383,6 +383,7 @@ const _NF_ICO = {
   shot:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
   shared:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
   pending:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>`,
+  lock:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
   done:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
   bell:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></svg>`,
 };
@@ -392,6 +393,7 @@ const _NF_ICO = {
 function _nfView(n, aMap){
   const a = n.attemptId ? aMap.get(n.attemptId) : null;
   const kind = n.sharedTestId ? "shared"
+    : n.type === "access" ? "access"
     : n.type === "screenshot" ? "screenshot"
     : (n.type === "completed" || n.type === "new") ? "completed"
     : n.type === "started" ? "started" : "other";
@@ -426,6 +428,11 @@ function _nfView(n, aMap){
     lv = "bad"; tag = "Скріншот"; ico = _NF_ICO.shot;
     title = a ? `<b>${who}</b> зробив(ла) скріншот` : _nfTxt(n.title);
     text = _nfTxt(n.desc || n.msg);
+  } else if (kind === "access") {
+    // Адміністратор змінив роль, дозволи чи режим акаунта
+    tag = "Доступ"; lv = "warn"; ico = _NF_ICO.lock;
+    title = _nfTxt(n.title) || "Змінено ваш доступ";
+    text = _nfTxt(n.msg || n.desc);
   } else if (kind === "shared") {
     tag = "Від колеги"; ico = _NF_ICO.shared;
     title = _nfTxt(n.title) || "Вам надіслали тест";

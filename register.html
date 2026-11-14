@@ -249,7 +249,10 @@ $("regF").addEventListener("submit", async e => {
     await A.setPersistence(auth, A.browserLocalPersistence);
     cred = await A.createUserWithEmailAndPassword(auth, email, pass);
     const uid = cred.user.uid;
-    await set(ref(db, `users/${uid}`), { name, surname, email, role: "teacher", createdAt: Date.now(), blocked: false, inviteToken: token });
+    // Ролі, які адміністратор призначив у запрошенні: правила бази пропускають лише їх
+    const tr = t.val().roleIds && typeof t.val().roleIds === "object" ? t.val().roleIds : {};
+    const customRoleIds = Object.fromEntries(Object.keys(tr).filter(k => tr[k] === true).map(k => [k, true]));
+    await set(ref(db, `users/${uid}`), { name, surname, email, role: "teacher", createdAt: Date.now(), blocked: false, inviteToken: token, ...(Object.keys(customRoleIds).length ? { customRoleIds } : {}) });
     await update(ref(db, `invite_tokens/${token}`), { used: true, usedAt: Date.now(), usedBy: uid });
     try { await A.updateProfile?.(cred.user, { displayName: `${name} ${surname}` }); } catch {}
     try { localStorage.setItem("qf_last_email", email); localStorage.setItem("qf_signed_in", "1"); } catch {}
