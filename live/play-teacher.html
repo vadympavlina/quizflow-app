@@ -212,6 +212,21 @@
   button:focus-visible,input:focus-visible{outline:2px solid #FDE047;outline-offset:2px}
   @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important} }
   @media (max-width: 1100px){ .reveal-grid{grid-template-columns:1fr} }
+  /* Розкриття на широкому екрані (16:9): результати праворуч від варіантів, а не під ними, тож усе вміщується без прокрутки.
+     Блок зарахування й лідери займають лишок висоти й прокручуються всередині, а не роблять сторінку вищою. */
+  @media (min-width: 1101px){
+    .stage.revealed{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);grid-template-rows:auto auto minmax(0,1fr) auto;column-gap:22px;overflow:hidden}
+    .stage.revealed > .pause-banner,.stage.revealed > .meta-row,.stage.revealed > .question-text{grid-column:1/-1}
+    .revealed .answers{grid-column:1;grid-row:3;margin:0;max-width:none;height:100%;min-height:0;grid-auto-rows:minmax(0,150px);align-content:center}
+    .revealed .key-line{grid-column:1;grid-row:4;margin:14px 0 0;max-width:none}
+    .revealed .reveal-grid{margin:0;max-width:none;min-height:0;height:100%;align-items:stretch;grid-row:3 / span 2}
+    .revealed .reveal-grid.no-grading{grid-column:2;grid-template-columns:1fr}
+    .revealed .reveal-grid:not(.no-grading){grid-column:1 / -1;grid-template-columns:minmax(0,1fr) minmax(320px,380px)}
+    .reveal-grid .panel{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+    .reveal-grid .groups{flex:1 1 0;min-height:0;max-height:none}
+    .reveal-grid .leaders{flex:1 1 0;min-height:0;overflow:hidden}
+    .revealed .ans .count{font-size:clamp(18px,1.7vw,28px)}
+  }
   @media (max-width: 760px){
     .answers{grid-template-columns:1fr !important}
     .stage,.topbar{padding-left:16px;padding-right:16px}
@@ -550,7 +565,9 @@ function refit() {
   qt.classList.toggle("small", len > 160);
   const nOpts = (questions[shownQ].options || []).length;
   // Чим більше варіантів, тим менше місця лишається для питання
-  const qShare = isFreeform(questions[shownQ]) ? 0.34 : nOpts >= 5 ? 0.2 : 0.25;
+  let qShare = isFreeform(questions[shownQ]) ? 0.34 : nOpts >= 5 ? 0.2 : 0.25;
+  // Розкриття на широкому екрані: поруч з'являються результати, питанню лишаємо менше висоти
+  if (innerWidth > 1100 && $("stage").classList.contains("revealed")) qShare = Math.min(qShare, 0.2);
   fitText(qt, { max: innerWidth < 640 ? 32 : 64, min: 20, maxHeight: innerHeight * qShare + imgH });
   // Висоту клітинки задає екран, тож шрифт підбираємо під неї
   const txts = document.querySelectorAll("#answers-grid .ans .txt");
@@ -558,7 +575,16 @@ function refit() {
   const room = cell ? cell.clientHeight - (parseFloat(getComputedStyle(cell).paddingTop) || 0) * 2 : 0;
   if (txts.length) fitGroup(txts, { max: innerWidth < 760 ? 22 : innerWidth >= 1600 ? 46 : 32, min: 11, maxHeight: Math.max(24, room) });
 }
-onRefit(refit, $("q-text"));
+// Лідери, що не вміщуються по висоті, ховаємо цілими рядками (не різати посередині й не прокручувати сторінку)
+function trimLeaders() {
+  const box = $("leaders");
+  const rows = [...box.querySelectorAll(".lr")];
+  rows.forEach(r => { r.style.display = ""; });
+  if (!rows.length || getComputedStyle(box).overflow !== "hidden") return;
+  const bottom = box.getBoundingClientRect().bottom;
+  rows.forEach((r, i) => { if (i > 0 && r.getBoundingClientRect().bottom > bottom + 1) r.style.display = "none"; });
+}
+onRefit(() => { refit(); trimLeaders(); }, $("q-text"));
 
 // Кого чекаємо: гравці онлайн + ті, хто вже відповів (навіть якщо потім вийшов).
 // Учні, що закрили вкладку, більше не блокують автоматичне розкриття.
@@ -608,6 +634,8 @@ function renderReveal() {
       ? `<span class="kl">${correct.length === 1 ? "Правильна відповідь" : "Правильні відповіді"}</span>` + correct.map(i =>
           `<span class="kchip"><b>${OPT_LETTERS[i]}</b><span>${esc(q.options?.[i] ?? "")}</span></span>`).join("")
       : "";
+    // Довгу правильну відповідь повторювати рядком під варіантами не треба: вона вже підсвічена, а місце потрібне варіантам
+    $("key-line").style.display = correct.some(i => String(q.options?.[i] ?? "").length > 60) ? "none" : "";
     $("reveal-grid").classList.add("no-grading");
   } else {
     $("reveal-grid").classList.remove("no-grading");
@@ -616,7 +644,7 @@ function renderReveal() {
   const graded = entries.filter(a => typeof a.isCorrect === "boolean");
   $("footer-acc").textContent = graded.length ? Math.round(graded.filter(a => a.isCorrect).length / graded.length * 100) + "%" : "—";
   renderLeaders();
-  if (firstReveal) refit();   // з'явились лічильники — місця для тексту менше
+  if (firstReveal) { refit(); trimLeaders(); }   // з'явились лічильники — місця для тексту менше
 }
 
 // Ручна перевірка текстових / числових відповідей. Групуємо за нормалізованим
@@ -700,6 +728,7 @@ function renderLeaders() {
       <span class="s">${fmtNum(p.score)}</span>
     </div>`;
   }).join("") : `<div class="muted">Немає гравців</div>`;
+  trimLeaders();
 }
 
 // «Точність»: замість лідерів — результат класу за поточне питання
