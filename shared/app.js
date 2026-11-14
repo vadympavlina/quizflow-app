@@ -96,6 +96,26 @@ export const capsReady = loadCaps(db, { ..._user, features: _userDb.features, re
   window.QFNav?.setPerms?.(c.perms);
   return c;
 }).catch(() => null);
+// Повернувся на вкладку: адміністратор міг змінити доступ, поки сторінка була відкрита.
+// Перечитуємо профіль і дозволи (не частіше ніж раз на 30 с); якщо сторінка закрилась, показуємо пояснення.
+let _capsAt = Date.now();
+async function refreshCaps() {
+  if (Date.now() - _capsAt < (window.QF_CAPS_REFRESH_MS ?? 30000)) return;
+  _capsAt = Date.now();
+  try {
+    const prof = (await get(ref(db, `users/${_user.id}`))).val() || {};
+    if (prof.blocked === true) { location.reload(); return; }
+    const roleIds = prof.customRoleIds && typeof prof.customRoleIds === "object" ? Object.keys(prof.customRoleIds).filter(k => prof.customRoleIds[k]) : (prof.customRoleId ? [prof.customRoleId] : []);
+    const c = await loadCaps(db, { ..._user, customRoleIds: roleIds, features: prof.features, readOnly: prof.readOnly });
+    window.QF_CAPS = c;
+    try { localStorage.setItem(PERMS_KEY, JSON.stringify({ id: _user.id, perms: c.perms, readOnly: c.readOnly })); } catch {}
+    window.QFNav?.setPerms?.(c.perms);
+    document.dispatchEvent(new Event("qf:access"));
+    const page = document.body.dataset.page || window.QF_PAGE;
+    if (page && typeof recheckAccess === "function") recheckAccess(page);
+  } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshCaps(); });
 // Ключ дозволу за назвою: сам дозвіл, id сторінки меню або старий прапорець (games, export, import)
 const permKey = need => PERMS[need] ? need : PAGE_PERMS[need] || LEGACY_FLAG_PERM[need] || null;
 // Чи можна. Поки дозволи не завантажились, беремо кеш; без кешу не блокуємо.
@@ -868,6 +888,7 @@ async function backfillIndexes(){
  * @param {Object} options — { skipData: true } якщо сторінка сама грузить
  */
 export async function initApp(pageName, options = {}) {
+  window.QF_PAGE = pageName;
   ldr(true);
   // Страховка: якщо сторінка впала до appReady(), не лишаємо її під лоадером
   const _safety = setTimeout(() => ldr(false), 12000);

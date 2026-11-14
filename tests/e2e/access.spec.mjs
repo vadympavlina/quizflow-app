@@ -215,3 +215,29 @@ test("без дозволу на AI у конструкторі немає ге�
   await expect(page.locator('.tb[data-act="ai"]')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("сповіщення «Змінено ваш доступ» від адміністратора показується у стрічці", async ({ page, errors }) => {
+  const d = rich(Date.now());
+  d.teachers.t1.notifications = { n1: { type: "access", title: "Змінено ваш доступ", msg: "Вам додано роль «Лише ігри». Сторінка «Тести» більше не доступна.", read: false, ts: Date.now() - 1000 } };
+  await seed(page, d, "t1");
+  await page.goto("/notifications");
+  await expect(page.getByText("Змінено ваш доступ")).toBeVisible();
+  await expect(page.getByText("Сторінка «Тести» більше не доступна.")).toBeVisible();
+  await expect(page.getByText("Доступ", { exact: true }).first()).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("зміна доступу в адмінці підхоплюється, коли викладач повертається на вкладку", async ({ page }) => {
+  await page.addInitScript(() => { window.QF_CAPS_REFRESH_MS = 200; });
+  await seed(page, db(["authors"]), "t1");
+  await page.goto("/tests");
+  await expect(page.locator("#qf-noaccess")).toHaveCount(0);
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("mockdb"));
+    d.users.t1.customRoleIds = { games: true };          // роль «Автори» знято
+    localStorage.setItem("mockdb", JSON.stringify(d));
+  });
+  await page.waitForTimeout(400);
+  await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
+  await expect(page.locator("#qf-noaccess")).toBeVisible({ timeout: 8000 });
+});
