@@ -94,6 +94,33 @@ window.qfCan = (flag) => {
   toast(`«${CAP_FLAGS[flag]?.label || flag}» вимкнено адміністратором`, "err");
   return false;
 };
+// Чи доступне право: id сторінки меню (tests, links, attempts…) або функція (games, export, import).
+window.qfAllowed = (need) => {
+  if (!need) return true;
+  if (CAP_FLAGS[need]) { const c = window.QF_CAPS; return !c || c.flags[need] !== false; }
+  return !window.QFNav?.canOpen || window.QFNav.canOpen(need);
+};
+// Елемент з data-needs="tests links" показуємо, лише коли дозволено все перелічене. Недоступну дію
+// не показуємо взагалі, а не відповідаємо тостом після кліку.
+window.qfApplyAccess = (root = document) => {
+  root.querySelectorAll("[data-needs]").forEach(el => {
+    const ok = el.dataset.needs.split(/\s+/).every(window.qfAllowed);
+    if (el.hidden === !ok && el.classList.contains("qf-noperm") === !ok) return;
+    el.classList.toggle("qf-noperm", !ok);
+    el.hidden = !ok;
+  });
+};
+{
+  const st = document.createElement("style");
+  st.textContent = ".qf-noperm{display:none!important}";
+  document.head.appendChild(st);
+  let raf = 0;
+  const run = () => { raf = 0; window.qfApplyAccess(); };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(run); };
+  capsReady.then(kick);
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener("qf:access", kick);
+}
 // Чи можна додати ще один об'єкт при поточній кількості current
 window.qfLimit = (key, current) => {
   const lim = window.QF_CAPS?.limits?.[key] || 0;
@@ -523,7 +550,7 @@ function ensureNavScript() {
   if (window.QFNav) return Promise.resolve();
   return new Promise(res => {
     const s = document.createElement("script");
-    s.src = new URL("./nav.js?v=17", import.meta.url).href;
+    s.src = new URL("./nav.js?v=18", import.meta.url).href;
     s.onload = s.onerror = () => res();
     document.head.appendChild(s);
   });
@@ -536,7 +563,38 @@ async function loadSidebar(activePage) {
   if (!document.getElementById("sidebar")) nav.render(null);
   nav.setActive(activePage);
   nav.setUser(_user);
-  refreshNavConfig();
+  refreshNavConfig().then(() => recheckAccess(activePage)).catch(() => {});
+  if (!pageOpen(activePage)) { showNoAccess(); throw Object.assign(new Error("Немає доступу до сторінки"), { code: "qf/no-access" }); }
+}
+
+// ─── Доступ до сторінки за роллю ───────────────────────────────────────────
+// Меню лише ховає пункт, тож сама сторінка теж питає, чи можна її відкрити.
+function pageOpen(page) { return !window.QFNav?.canOpen || window.QFNav.canOpen(page); }
+function showNoAccess() {
+  if (document.getElementById("qf-noaccess")) return;
+  ldr(false);
+  const main = document.querySelector("main.main") || document.querySelector(".main");
+  const box = document.createElement("section");
+  box.id = "qf-noaccess";
+  box.setAttribute("role", "alert");
+  box.style.cssText = "min-height:60vh;display:grid;place-items:center;padding:32px 16px;text-align:center";
+  box.innerHTML = `<div style="max-width:380px">
+    <div style="width:56px;height:56px;margin:0 auto 16px;border-radius:16px;display:grid;place-items:center;background:var(--qf-surface-3,#EEF1F7);color:var(--qf-ink-600,#5B6577)">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <h1 style="font-size:20px;font-weight:800;margin:0 0 8px">Немає доступу</h1>
+    <p style="font-size:14px;line-height:1.6;color:var(--qf-ink-600,#5B6577);margin:0 0 20px">Ця сторінка недоступна для вашої ролі. Якщо вона вам потрібна, зверніться до адміністратора.</p>
+    <a href="./" class="btn" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:12px;background:var(--qf-primary,#2D5BE3);color:#fff;font-weight:700;text-decoration:none">На головну</a></div>`;
+  if (main) {
+    // Лишаємо сам контейнер (відступ під меню й верхню смужку), ховаємо вміст сторінки
+    Array.from(main.children).forEach(c => { if (c.id !== "qtb") c.style.display = "none"; });
+    const ex = document.getElementById("qtb-extras"); if (ex) ex.style.display = "none";
+    main.append(box);
+  } else document.body.append(box);
+}
+function recheckAccess(page) {
+  const denied = !pageOpen(page), shown = !!document.getElementById("qf-noaccess");
+  if (denied && !shown) showNoAccess();
+  else if (!denied && shown) location.reload();
 }
 
 async function refreshNavConfig() {

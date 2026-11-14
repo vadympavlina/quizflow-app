@@ -139,7 +139,9 @@ function renderNow(A, L, now){
 }
 
 const timeAgoShort = t => fmtDay(t);
-const btn = (cls, act, id, label, icon, title = "") => `<button type="button" class="dx-qb ${cls}" data-dxa="${act}" data-id="${esc(id)}"${title ? ` title="${esc(title)}" aria-label="${esc(title)}"` : ""}>${icon ? svg(icon, 13, 2.2) : ""}${label}</button>`;
+const NEEDS = { game: "games", link: "links", edit: "tests" };
+const DX_NEEDS = { new: "tests", game: "games", test: "links" };
+const btn = (cls, act, id, label, icon, title = "") => `<button type="button" class="dx-qb ${cls}" data-dxa="${act}" data-id="${esc(id)}"${NEEDS[act] ? ` data-needs="${NEEDS[act]}"` : ""}${title ? ` title="${esc(title)}" aria-label="${esc(title)}"` : ""}>${icon ? svg(icon, 13, 2.2) : ""}${label}</button>`;
 const IC2 = { edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>', copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>', redo: '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>', list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>' };
 
 // «Ваші тести»: з чим ви працювали останнім — одразу «Гра» і «Посилання»
@@ -160,7 +162,7 @@ function renderTests(A, L, T, games, now){
     return `<div class="dx-qr"><span class="dx-tile" style="background:${c}1A;color:color-mix(in srgb,${c} 66%,#0B1437)">${esc(abbr(t.title))}</span>
       <span class="dx-row-b"><b>${esc(t.title || "Без назви")}</b><small>${qn} ${plural(qn, ["питання", "питання", "питань"])} · ${esc(used)}</small></span>
       <span class="dx-qa">${btn("g", "game", t.id, "Гра", IC.play)}${btn("", "link", t.id, "Посилання", IC.link)}${btn("ic", "edit", t.id, "", IC2.edit, "Редагувати")}</span></div>`;
-  }).join("") + `<div class="dx-all"><a class="go" href="tests">Усі тести${svg(IC.chev, 12, 2.5)}</a></div>`;
+  }).join("") + `<div class="dx-all" data-needs="tests"><a class="go" href="tests">Усі тести${svg(IC.chev, 12, 2.5)}</a></div>`;
 }
 
 // Активні посилання: скопіювати одним натисканням
@@ -171,7 +173,7 @@ function renderLinks(A, L, T, now){
   const open = L.filter(l => qf().isOpenState?.(st(l, now)))
     .sort((a, b) => (a.closeAt || Infinity) - (b.closeAt || Infinity) || (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 4);
   if (!open.length){
-    box.innerHTML = `<div class="dx-mini-empty">Немає активних посилань · <button type="button" data-dx="test">створити</button></div>`;
+    box.innerHTML = `<div class="dx-mini-empty">Немає активних посилань · <button type="button" data-dx="test" data-needs="links">створити</button></div>`;
     return;
   }
   box.innerHTML = open.map(l => {
@@ -188,7 +190,7 @@ function renderGames(games, T){
   const box = $("dx-games"); if (!box) return;
   if (D.games === null){ box.innerHTML = `<div class="dx-skel"></div><div class="dx-skel"></div>`; return; }
   if (!games.length){
-    box.innerHTML = `<div class="dx-mini-empty">Ще не було жодної гри · <button type="button" data-dx="game">провести першу</button></div>`;
+    box.innerHTML = `<div class="dx-mini-empty">Ще не було жодної гри · <button type="button" data-dx="game" data-needs="games">провести першу</button></div>`;
     return;
   }
   box.innerHTML = games.slice(0, 4).map(g => {
@@ -215,7 +217,7 @@ function renderStart(A, L, T, games){
   box.innerHTML = `<div class="dx-start-h"><b>Почніть роботу з QuizFlow</b><span>${n} з ${steps.length}</span><span class="dx-bar"><i style="width:${Math.round(n / steps.length * 100)}%"></i></span></div>
     <ol>${steps.map((x, i) => `<li class="${x.done ? "done" : i === next ? "next" : ""}">
       <span class="n">${x.done ? svg(IC.check, 12, 3) : i + 1}</span><span class="dx-row-b"><b>${x.t}</b><small>${x.s}</small></span>
-      ${x.done ? "" : `<button type="button" class="dx-btn ${i === next ? "p" : ""}" data-dx="${x.act}">${x.btn}</button>`}</li>`).join("")}</ol>`;
+      ${x.done ? "" : `<button type="button" class="dx-btn ${i === next ? "p" : ""}" data-dx="${x.act}"${DX_NEEDS[x.act] ? ` data-needs="${DX_NEEDS[x.act]}"` : ""}>${x.btn}</button>`}</li>`).join("")}</ol>`;
 }
 
 // ─── Вибір тесту для гри (власний список з пошуком, без <select>) ──────
@@ -235,7 +237,7 @@ function openPicker(){
         <span class="dx-tile" style="background:${c}1A;color:color-mix(in srgb,${c} 66%,#0B1437)">${esc(abbr(x.t.title))}</span>
         <span class="dx-row-b"><b>${esc(x.t.title || "Без назви")}</b><small>${qn} ${plural(qn, ["питання", "питання", "питань"])}${x.p ? ` · грали ${x.p.n} ${plural(x.p.n, ["раз", "рази", "разів"])}, ост. ${esc(fmtDay(x.p.at))}` : ""}</small></span>
         <span class="dx-pick-go">${svg(IC.play, 12)}</span></button>`;
-    }).join("") : `<div class="dx-mini-empty">${list.length ? "Нічого не знайдено" : `Немає тестів з питаннями · <button type="button" data-dx="new">створити тест</button>`}</div>`;
+    }).join("") : `<div class="dx-mini-empty">${list.length ? "Нічого не знайдено" : `Немає тестів з питаннями · <button type="button" data-dx="new" data-needs="tests">створити тест</button>`}</div>`;
     box.querySelector(".kb")?.scrollIntoView({ block: "nearest" });
     return rows;
   };

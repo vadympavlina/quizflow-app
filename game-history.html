@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=58">
-<link rel="modulepreload" href="shared/app.js?v=41">
+<link rel="modulepreload" href="shared/app.js?v=42">
 <style>
 #sec-history{
   --ink-900:var(--qf-ink-900);--ink-700:var(--qf-ink-700);--ink-500:var(--qf-ink-500);--ink-400:var(--qf-ink-400);--ink-300:var(--qf-line-strong);
@@ -237,7 +237,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 </head>
 <body>
 
-<script src="shared/nav.js?v=33"></script>
+<script src="shared/nav.js?v=34"></script>
 <main class="main">
 <div class="sec" id="sec-history">
   <div class="gh-title">
@@ -310,7 +310,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
       <button type="button" role="radio" data-v="rel" title="Найкращий у грі отримує 12, решта пропорційно до його результату">Відносно класу</button>
       <button type="button" role="radio" data-v="mix" title="70% за правильними й 30% відносно класу">Змішана</button>
     </div>
-    <button class="gh-btn sm" id="res-csv" type="button" title="Завантажити таблицю для Excel">
+    <button class="gh-btn sm" id="res-csv" data-needs="export" type="button" title="Завантажити таблицю для Excel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
     </button>
   </div>
@@ -351,7 +351,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 
 <script type="module">
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-const { initApp, appReady } = await import("./shared/app.js?v=41");
+const { initApp, appReady } = await import("./shared/app.js?v=42");
 await initApp("history", { skipData: true });
 
 const db = getDatabase();
@@ -565,8 +565,8 @@ function openMenu(btn, g){
   const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   m.innerHTML = `
     ${g.hasResults ? `<button role="menuitem" data-act="open" data-code="${esc(g.code)}">${I('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>')}Усі результати</button>
-    <button role="menuitem" data-act="csv" data-code="${esc(g.code)}">${I('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}Експорт у CSV</button>` : ""}
-    ${g.testId ? `<button role="menuitem" data-act="replay" data-code="${esc(g.code)}">${I('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>')}Зіграти цей тест ще раз</button>` : ""}
+    <button role="menuitem" data-act="csv" data-needs="export" data-code="${esc(g.code)}">${I('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}Експорт у CSV</button>` : ""}
+    ${g.testId ? `<button role="menuitem" data-act="replay" data-needs="games" data-code="${esc(g.code)}">${I('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>')}Зіграти цей тест ще раз</button>` : ""}
     <hr><button role="menuitem" class="d" data-act="del" data-code="${esc(g.code)}">${I('<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>')}Видалити з історії</button>`;
   document.body.appendChild(m);
   const r = btn.getBoundingClientRect();

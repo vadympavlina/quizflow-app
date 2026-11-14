@@ -29,9 +29,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=58">
-<link rel="modulepreload" href="shared/app.js?v=41">
-<link rel="modulepreload" href="shared/features.js?v=50">
-<link rel="modulepreload" href="shared/dash.js?v=5">
+<link rel="modulepreload" href="shared/app.js?v=42">
+<link rel="modulepreload" href="shared/features.js?v=51">
+<link rel="modulepreload" href="shared/dash.js?v=6">
 <style>
 /* ═══ Дашборд: ігри наживо + тести (shared/dash.js) ═══ */
 #sec-dashboard{
@@ -262,7 +262,7 @@
 </div>
 <style>@keyframes appSpin{to{transform:rotate(360deg)}}</style>
 
-<script src="shared/nav.js?v=33"></script>
+<script src="shared/nav.js?v=34"></script>
 <main class="main">
   <div class="sec on" id="sec-dashboard">
 
@@ -272,7 +272,7 @@
         <p id="dx-sub"></p>
       </div>
       <div class="dx-head-r">
-        <button type="button" class="dx-btn" data-dx="new" data-qtb="primary">
+        <button type="button" class="dx-btn" data-dx="new" data-qtb="primary" data-needs="tests">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Новий тест
         </button>
@@ -281,19 +281,19 @@
 
     <!-- Швидкі дії -->
     <section class="dx-q" id="dx-q" aria-label="Швидкі дії">
-      <button type="button" class="dx-qi game" data-dx="game">
+      <button type="button" class="dx-qi game" data-dx="game" data-needs="games">
         <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg></span>
         <span><b>Запустити гру</b><small id="dx-q-game">Вікторина для класу</small></span>
       </button>
-      <button type="button" class="dx-qi link" data-dx="test">
+      <button type="button" class="dx-qi link" data-dx="test" data-needs="links">
         <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
         <span><b>Посилання на тест</b><small id="dx-q-link">Для студентів</small></span>
       </button>
-      <a class="dx-qi" href="tests">
+      <a class="dx-qi" href="tests" data-needs="tests">
         <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
         <span><b>Усі тести</b><small id="dx-q-tests">Бібліотека й папки</small></span>
       </a>
-      <a class="dx-qi" href="attempts?status=pending_review" id="dx-q-rev">
+      <a class="dx-qi" href="attempts?status=pending_review" id="dx-q-rev" data-needs="attempts">
         <span class="dx-qi-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span>
         <span><b>Перевірити роботи</b><small id="dx-q-revs">Усе перевірено</small></span>
         <span class="dx-n" id="dx-q-revn" hidden></span>
@@ -314,7 +314,7 @@
 
     <div class="dx-cols">
       <div class="dx-col">
-        <section class="dx-card t">
+        <section class="dx-card t" data-needs="tests">
           <div class="dx-card-h">
             <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
             <h3 aria-level="2">Ваші тести</h3><span class="meta" id="dx-tests-cnt"></span>
@@ -334,7 +334,7 @@
         </section>
       </div>
       <div class="dx-col">
-        <section class="dx-card g">
+        <section class="dx-card g" data-needs="links">
           <div class="dx-card-h">
             <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
             <h3 aria-level="2">Активні посилання</h3>
@@ -342,7 +342,7 @@
           </div>
           <div class="dx-ql" id="dx-links"></div>
         </section>
-        <section class="dx-card g">
+        <section class="dx-card g" data-needs="history">
           <div class="dx-card-h">
             <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
             <h3 aria-level="2">Останні ігри</h3>
@@ -374,8 +374,8 @@
 <div id="modals-root"></div>
 
 <script type="module">
-const { initApp } = await import("./shared/app.js?v=41");
-const featuresP = import("./shared/features.js?v=50");
+const { initApp } = await import("./shared/app.js?v=42");
+const featuresP = import("./shared/features.js?v=51");
 
 window.showSec = function(name){
   if (name === "dashboard") {
@@ -403,7 +403,7 @@ await featuresP;
 await window.initFeatures();
 
 if (window.renderAll) window.renderAll();
-await import("./shared/dash.js?v=5");
+await import("./shared/dash.js?v=6");
 
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {

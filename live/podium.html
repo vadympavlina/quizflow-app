@@ -204,6 +204,12 @@ if (room.testId) $("again-btn").href = `setup?testId=${encodeURIComponent(room.t
 else $("again-btn").hidden = true;
 $("csv-btn").hidden = !list.length;
 $("replay-btn").hidden = !list.length;
+// Можливості з адмінки: недоступні дії не показуємо (у фоні, показ результатів не затримуємо)
+import("../shared/caps.js?v=3").then(async ({ loadCaps }) => {
+  const caps = await loadCaps(db, (await get(ref(db, `users/${user.uid}`))).val() || {});
+  if (caps.flags.export === false) $("csv-btn").hidden = true;
+  if (caps.flags.games === false) $("again-btn").hidden = true;
+}).catch(() => {});
 const sndLabel = () => { $("snd-btn").textContent = SND.on ? "Звук: вкл" : "Звук: вимк"; };
 sndLabel();
 $("snd-btn").addEventListener("click", () => { SND.toggle(); sndLabel(); });
