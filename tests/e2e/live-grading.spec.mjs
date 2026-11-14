@@ -14,6 +14,8 @@ const db = () => ({ users: { t1: { role: "teacher" } }, teachers: { t1: { liveRo
 test("зарахування відповіді не прокручує список угору й не губить фокус", async ({ page, errors }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await seed(page, db(), "t1");
+  // справжня мережа відповідає не миттєво: за цей час вимкнена кнопка встигає втратити фокус
+  await page.addInitScript(() => localStorage.setItem("mockUpdateDelay", "300"));
   await page.goto("/live/play-teacher?code=12345678");
   await expect(page.locator("#grading .grp")).toHaveCount(N);
   const groups = page.locator("#grading .groups");

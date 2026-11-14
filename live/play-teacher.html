@@ -621,7 +621,7 @@ function renderReveal() {
 
 // Ручна перевірка текстових / числових відповідей. Групуємо за нормалізованим
 // текстом, щоб «Київ», «київ » і «КИЇВ» були однією групою.
-let groupsCache = [], lastGradingHtml = "";
+let groupsCache = [], lastGradingHtml = "", pendingFocusKey = null;
 const normKey = (v) => String(v ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 function renderGrading(ans) {
   const prevGroups = groupsCache;
@@ -654,19 +654,23 @@ function renderGrading(ans) {
   const host = $("grading");
   const scrollTop = host.querySelector(".groups")?.scrollTop || 0;
   const act = document.activeElement;
-  const focusKey = act && host.contains(act) && act.classList?.contains("grade-btn") ? prevGroups[+act.dataset.g]?.key : null;
+  // Кнопку, на яку щойно натиснули, браузер вимикає (disabled) і знімає з неї фокус ще до відповіді бази,
+  // тож за activeElement її вже не знайти: групу запам'ятовує сам клік (pendingFocusKey)
+  const focusKey = pendingFocusKey ?? (act && host.contains(act) && act.classList?.contains("grade-btn") ? prevGroups[+act.dataset.g]?.key : null);
   host.innerHTML = html;
   const box = host.querySelector(".groups");
   if (box) box.scrollTop = scrollTop;
   if (focusKey != null) {
     const i = groupsCache.findIndex(g => g.key === focusKey);
     if (i >= 0) host.querySelector(`.grade-btn[data-g="${i}"]`)?.focus({ preventScroll: true });
+    pendingFocusKey = null;
   }
 }
 $("grading").addEventListener("click", async (e) => {
   const btn = e.target.closest(".grade-btn"); if (!btn) return;
   const g = groupsCache[+btn.dataset.g]; if (!g) return;
   const makeCorrect = g.correct !== g.pids.length;
+  pendingFocusKey = g.key;
   btn.disabled = true;
   const qi = state.currentQ, upd = {};
   g.pids.forEach(pid => {
@@ -677,7 +681,7 @@ $("grading").addEventListener("click", async (e) => {
   });
   withRanks(qi, upd);
   try { await update(ref(db), upd); }
-  catch (err) { toast("Не вдалося зберегти: " + err.message, "err"); btn.disabled = false; }
+  catch (err) { toast("Не вдалося зберегти: " + err.message, "err"); btn.disabled = false; pendingFocusKey = null; }
 });
 
 function renderLeaders() {
