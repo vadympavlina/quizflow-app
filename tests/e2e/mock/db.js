@@ -18,7 +18,7 @@ export function ref(db,path=''){const p=String(path);return{path:p,key:p.split('
 const _log=(k,p)=>{(globalThis.__dblog=globalThis.__dblog||[]).push(k+':'+p)};
 export async function get(r){_log('get',r.path);await 0;tree=load();return snap(readQ(r))}
 export async function set(r,v){ if(localStorage.getItem('mockFailSet')===r.path.split('/')[0]) throw Object.assign(new Error('PERMISSION_DENIED'),{code:'PERMISSION_DENIED'}); tree=load();setAt(r.path,v);commit()}
-export async function update(r,obj){if(localStorage.getItem('mockFailUpdate'))throw Object.assign(new Error('network'),{code:'NETWORK'});tree=load();for(const[k,v]of Object.entries(obj)){setAt((r.path?r.path+'/':'')+k,v)}commit()}
+export async function update(r,obj){const _d=+localStorage.getItem('mockUpdateDelay')||0;if(_d)await new Promise(res=>setTimeout(res,_d));if(localStorage.getItem('mockFailUpdate'))throw Object.assign(new Error('network'),{code:'NETWORK'});tree=load();for(const[k,v]of Object.entries(obj)){setAt((r.path?r.path+'/':'')+k,v)}commit()}
 export async function remove(r){tree=load();setAt(r.path,null);commit()}
 export function onValue(r,cb){_log('on',r.path);const l={path:r.path,ltl:r.ltl,cb,last:undefined};listeners.add(l);setTimeout(()=>{if(!listeners.has(l))return;const v=l.path.startsWith('.info')?(l.path.endsWith('connected')?true:0):readQ(l);l.last=JSON.stringify(v);cb(snap(v))},5);return()=>listeners.delete(l)}
 export function serverTimestamp(){return{'.sv':'timestamp'}}

@@ -52,8 +52,21 @@
   .p>.in{position:relative;z-index:2;max-width:100%}
   .p .nm{font-weight:900;letter-spacing:-.045em;line-height:.92;overflow-wrap:anywhere}
   .p.w .nm{font-size:clamp(56px,min(8.2vw,13vh),124px);max-width:92%}.p.s2 .nm,.p.s3 .nm{font-size:clamp(32px,min(3.6vw,6vh),54px);max-width:80%}
-  .p.multi .nm{margin-bottom:.08em}.p.w.multi .nm{font-size:clamp(34px,min(4.4vw,7vh),66px)}.p.s2.multi .nm,.p.s3.multi .nm{font-size:clamp(24px,min(2.4vw,4vh),36px)}
-  .tie{font-weight:800;font-size:15px;margin-bottom:12px;opacity:.9}
+  /* Кілька гравців на одному місці: плашка «Ділять N-е місце», усі імена колонками (розмір і кількість колонок за кількістю), «по N балів» */
+  .tie{display:inline-block;font-weight:800;font-size:14px;line-height:1.2;padding:6px 14px;border-radius:99px;margin-bottom:16px;background:rgba(255,255,255,.22);color:#fff}
+  .p.w .tie{background:rgba(15,24,68,.14);color:var(--navy)}
+  .tied{column-count:var(--c);column-gap:.9em;max-width:100%}
+  .tied .nm{break-inside:avoid;margin-bottom:.14em}
+  .p.w .tied[data-t="1"] .nm{font-size:clamp(34px,min(4.4vw,7vh),66px)}.p.w .tied[data-t="2"] .nm{font-size:clamp(28px,min(3.4vw,5.6vh),52px)}
+  .p.w .tied[data-t="3"] .nm{font-size:clamp(22px,min(2.6vw,4.4vh),40px)}.p.w .tied[data-t="4"] .nm{font-size:clamp(18px,min(2vw,3.6vh),30px)}
+  .p:not(.w) .tied[data-t="1"] .nm{font-size:clamp(24px,min(2.4vw,4vh),36px)}.p:not(.w) .tied[data-t="2"] .nm{font-size:clamp(20px,min(1.9vw,3.4vh),28px)}
+  .p:not(.w) .tied[data-t="3"] .nm{font-size:clamp(16px,min(1.5vw,2.8vh),22px)}.p:not(.w) .tied[data-t="4"] .nm{font-size:clamp(14px,min(1.3vw,2.4vh),18px)}
+  .p.w .tied{margin-bottom:.1em}
+  /* Усі на першому місці: плакат на весь екран, імена можна робити крупнішими */
+  .T.np1 .p.w .tied[data-t="2"] .nm{font-size:clamp(34px,min(5vw,8.6vh),76px)}.T.np1 .p.w .tied[data-t="3"] .nm{font-size:clamp(28px,min(3.8vw,6.4vh),58px)}
+  .T.np1 .p.w .tied[data-t="4"] .nm{font-size:clamp(22px,min(2.8vw,4.8vh),44px)}
+  /* дуже довге слово не налазить на сусідню колонку, а переноситься */
+  .tied .wd{white-space:normal;max-width:100%}
   .p .sc{display:flex;align-items:baseline;gap:12px;margin-top:16px;font-family:"Geist Mono",monospace;font-weight:800;font-variant-numeric:tabular-nums}
   .p.w .sc{font-size:clamp(34px,min(4vw,7vh),56px)}.p.s2 .sc,.p.s3 .sc{font-size:clamp(24px,min(2.2vw,4vh),30px);margin-top:10px}
   .p .sc small{font-family:Manrope,system-ui,sans-serif;font-size:.36em;font-weight:700;opacity:.8}
@@ -70,6 +83,9 @@
   .acts .btn{font:700 13px Manrope,system-ui,sans-serif;color:#fff;background:rgba(15,24,68,.6);border:0;padding:9px 13px;text-decoration:none;cursor:pointer}
   .acts .btn:hover{background:rgba(15,24,68,.85)}.acts .btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
   .acts .btn.primary{background:#fff;color:var(--navy)}
+  /* На великому екрані (проєктор) кнопки лягають на плакат, тому коли ними не користуються — тануть і не заважають */
+  @media (min-width:801px){.acts{transition:opacity .45s ease}.acts.idle{opacity:0;pointer-events:none}}
+  @media (prefers-reduced-motion:reduce){.acts{transition:none}}
   .empty{grid-area:w;display:grid;place-items:center;font-weight:800;font-size:22px;color:#C9D3F5;padding:60px 20px;text-align:center}
   @media (max-width:800px){
     .T,.T.np2{display:block;min-height:0}
@@ -78,6 +94,8 @@
     .p.w .nm{font-size:clamp(44px,13vw,70px)}.p.s2 .nm,.p.s3 .nm{font-size:clamp(30px,9vw,44px);max-width:85%}
     .p.w .sc{font-size:34px}
     .hdr{left:20px;top:20px;max-width:70%}
+    .tied{column-count:var(--cm)}
+    .p.w{padding-top:112px}   /* місце під заголовок, що лежить зверху: довгий список не наїжджає на нього */
     .r,.T.np0 .r{grid-template-columns:1fr;padding:18px 20px 10px}
     .acts{position:static;max-width:none;justify-content:center;padding:6px 20px 28px;background:var(--navy)}
   }
@@ -144,11 +162,16 @@ function panel(rank, i) {
       ${totalQ ? pips(p) : ""}
       <div class="gap">${i === 0 ? (acc ? `${totalQ ? Math.round(p.correct / totalQ * 100) : 0}% правильно` : `${p.correct} з ${totalQ} правильно`) : esc(diffText(p, top))}</div></div></div>`;
   }
-  const shownNames = g.slice(0, 6), more = g.length - shownNames.length;
+  // Усі, хто ділить місце, за алфавітом (без «+N»: кожен має бути видно). Колонок більше, коли імен багато.
+  const names = [...g].sort((x, y) => String(x.nickname).localeCompare(String(y.nickname), "uk"));
+  const n = g.length, win = i === 0;
+  const tier = n <= 3 ? 1 : n <= 6 ? 2 : n <= 12 ? 3 : 4;
+  const cols = (win ? [1, 2, 3, 4] : [1, 2, 3, 3])[tier - 1];
+  const place = rank === 3 ? "3-є" : rank + "-е";
   return `<div class="p ${CLS[i]} multi"><div class="bg"></div><span class="num">${rank}</span><div class="in">
-    <div class="tie">Нічия · ${g.length} ${plural(g.length, "гравець", "гравці", "гравців")}</div>
-    ${shownNames.map(p => `<div class="nm">${split(p.nickname)}</div>`).join("")}${more > 0 ? `<div class="nm">${split("+" + more)}</div>` : ""}
-    <div class="sc"><span class="odo">${odo(shown(g[0]))}</span><small>${ptsWord}</small></div>
+    <div class="tie">Ділять ${place} місце · ${n} ${plural(n, "гравець", "гравці", "гравців")}</div>
+    <div class="tied" data-t="${tier}" style="--c:${cols};--cm:${Math.min(cols, 2)}">${names.map(p => `<div class="nm">${split(p.nickname)}</div>`).join("")}</div>
+    <div class="sc"><small>по</small><span class="odo">${odo(shown(g[0]))}</span><small>${ptsWord}</small></div>
     <div class="gap">${i === 0 ? `${g[0].correct} з ${totalQ} правильно` : esc(diffText(g[0], top))}</div></div></div>`;
 }
 
@@ -197,7 +220,7 @@ function run() {
     A(num, [{ transform: "scale(2.6) rotate(-8deg)", opacity: 0 }, { transform: "scale(1) rotate(0)", opacity: 1 }], { duration: win ? 650 : 520, delay: t + 220, easing: POP });
     rings(p, cx, cy, t + 520, win ? 4 : 3, win ? 60 : 34);
     A(inn, [{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay: t + 300 });
-    p.querySelectorAll(".nm").forEach((n, k) => letters(n, t + 420 + k * 120));
+    p.querySelectorAll(".nm").forEach((n, k) => letters(n, t + 420 + Math.min(k, 6) * 110));   // багато імен — не розтягуємо появу
     odometer(p.querySelector(".odo"), t + 520, win ? 1900 : 1200);
     A(p.querySelector(".gap"), [{ opacity: 0 }, { opacity: .88 }], { duration: 500, delay: t + 1300 });
     p.querySelectorAll(".pips i").forEach((e, j) => A(e, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 300, delay: t + 900 + j * 45 }));
@@ -233,6 +256,16 @@ $("csv-btn").addEventListener("click", () => {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   toast("CSV завантажено", "ok");
 });
+
+// Кнопки зверху справа ховаються через 4 с без дій і повертаються від руху миші, дотику, клавіші чи фокуса.
+// Під курсором і з фокусом усередині вони лишаються. На вузькому екрані кнопки в потоці (CSS не ховає їх).
+{
+  const acts = document.querySelector(".acts");
+  let last = Date.now();
+  const wake = () => { last = Date.now(); acts?.classList.remove("idle"); };
+  ["pointermove", "pointerdown", "touchstart", "keydown", "wheel", "focusin"].forEach(ev => addEventListener(ev, wake, { passive: true, capture: true }));
+  setInterval(() => { if (acts && Date.now() - last > 4000 && !acts.matches(":hover,:focus-within")) acts.classList.add("idle"); }, 500);
+}
 
 $("end-btn").addEventListener("click", async () => {
   const btn = $("end-btn"); btn.disabled = true;
