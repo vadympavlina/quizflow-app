@@ -621,19 +621,20 @@ function renderReveal() {
 
 // Ручна перевірка текстових / числових відповідей. Групуємо за нормалізованим
 // текстом, щоб «Київ», «київ » і «КИЇВ» були однією групою.
-let groupsCache = [];
+let groupsCache = [], lastGradingHtml = "";
 const normKey = (v) => String(v ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 function renderGrading(ans) {
+  const prevGroups = groupsCache;
   const groups = new Map();
   Object.entries(ans).forEach(([pid, a]) => {
     const k = normKey(a.value);
-    const g = groups.get(k) || { label: String(a.value ?? "").trim(), pids: [], correct: 0 };
+    const g = groups.get(k) || { key: k, label: String(a.value ?? "").trim(), pids: [], correct: 0 };
     g.pids.push(pid); if (a.isCorrect) g.correct++;
     groups.set(k, g);
   });
   groupsCache = [...groups.values()].sort((a, b) => b.pids.length - a.pids.length);
   const total = Object.keys(ans).length;
-  $("grading").innerHTML = `
+  const html = `
     <h3>Відповіді учнів <small>можна зарахувати вручну</small></h3>
     <div class="correct-line"><span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).length > 1 ? "Допустимі відповіді:" : "Еталон:"}</span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).map(v => `<span class="kchip v"><span>${esc(v)}</span></span>`).join("") || "—"}</div>
     <div class="groups">${groupsCache.length ? groupsCache.map((g, i) => {
@@ -645,6 +646,22 @@ function renderGrading(ans) {
         <button class="grade-btn ${ok ? "revoke" : "accept"}" data-g="${i}">${ok ? ICO_X + " Скасувати" : ICO_OK + " Зарахувати"}</button>
       </div>`;
     }).join("") : `<div class="muted">Ніхто не відповів</div>`}</div>`;
+  // Нічого не змінилось (оновилось щось стороннє) — не перемальовуємо, щоб не збивати прокрутку й фокус
+  if (html === lastGradingHtml) return;
+  lastGradingHtml = html;
+  // Після кожного «Зарахувати» база оновлює список, і він перемальовується. Без цього прокрутка стрибала
+  // на початок, а клавіатурний фокус губився: запам'ятовуємо їх і повертаємо на ту саму групу.
+  const host = $("grading");
+  const scrollTop = host.querySelector(".groups")?.scrollTop || 0;
+  const act = document.activeElement;
+  const focusKey = act && host.contains(act) && act.classList?.contains("grade-btn") ? prevGroups[+act.dataset.g]?.key : null;
+  host.innerHTML = html;
+  const box = host.querySelector(".groups");
+  if (box) box.scrollTop = scrollTop;
+  if (focusKey != null) {
+    const i = groupsCache.findIndex(g => g.key === focusKey);
+    if (i >= 0) host.querySelector(`.grade-btn[data-g="${i}"]`)?.focus({ preventScroll: true });
+  }
 }
 $("grading").addEventListener("click", async (e) => {
   const btn = e.target.closest(".grade-btn"); if (!btn) return;
