@@ -10,7 +10,7 @@ import { getDatabase, ref, get, set, push, update, remove, onValue, off } from "
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { loadCaps, CAP_FLAGS, CAP_LIMITS, pluralUk } from "./caps.js?v=4";
 import { PERMS, PAGE_PERMS, LEGACY_FLAG_PERM } from "./perms.js?v=1";
-import { limitNotice } from "./notices.js?v=2";
+import { limitNotice } from "./notices.js?v=3";
 
 // ─── Firebase ──────────────────────────────────────────────────────────
 const FC = {
