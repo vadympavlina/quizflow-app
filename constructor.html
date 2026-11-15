@@ -273,6 +273,14 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .seg button:hover{color:var(--ink)}
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(11,20,55,.1)}
 .seg button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+#ai-focus button{padding:0 6px;font-size:12px}
+.achips{display:flex;flex-wrap:wrap;gap:6px}
+.achips button{height:32px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:12.5px;font-weight:700;transition:all .15s}
+.achips button:hover{color:var(--ink)}
+.achips button.on{border-color:var(--pri,#2D5BE3);background:var(--pri-soft);color:var(--pri,#2D5BE3)}
+.achips button:focus-visible{outline:2px solid var(--pri,#2D5BE3);outline-offset:2px}
+.ai-verify{display:flex;align-items:flex-start;gap:10px;margin-top:14px;font-size:13px;font-weight:700;flex-wrap:wrap}
+.ai-verify small{flex-basis:100%;font-weight:500;color:var(--muted);font-size:12px;line-height:1.45;margin-left:46px;margin-top:-6px}
 .sp-note{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.45}
 .sp-note.warn{color:var(--warn);font-weight:600}
 .field-btn{width:100%;height:38px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;text-align:left;transition:all .15s}
@@ -642,17 +650,35 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
     </div>
     <label class="fl" for="ai-topic">Тема *</label>
     <input class="in" id="ai-topic" maxlength="200" placeholder="Наприклад: Типи даних у Python">
-    <label class="fl" for="ai-desc">Що саме генерувати <small>— необов'язково</small></label>
-    <textarea class="in" id="ai-desc" rows="3" maxlength="800" placeholder="Фокус на практичному застосуванні: списки, словники, функції…"></textarea>
+    <label class="fl" for="ai-mat">Ваш матеріал <small>— необов'язково</small></label>
+    <textarea class="in" id="ai-mat" rows="4" maxlength="8000" placeholder="Вставте конспект чи текст: питання складуться лише за ним, без вигадок"></textarea>
+    <label class="fl" for="ai-desc">Побажання <small>— необов'язково</small></label>
+    <textarea class="in" id="ai-desc" rows="2" maxlength="800" placeholder="Фокус на практичному застосуванні: списки, словники, функції…"></textarea>
     <label class="fl">Складність</label>
     <div class="seg" id="ai-diff">
       <button data-v="легка">Легка</button><button data-v="середня" class="on">Середня</button><button data-v="складна">Складна</button>
     </div>
+    <label class="fl">Типи питань <small>— можна кілька, розподіляться порівну</small></label>
+    <div class="achips" id="ai-types" role="group" aria-label="Типи питань">
+      <button type="button" data-v="single" class="on">Одна відповідь</button><button type="button" data-v="multi" class="on">Кілька</button><button type="button" data-v="text" class="on">Коротка</button><button type="button" data-v="number">Число</button><button type="button" data-v="long">Розгорнута</button><button type="button" data-v="ordering">Порядок</button><button type="button" data-v="matching">Зіставлення</button>
+    </div>
+    <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)">
+      <div>
+        <label class="fl" for="ai-aud">Для кого <small>— необов'язково</small></label>
+        <input class="in" id="ai-aud" maxlength="80" placeholder="Наприклад: 9 клас, 1 курс">
+      </div>
+      <div>
+        <label class="fl">Акцент</label>
+        <div class="seg" id="ai-focus">
+          <button data-v="факти">Факти</button><button data-v="розуміння" class="on">Розуміння</button><button data-v="застосування">Практика</button>
+        </div>
+      </div>
+    </div>
     <div class="grid2">
       <div>
-        <label class="fl">Тип питань</label>
-        <div class="seg" id="ai-type">
-          <button data-v="mix" class="on">Мікс</button><button data-v="single">Одна</button><button data-v="multi">Кілька</button><button data-v="text">Текст</button>
+        <label class="fl">Варіантів у виборі</label>
+        <div class="seg" id="ai-opts">
+          <button data-v="3">3</button><button data-v="4" class="on">4</button><button data-v="5">5</button><button data-v="6">6</button>
         </div>
       </div>
       <div>
@@ -664,6 +690,7 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
         </div>
       </div>
     </div>
+    <label class="sw ai-verify"><input type="checkbox" id="ai-verify" checked><b></b>Перевірити якість другим проходом<small>AI ще раз перевіряє відповіді й слабкі питання виправляє або прибирає. Це ще один запит.</small></label>
     <div class="hint ai-off" id="ai-off" hidden></div>
     <div class="mb-foot">
       <button class="btn ghost" data-act="close-modal">Скасувати</button>
@@ -1457,74 +1484,167 @@ function parseJSON(raw, open){
   if (open === "["){ const li = s.lastIndexOf("}"); if (li > 0) try { return JSON.parse(s.slice(0, li + 1) + "]"); } catch {} }
   throw new Error("AI повернув неповну відповідь — спробуйте менше питань");
 }
-function fromAI(r){
+
+const AI_FORMATS = {
+  single: `single — одна правильна відповідь: {"type":"single","text":"Питання?","options":[…],"correct":[0]}`,
+  multi: `multi — дві або більше правильних: {"type":"multi","text":"Питання?","options":[…],"correct":[1,2]}`,
+  text: `text — коротка відповідь словом чи фразою: {"type":"text","text":"Питання?","correct":"відповідь / синонім"}`,
+  number: `number — відповідь число: {"type":"number","text":"Питання?","correct":"42"}`,
+  long: `long — розгорнута відповідь, яку оцінює викладач: {"type":"long","text":"Питання?"}`,
+  ordering: `ordering — розставити в порядку; items у ПРАВИЛЬНОМУ порядку: {"type":"ordering","text":"Розташуйте …","items":["перший","другий","третій"]}`,
+  matching: `matching — зіставлення; pairs — пари «лівий — правий»: {"type":"matching","text":"Зіставте …","pairs":[{"left":"…","right":"…"},{"left":"…","right":"…"}]}`,
+};
+const shuffled = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+// Варіанти на кшталт «усі вищезазначені» залежать від порядку: такі не чіпаємо
+const ORDER_BOUND = /(усі|всі|жодн|обидв|вищезазнач|перелічен|наведен)/i;
+function fromAI(r, nOpts = 4){
   const text = esc(String(r?.text || r?.question || "").trim());
   if (!text) return null;
-  let type = ["single", "multi", "text"].includes(r?.type) ? r.type : Array.isArray(r?.options) ? "single" : "text";
-  if (type === "text"){
+  let type = TYPES[r?.type] ? r.type : Array.isArray(r?.options) ? "single" : "text";
+  if (type === "text" || type === "number"){
     const c = Array.isArray(r.correct) ? r.correct[0] : r.correct;
-    return { id: genId(), type, text, correct: String(c ?? r.answer ?? "").trim() };
+    const val = String(c ?? r.answer ?? "").trim();
+    if (!val) return null;
+    return { id: genId(), type, text, correct: type === "number" ? val.replace(/\s+/g, "") : val };
   }
-  const options = toArr(r.options).map(o => String(o ?? "").trim()).filter(Boolean).slice(0, 8);
-  if (options.length < 2) return null;
+  if (type === "long") return { id: genId(), type, text };
+  if (type === "ordering"){
+    const items = toArr(r.items).map(o => String(o ?? "").trim()).filter(Boolean).slice(0, 8);
+    return items.length >= 3 ? { id: genId(), type, text, items } : null;
+  }
+  if (type === "matching"){
+    const pr = toArr(r.pairs).map(x => ({ left: String(x?.left ?? "").trim(), right: String(x?.right ?? "").trim() })).filter(x => x.left && x.right).slice(0, 6);
+    if (pr.length < 2 || new Set(pr.map(x => x.right)).size !== pr.length) return null;
+    const rights = shuffled(pr.map(x => x.right));
+    return { id: genId(), type, text, pairs: pr.map(x => ({ left: x.left, options: rights, correct: rights.indexOf(x.right) })) };
+  }
+  let options = toArr(r.options).map(o => String(o ?? "").trim()).filter(Boolean).slice(0, Math.max(nOpts, 4));
+  if (options.length < 2 || new Set(options.map(o => o.toLowerCase())).size !== options.length) return null;
   let correct = [...new Set(toArr(r.correct).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < options.length))];
+  if (!correct.length) return null;
   if (type === "single") correct = correct.slice(0, 1);
   if (type === "multi" && correct.length === 1) type = "single";
+  // AI любить ставити правильну відповідь на перші місця: перемішуємо, зберігаючи правильні
+  if (!options.some(o => ORDER_BOUND.test(o))){
+    const order = shuffled(options.map((_, i) => i));
+    options = order.map(i => options[i]);
+    correct = correct.map(c => order.indexOf(c)).sort((a, b) => a - b);
+  }
   return { id: genId(), type, text, options, correct };
 }
+// Те саме питання іншими словами: порівнюємо за значущими словами
+const sigWords = t => new Set(String(t).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(w => w.length > 3));
+function similar(a, b){
+  const A = sigWords(a), B = sigWords(b); if (!A.size || !B.size) return false;
+  let n = 0; A.forEach(w => { if (B.has(w)) n++; });
+  return n / (A.size + B.size - n) >= .72;
+}
+// Короткий опис питання для рецензента
+function briefQ(q, i){
+  const o = { i, type: q.type, text: plain(q.text) };
+  if (q.options) { o.options = q.options; o.correct = q.correct; }
+  else if (q.items) o.items_in_correct_order = q.items;
+  else if (q.pairs) o.pairs = q.pairs.map(p => ({ left: p.left, right: p.options[p.correct] }));
+  else if (q.correct !== undefined) o.correct = q.correct;
+  return o;
+}
+// Другий прохід: рецензент перевіряє відповіді; хибні питання виправляє або прибирає. Збій перевірки не ламає генерацію.
+async function aiVerify(list, material, nOpts){
+  const prompt = `Ти — суворий рецензент тестів. Перевір кожне питання зі списку.
+${material ? `Джерело істини — цей матеріал, питання мають йому відповідати:\n"""${material}"""` : "Спирайся на загальновідомі перевірені факти. Якщо не впевнений у відповіді — став ok:false."}
 
-const AI_TYPES = {
-  mix: "різні типи: single, multi і text — чергуй рівномірно",
-  single: "ТІЛЬКИ single (одна правильна відповідь)",
-  multi: "ТІЛЬКИ multi (дві або більше правильних відповідей)",
-  text: "ТІЛЬКИ text (коротка відповідь одним словом чи фразою)",
-};
+Для кожного питання перевір:
+- позначена правильна відповідь справді правильна;
+- у single немає другого правильного варіанта, а в multi усі правильні позначені;
+- питання однозначне, не має подвійного тлумачення;
+- неправильні варіанти правдоподібні, але точно неправильні;
+- для ordering порядок, а для matching пари — вірні.
+
+Питання:
+${JSON.stringify(list.map(briefQ))}
+
+Відповідай ТІЛЬКИ JSON-масивом з елементом на кожне питання:
+- вірне: {"i":0,"ok":true}
+- хибне: {"i":1,"ok":false,"reason":"коротко","fix":{…те саме питання у вихідному форматі: type, text, options/correct тощо…}}
+fix додавай лише якщо можеш надійно виправити, інакше пропусти поле. Усе українською.`;
+  try {
+    const verdicts = toArr(parseJSON(await callAI(prompt, Math.max(1500, list.length * 260), .1), "["));
+    const byI = new Map(verdicts.filter(v => v && Number.isInteger(v.i)).map(v => [v.i, v]));
+    let fixed = 0, dropped = 0;
+    const out = [];
+    list.forEach((q, i) => {
+      const v = byI.get(i);
+      if (!v || v.ok !== false){ out.push(q); return; }
+      const f = v.fix ? fromAI({ type: q.type, ...v.fix }, nOpts) : null;
+      if (f){ out.push(f); fixed++; } else dropped++;
+    });
+    return { list: out, fixed, dropped, ok: true };
+  } catch (e){ return { list, fixed: 0, dropped: 0, ok: false }; }
+}
+
 async function aiGenerate(){
   const why = aiBlocked(); if (why){ toast(why, "err"); return; }
   const topic = $("ai-topic").value.trim();
   if (!topic){ $("ai-topic").focus(); toast("Вкажіть тему", "err"); return; }
   const desc = $("ai-desc").value.trim();
+  const material = $("ai-mat").value.trim().slice(0, 8000);
+  const aud = $("ai-aud").value.trim();
   const diff = $("ai-diff").querySelector(".on")?.dataset.v || "середня";
-  const type = $("ai-type").querySelector(".on")?.dataset.v || "mix";
+  const focus = $("ai-focus").querySelector(".on")?.dataset.v || "розуміння";
+  const nOpts = Number($("ai-opts").querySelector(".on")?.dataset.v) || 4;
+  const types = [...$("ai-types").querySelectorAll(".on")].map(b => b.dataset.v);
+  if (!types.length){ toast("Оберіть хоча б один тип питань", "err"); return; }
+  const verify = $("ai-verify").checked;
   const count = clamp(Number($("ai-count").value) || 10, 1, 30);
   const existing = S.qs.map(q => plain(q.text)).filter(Boolean).slice(-40);
   const prompt = `Склади рівно ${count} унікальних тестових питань.
 
-Тема: "${topic}"${desc ? `\nВимоги викладача: ${desc}` : ""}
+Тема: "${topic}"${aud ? `\nАудиторія: ${aud}` : ""}${desc ? `\nВимоги викладача: ${desc}` : ""}
 Складність: ${diff}
-Тип: ${AI_TYPES[type]}
-${existing.length ? `\nУ тесті ВЖЕ є такі питання — не повторюй їх:\n${existing.map(t => "- " + t.slice(0, 120)).join("\n")}\n` : ""}
+Акцент: ${{ факти: "знання фактів, термінів, дат", розуміння: "розуміння причин і зв'язків", застосування: "застосування знань у практичних ситуаціях і задачах" }[focus]}
+Типи питань (${types.length > 1 ? "розподіли порівну між ними" : "лише цей"}):
+${types.map(t => "- " + AI_FORMATS[t]).join("\n")}
+${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай фактів, яких у ньому немає):\n"""${material}"""\n` : ""}${existing.length ? `\nУ тесті ВЖЕ є такі питання — не повторюй їх:\n${existing.map(t => "- " + t.slice(0, 120)).join("\n")}\n` : ""}
 ПРАВИЛА:
 1. Усе — тільки українською мовою.
-2. Жодних повторів чи дуже схожих формулювань.
-3. Варіанти правдоподібні, приблизно однакової довжини.
-4. single/multi: рівно 4 варіанти, correct — масив індексів з 0.
-5. text: correct — рядок; допустимі синоніми через «/».
-6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.
-
-Формат:
-[{"type":"single","text":"Питання?","options":["А","Б","В","Г"],"correct":[0]},{"type":"multi","text":"Питання?","options":["А","Б","В","Г"],"correct":[1,2]},{"type":"text","text":"Питання?","correct":"відповідь"}]`;
+2. Жодних повторів чи дуже схожих формулювань; кожне питання перевіряє окрему думку.
+3. single/multi: рівно ${nOpts} варіанти, correct — масив індексів з 0. Правильну відповідь не став завжди першою; варіанти правдоподібні й приблизно однакової довжини; без «усі вищезазначені».
+4. text/number: у correct допустимі синоніми через «/»; число без одиниць.
+5. Питання формулюй чітко, без підказок у тексті; ${material ? "кожне питання має мати відповідь у матеріалі" : "спирайся лише на достовірні факти"}.
+6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.`;
   const btn = $("ai-go"), html = btn.innerHTML;
+  const lock = on => $("m-ai").querySelectorAll("input,textarea,.seg button,.achips button,.num-in button").forEach(e => e.disabled = on);
   btn.disabled = true; btn.innerHTML = `<span class="spin"></span>Генерую ${count} ${plural(count, ["питання", "питання", "питань"])}…`;
-  $("m-ai").querySelectorAll("input,textarea,.seg button,.num-in button").forEach(e => e.disabled = true);
+  lock(true);
   try {
-    const raw = await callAI(prompt, Math.max(2000, count * 320), .4);
-    const seen = new Set(S.qs.map(q => plain(q.text).toLowerCase()));
-    const add = toArr(parseJSON(raw, "[")).map(fromAI).filter(q => {
-      if (!q) return false; const k = plain(q.text).toLowerCase();
-      if (seen.has(k)) return false; seen.add(k); return true;
+    const raw = await callAI(prompt, Math.max(2000, count * 380), .4);
+    const kept = [];
+    let skipped = 0;
+    toArr(parseJSON(raw, "[")).forEach(r => {
+      const q = fromAI(r, nOpts); if (!q) { skipped++; return; }
+      const t = plain(q.text);
+      if (existing.some(e => similar(e, t)) || kept.some(k => similar(plain(k.text), t))) { skipped++; return; }
+      kept.push(q);
     });
-    if (!add.length) throw new Error("AI не повернув жодного придатного питання");
+    if (!kept.length) throw new Error("AI не повернув жодного придатного питання");
+    let add = kept, note = "";
+    if (verify){
+      btn.innerHTML = `<span class="spin"></span>Перевіряю якість…`;
+      const v = await aiVerify(kept, material, nOpts);
+      add = v.list;
+      note = !v.ok ? " (перевірку якості виконати не вдалося)" : v.fixed || v.dropped ? ` (виправлено ${v.fixed}, прибрано ${v.dropped})` : " (перевірку пройдено)";
+      if (!add.length) throw new Error("після перевірки не лишилось надійних питань: спробуйте інші вимоги чи додайте матеріал");
+    }
     const from = S.qs.length;
     S.qs.push(...add.map(normQ)); S.cur = from;
     closeModal();
     afterStructChange();
-    toast(`Додано ${add.length} ${plural(add.length, ["питання", "питання", "питань"])}`, "", { label: "Скасувати", fn: () => { S.qs.splice(from, add.length); S.cur = clamp(from - 1, 0, S.qs.length - 1); afterStructChange(); } });
+    toast(`Додано ${add.length} ${plural(add.length, ["питання", "питання", "питань"])}${note}`, "", { label: "Скасувати", fn: () => { S.qs.splice(from, add.length); S.cur = clamp(from - 1, 0, S.qs.length - 1); afterStructChange(); } });
   } catch (e){
     toast("AI: " + e.message, "err");
   } finally {
     btn.disabled = false; btn.innerHTML = html;
-    $("m-ai").querySelectorAll("input,textarea,.seg button,.num-in button").forEach(e => e.disabled = false);
+    lock(false);
   }
 }
 
@@ -1969,6 +2089,8 @@ document.addEventListener("click", async e => {
   if (fb){ fmt(fb.dataset.fmt); return; }
   const qi = e.target.closest(".qi");
   if (qi && !e.target.closest("[data-act]")){ select(+qi.dataset.i); return; }
+  const chip = e.target.closest(".achips button");
+  if (chip){ if (!chip.disabled) chip.classList.toggle("on"); return; }
   const seg = e.target.closest(".seg button");
   if (seg){
     seg.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === seg)); return;
