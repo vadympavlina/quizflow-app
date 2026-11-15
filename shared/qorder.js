@@ -86,6 +86,28 @@ export function buildQuestions(base, qOrder, optOrder) {
 const RICH_OK = new Set(["B", "STRONG", "I", "EM", "U", "S", "SUB", "SUP", "BR", "P", "DIV", "SPAN", "UL", "OL", "LI", "CODE", "PRE", "MARK", "SMALL", "IMG"]);
 const COLOR_RE = /^(#[0-9a-f]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*(,\s*[\d.]+\s*)?\))$/i;
 const escT = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Колір, вибраний у конструкторі, може зливатися з тлом (темно-червоний на темно-синьому екрані гри):
+// тоді підкладаємо світлу (або темну) плашку, щоб текст читався за будь-якого кольору.
+const ON_DARK = false;
+function colorLum(c) {
+  let r, g, b;
+  const m = c.match(/^#([0-9a-f]{3,8})$/i);
+  if (m) { let h = m[1]; if (h.length <= 4) h = h.split("").map(x => x + x).join(""); r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16); }
+  else { [r, g, b] = (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number); }
+  const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+  return .2126 * f(r) + .7152 * f(g) + .0722 * f(b);
+}
+function markContrast(el, col) {
+  const L = colorLum(col);
+  if (!Number.isFinite(L)) return;
+  const weak = ON_DARK ? L < .265 : L > .183;
+  if (!weak) return;
+  el.style.background = ON_DARK ? "rgba(255,255,255,.94)" : "#14195A";
+  el.style.padding = "0 .28em";
+  el.style.borderRadius = ".3em";
+  el.style.boxDecorationBreak = "clone";
+  el.style.webkitBoxDecorationBreak = "clone";
+}
 export function richHtml(html) {
   const src = String(html ?? "");
   if (!/[<&]/.test(src)) return escT(src).replace(/\r?\n/g, "<br>");
@@ -102,7 +124,7 @@ export function richHtml(html) {
         el.src = s; el.alt = n.getAttribute("alt") || ""; el.loading = "lazy";
       }
       const col = (n.style?.color || "").trim();
-      if (col && COLOR_RE.test(col)) el.style.color = col;
+      if (col && COLOR_RE.test(col)) { el.style.color = col; markContrast(el, col); }
       walk(n, el);
       to.appendChild(el);
     }

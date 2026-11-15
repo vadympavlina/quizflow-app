@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=9">
+<link rel="modulepreload" href="live-core.js?v=10">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -104,8 +104,9 @@
   .tchip.multi{background:#D1FAE5;color:#065F46}
   .tchip.text{background:#FEF3C7;color:#78350F}
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
-  .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:900;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
-  .question-text.small{font-weight:800;line-height:1.28;letter-spacing:-.015em}
+  .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:700;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
+  .question-text b,.question-text strong{font-weight:900}
+  .question-text.small{font-weight:600;line-height:1.28;letter-spacing:-.015em}
   .question-text img{max-width:100%;max-height:34vh;border-radius:14px;display:block;margin:14px auto 0}
   .question-text p{margin:0}
 
@@ -319,7 +320,7 @@ import {
   OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=9";
+} from "./live-core.js?v=10";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
