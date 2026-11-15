@@ -241,3 +241,17 @@ test("зміна доступу в адмінці підхоплюється, к
   await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
   await expect(page.locator("#qf-noaccess")).toBeVisible({ timeout: 8000 });
 });
+
+test("дашборд: «Журнал», «Моніторинг» і новини показуються лише з відповідними дозволами", async ({ page, errors }) => {
+  await seed(page, v2({}, { perms: { "gradebook.view": false, "online.view": false, "news.view": false } }), "t1");
+  await page.goto("/");
+  await expect(page.locator("#dx-q")).toBeVisible();
+  await expect(page.locator('#dx-q a[href="gradebook"]')).toBeHidden();
+  await expect(page.locator('#dx-q a[href="live"]')).toBeHidden();
+  await expect(page.locator("#dash-news-block")).toBeHidden();
+  await seed(page, v2({}), "t1");
+  await page.goto("/");
+  await expect(page.locator('#dx-q a[href="gradebook"]')).toBeVisible();
+  await expect(page.locator('#dx-q a[href="live"]')).toBeVisible();
+  expect(errors).toEqual([]);
+});
