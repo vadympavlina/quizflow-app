@@ -131,11 +131,12 @@ const v2 = (roles, extra = {}, user = {}) => {
   d.settings = { features: { v: 2, roles: { r: { perms: roles } }, ...extra } };
   return d;
 };
-const GAMES_ONLY = { "tests.view": false, "tests.edit": false, "tests.import": false, "tests.share": false, "links.manage": false, "links.view": false, "games.run": true };
-const TESTS_ONLY = { "games.run": false, "games.history": false, "online.view": false };
+// Ролі лише додають права, тож «лише ігри» = базові права без тестів і посилань + роль, що дає ігри
+const GAMES_ONLY = d => v2({ "games.run": true }, { perms: { "tests.view": false, "tests.edit": false, "tests.import": false, "tests.share": false, "links.manage": false, "links.view": false } });
+const TESTS_ONLY = () => v2({}, { perms: { "games.run": false, "games.history": false, "online.view": false } });
 
 test("роль «лише ігри»: сторінки тестів немає, а гру запустити можна", async ({ page, errors }) => {
-  await seed(page, v2(GAMES_ONLY), "t1");
+  await seed(page, GAMES_ONLY(), "t1");
   await page.goto("/");
   await expect(page.locator("#dx-q")).toBeVisible();
   await expect(page.locator('#dx-q [data-dx="game"]')).toBeVisible();
@@ -159,7 +160,7 @@ test("роль «лише ігри»: сторінки тестів немає, 
 });
 
 test("роль «лише тести»: ігор і моніторингу немає", async ({ page, errors }) => {
-  await seed(page, v2(TESTS_ONLY), "t1");
+  await seed(page, TESTS_ONLY(), "t1");
   await page.goto("/");
   await expect(page.locator("#dx-q")).toBeVisible();
   await expect(page.locator('#dx-q [data-dx="game"]')).toBeHidden();
@@ -190,13 +191,13 @@ test("режим «лише перегляд»: сторінки відкрив�
 });
 
 test("особисте налаштування сильніше за роль", async ({ page }) => {
-  await seed(page, v2({ "games.run": false }, {}, { features: { perms: { "games.run": true } } }), "t1");
+  await seed(page, v2({}, { perms: { "games.run": false } }, { features: { perms: { "games.run": true } } }), "t1");
   await page.goto("/");
   await expect(page.locator('#dx-q [data-dx="game"]')).toBeVisible();
 });
 
 test("дозволи з кешу працюють одразу, без мерехтіння меню", async ({ page }) => {
-  await seed(page, v2(GAMES_ONLY), "t1");
+  await seed(page, GAMES_ONLY(), "t1");
   await page.goto("/");
   await expect(page.locator("#sidebar a[data-page=history]")).toBeVisible();
   const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("qf_perms_cache")));
@@ -205,7 +206,7 @@ test("дозволи з кешу працюють одразу, без мере�
 });
 
 test("без дозволу на AI у конструкторі немає генерації питань", async ({ page, errors }) => {
-  const d = v2({ ai: false });
+  const d = v2({}, { perms: { ai: false } });
   await seed(page, d, "t1");
   await page.goto("/constructor?id=T2");
   await expect(page.locator(".tb")).not.toHaveCount(0);
