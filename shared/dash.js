@@ -115,7 +115,7 @@ function renderNow(A, L, now){
   liveRooms(D.rooms).forEach(r => {
     const inGame = IN_GAME.includes(r.status);
     const target = roomTarget(r), state = roomState(r);
-    items.push(`<a class="dx-now-it game" href="live/${target}?code=${encodeURIComponent(r.code)}" target="_blank" rel="noopener">
+    items.push(`<a class="dx-now-it game" data-needs="games.run" href="live/${target}?code=${encodeURIComponent(r.code)}" target="_blank" rel="noopener">
       <span class="dx-now-ic">${inGame ? '<i class="dx-pulse"></i>' : ""}${svg(IC.play, 15)}</span>
       <span class="dx-now-b" title="${esc(r.title)}"><b>Гра ${esc(r.code)} · ${r.players.length} ${plural(r.players.length, ["гравець", "гравці", "гравців"])}</b><small>${esc(state)}${r.title ? ` · ${esc(r.title)}` : ""}</small></span>
       <span class="dx-now-go">${svg(IC.chev, 14, 2.5)}</span></a>`);
@@ -124,13 +124,13 @@ function renderNow(A, L, now){
   if (online.length){
     const tIds = [...new Set(online.map(a => a.testId))];
     const tt = tIds.length === 1 ? (window.tests || []).find(t => t.id === tIds[0])?.title : "";
-    items.push(`<a class="dx-now-it live" href="online">
+    items.push(`<a class="dx-now-it live" data-needs="online.view" href="online">
       <span class="dx-now-ic"><i class="dx-pulse"></i>${svg(IC.users, 15)}</span>
       <span class="dx-now-b"><b>${online.length} ${plural(online.length, ["проходить", "проходять", "проходять"])} тест зараз</b><small>${tt ? esc(tt) : `${tIds.length} ${plural(tIds.length, ["тест", "тести", "тестів"])}`}</small></span>
       <span class="dx-now-go">${svg(IC.chev, 14, 2.5)}</span></a>`);
   }
   const susp = qf().suspNewCount?.() || 0;
-  if (susp) items.push(`<a class="dx-now-it bad" href="suspicious">
+  if (susp) items.push(`<a class="dx-now-it bad" data-needs="suspicious.view" href="suspicious">
       <span class="dx-now-ic">${svg(IC.flag, 15)}</span>
       <span class="dx-now-b"><b>${susp} ${plural(susp, ["нова підозріла", "нові підозрілі", "нових підозрілих"])}</b><small>Виходи, копіювання, скріншоти</small></span>
       <span class="dx-now-go">${svg(IC.chev, 14, 2.5)}</span></a>`);
@@ -209,6 +209,8 @@ function renderStart(A, L, T, games){
     { done: games.length > 0 || D.rooms.size > 0, t: "Проведіть гру наживо", s: "Вікторина на уроці: учні заходять за кодом", act: "game", btn: "Запустити" },
     { done: L.length > 0, t: "Надішліть тест за посиланням", s: "Самостійна чи контрольна у зручний час", act: "test", btn: "Надіслати" },
   ];
+  // Кроки, які ця роль не може виконати, не показуємо
+  for (let i = steps.length - 1; i >= 0; i--) if (DX_NEEDS[steps[i].act] && window.can && !window.can(DX_NEEDS[steps[i].act])) steps.splice(i, 1);
   const n = steps.filter(x => x.done).length;
   // Лише поки немає жодного тесту: далі всі дії вже на плитках зверху
   if (D.games === null || n === steps.length || T.some(t => t.status !== "archived" && (t.questions || []).length)){ box.hidden = true; return; }
