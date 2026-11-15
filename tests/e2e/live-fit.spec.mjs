@@ -37,3 +37,17 @@ for (const [W, H] of [[1920, 1080], [1366, 768], [1280, 720]]) {
     }
   }
 }
+
+test("блок очікування текстових відповідей: суцільна рамка й непрозорий фон, а не прозорий пунктир", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const d = dbFor(SC["текст"], "speed");
+  d.rooms["12345678"] = { ...d.rooms["12345678"], status: "question", questionStartedAt: Date.now() };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  const hint = page.locator(".text-wait-hint");
+  await expect(hint).toBeVisible();
+  const st = await hint.evaluate(el => { const c = getComputedStyle(el); return { border: c.borderTopStyle, bg: c.backgroundColor }; });
+  expect(st.border).toBe("solid");
+  expect(+(st.bg.match(/[\d.]+/g)[3] ?? 1)).toBeGreaterThanOrEqual(.8);
+  expect(errors).toEqual([]);
+});
