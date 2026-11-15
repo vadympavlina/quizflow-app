@@ -273,6 +273,37 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(11,20,55,.1)}
 .seg button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
 #ai-focus button{padding:0 6px;font-size:12px}
+.ai-src{margin-bottom:2px}
+.ai-cnt{font:600 11.5px 'Geist Mono',monospace;color:var(--faint);text-align:right;margin-top:4px}
+.grid3{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:end}
+.grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:end}
+.ai-more-t{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:6px 2px;font-size:13px;font-weight:700;color:var(--muted)}
+.ai-more-t:hover{color:var(--ink)}
+.ai-more-t svg{transition:transform .18s}
+.ai-more-t[aria-expanded="true"] svg{transform:rotate(180deg)}
+.ai-more{padding:2px 0 4px}
+.ai-rev-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+.ai-rev-h b{font-size:15px;font-weight:800}
+.ai-all{font-size:12.5px;font-weight:700;color:var(--pri,#2D5BE3);padding:4px 6px;border-radius:8px}
+.ai-all:hover{background:var(--pri-soft)}
+.ai-note{margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--pri-soft);color:#1E3A8A;font-size:12.5px;font-weight:600;line-height:1.4}
+.ai-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:min(52dvh,460px);overflow-y:auto;padding:2px}
+.ai-q{display:flex;gap:11px;padding:11px 12px;border:1.5px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;transition:border-color .15s,opacity .15s}
+.ai-q:hover{border-color:var(--pri-line)}
+.ai-q.off{opacity:.5;background:var(--hover)}
+.ai-q input{position:absolute;opacity:0;pointer-events:none}
+.ai-ck{flex:0 0 auto;width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;margin-top:1px;color:transparent;transition:all .15s}
+.ai-q input:checked + .ai-ck{background:var(--pri,#2D5BE3);border-color:var(--pri,#2D5BE3);color:#fff}
+.ai-q input:focus-visible + .ai-ck{outline:2px solid var(--pri,#2D5BE3);outline-offset:2px}
+.ai-qb{min-width:0;flex:1}
+.ai-qt{display:inline-block;font-size:11px;font-weight:800;color:var(--c);margin-bottom:3px}
+.ai-qx{font-size:14px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.ai-qa{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
+.ai-qa li{display:flex;gap:7px;align-items:baseline;overflow-wrap:anywhere}
+.ai-qa li.ok{color:#047857;font-weight:700}
+.ai-qa li i{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--line);transform:translateY(-1px)}
+.ai-qa li.ok i{background:#10B981}
+@media (max-width:480px){.grid3,.grid2e{grid-template-columns:1fr}}
 .achips{display:flex;flex-wrap:wrap;gap:6px}
 .achips button{height:32px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:12.5px;font-weight:700;transition:all .15s}
 .achips button:hover{color:var(--ink)}
@@ -645,55 +676,85 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
     <button class="ib mb-x" data-act="close-modal" aria-label="Закрити"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     <div class="mb-h">
       <div class="mb-ic ai"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div>
-      <div><h3 id="ai-t">AI-генерація питань</h3><p>Питання додадуться в кінець тесту — їх можна відредагувати.</p><span class="prov" id="ai-prov">Groq</span></div>
+      <div><h3 id="ai-t">Питання від AI</h3><p id="ai-sub">Опишіть, про що тест, а решту AI складе сам.</p><span class="prov" id="ai-prov">Groq</span></div>
     </div>
-    <label class="fl" for="ai-topic">Тема *</label>
-    <input class="in" id="ai-topic" maxlength="200" placeholder="Наприклад: Типи даних у Python">
-    <label class="fl" for="ai-mat">Ваш матеріал <small>— необов'язково</small></label>
-    <textarea class="in" id="ai-mat" rows="4" maxlength="8000" placeholder="Вставте конспект чи текст: питання складуться лише за ним, без вигадок"></textarea>
-    <label class="fl" for="ai-desc">Побажання <small>— необов'язково</small></label>
-    <textarea class="in" id="ai-desc" rows="2" maxlength="800" placeholder="Фокус на практичному застосуванні: списки, словники, функції…"></textarea>
-    <label class="fl">Складність</label>
-    <div class="seg" id="ai-diff">
-      <button data-v="легка">Легка</button><button data-v="середня" class="on">Середня</button><button data-v="складна">Складна</button>
-    </div>
-    <label class="fl">Типи питань <small>— можна кілька, розподіляться порівну</small></label>
-    <div class="achips" id="ai-types" role="group" aria-label="Типи питань">
-      <button type="button" data-v="single" class="on">Одна відповідь</button><button type="button" data-v="multi" class="on">Кілька</button><button type="button" data-v="text" class="on">Коротка</button><button type="button" data-v="number">Число</button><button type="button" data-v="long">Розгорнута</button><button type="button" data-v="ordering">Порядок</button><button type="button" data-v="matching">Зіставлення</button>
-    </div>
-    <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)">
-      <div>
-        <label class="fl" for="ai-aud">Для кого <small>— необов'язково</small></label>
-        <input class="in" id="ai-aud" maxlength="80" placeholder="Наприклад: 9 клас, 1 курс">
+
+    <div id="ai-p1">
+      <div class="seg ai-src" id="ai-src" role="group" aria-label="Джерело питань">
+        <button type="button" data-v="topic" class="on">За темою</button><button type="button" data-v="text">За моїм текстом</button>
       </div>
-      <div>
-        <label class="fl">Акцент</label>
+      <div id="ai-src-topic">
+        <label class="fl" for="ai-topic">Тема</label>
+        <input class="in" id="ai-topic" maxlength="200" placeholder="Наприклад: Типи даних у Python">
+      </div>
+      <div id="ai-src-text" hidden>
+        <label class="fl" for="ai-mat">Ваш текст</label>
+        <textarea class="in" id="ai-mat" rows="6" maxlength="8000" placeholder="Вставте конспект чи уривок підручника. Питання складуться лише за ним, без вигадок."></textarea>
+        <div class="ai-cnt" id="ai-mat-n">0 / 8000</div>
+      </div>
+
+      <div class="grid3">
+        <div>
+          <label class="fl">Скільки питань</label>
+          <div class="num-in">
+            <button data-act="ai-dec" aria-label="Менше">−</button>
+            <input id="ai-count" type="number" min="1" max="30" value="10" aria-label="Кількість питань">
+            <button data-act="ai-inc" aria-label="Більше">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="fl">Складність</label>
+          <div class="seg" id="ai-diff">
+            <button data-v="легка">Легка</button><button data-v="середня" class="on">Середня</button><button data-v="складна">Складна</button>
+          </div>
+        </div>
+      </div>
+
+      <label class="fl">Які типи питань</label>
+      <div class="achips" id="ai-types" role="group" aria-label="Типи питань">
+        <button type="button" data-v="single" class="on">Одна відповідь</button><button type="button" data-v="multi" class="on">Кілька відповідей</button><button type="button" data-v="text" class="on">Коротка відповідь</button><button type="button" data-v="number">Число</button><button type="button" data-v="ordering">Порядок</button><button type="button" data-v="matching">Зіставлення</button><button type="button" data-v="long">Розгорнута</button>
+      </div>
+
+      <button type="button" class="ai-more-t" id="ai-more-t" data-act="ai-more" aria-expanded="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>Додаткові налаштування
+      </button>
+      <div class="ai-more" id="ai-more" hidden>
+        <label class="fl" for="ai-desc">Що врахувати</label>
+        <textarea class="in" id="ai-desc" rows="2" maxlength="800" placeholder="Наприклад: більше практики, без дат, лише змінні й цикли"></textarea>
+        <div class="grid2e">
+          <div>
+            <label class="fl" for="ai-aud">Для кого</label>
+            <input class="in" id="ai-aud" maxlength="80" placeholder="9 клас, 1 курс…">
+          </div>
+          <div>
+            <label class="fl">Варіантів у виборі</label>
+            <div class="seg" id="ai-opts">
+              <button data-v="3">3</button><button data-v="4" class="on">4</button><button data-v="5">5</button><button data-v="6">6</button>
+            </div>
+          </div>
+        </div>
+        <label class="fl">Що перевіряють питання</label>
         <div class="seg" id="ai-focus">
-          <button data-v="факти">Факти</button><button data-v="розуміння" class="on">Розуміння</button><button data-v="застосування">Практика</button>
+          <button data-v="факти">Факти й терміни</button><button data-v="розуміння" class="on">Розуміння</button><button data-v="застосування">Практика</button>
         </div>
+      </div>
+
+      <label class="sw ai-verify"><input type="checkbox" id="ai-verify" checked><b></b>Перевірити відповіді перед показом<small>Займає трохи довше, але AI виправить або прибере питання з помилками.</small></label>
+      <div class="hint ai-off" id="ai-off" hidden></div>
+      <div class="mb-foot">
+        <button class="btn ghost" data-act="close-modal">Скасувати</button>
+        <button class="btn ai" id="ai-go" data-act="ai-run"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg>Згенерувати</button>
       </div>
     </div>
-    <div class="grid2">
-      <div>
-        <label class="fl">Варіантів у виборі</label>
-        <div class="seg" id="ai-opts">
-          <button data-v="3">3</button><button data-v="4" class="on">4</button><button data-v="5">5</button><button data-v="6">6</button>
-        </div>
+
+    <div id="ai-p2" hidden>
+      <div class="ai-rev-h"><b id="ai-rev-t"></b><button type="button" class="ai-all" id="ai-all" data-act="ai-all">Зняти всі</button></div>
+      <div class="ai-note" id="ai-note" hidden></div>
+      <div class="ai-list" id="ai-list"></div>
+      <div class="mb-foot">
+        <button class="btn ghost" data-act="ai-back">Змінити налаштування</button>
+        <button class="btn ai" id="ai-add" data-act="ai-add">Додати в тест</button>
       </div>
-      <div>
-        <label class="fl" for="ai-count">Кількість</label>
-        <div class="num-in">
-          <button data-act="ai-dec" aria-label="Менше">−</button>
-          <input id="ai-count" type="number" min="1" max="30" value="10">
-          <button data-act="ai-inc" aria-label="Більше">+</button>
-        </div>
-      </div>
-    </div>
-    <label class="sw ai-verify"><input type="checkbox" id="ai-verify" checked><b></b>Перевірити якість другим проходом<small>AI ще раз перевіряє відповіді й слабкі питання виправляє або прибирає. Це ще один запит.</small></label>
-    <div class="hint ai-off" id="ai-off" hidden></div>
-    <div class="mb-foot">
-      <button class="btn ghost" data-act="close-modal">Скасувати</button>
-      <button class="btn ai" id="ai-go" data-act="ai-run"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg>Згенерувати</button>
     </div>
   </div>
 </div>
@@ -1583,10 +1644,13 @@ fix додавай лише якщо можеш надійно виправит�
 
 async function aiGenerate(){
   const why = aiBlocked(); if (why){ toast(why, "err"); return; }
-  const topic = $("ai-topic").value.trim();
+  const fromText = aiSrc() === "text";
+  const material = fromText ? $("ai-mat").value.trim().slice(0, 8000) : "";
+  if (fromText && material.length < 80){ $("ai-mat").focus(); toast("Вставте текст, за яким скласти питання (хоча б кілька речень)", "err"); return; }
+  // За текстом тема не потрібна: беремо назву тесту або початок тексту
+  const topic = fromText ? ($("ai-topic").value.trim() || S.title || material.slice(0, 80)) : $("ai-topic").value.trim();
   if (!topic){ $("ai-topic").focus(); toast("Вкажіть тему", "err"); return; }
   const desc = $("ai-desc").value.trim();
-  const material = $("ai-mat").value.trim().slice(0, 8000);
   const aud = $("ai-aud").value.trim();
   const diff = $("ai-diff").querySelector(".on")?.dataset.v || "середня";
   const focus = $("ai-focus").querySelector(".on")?.dataset.v || "розуміння";
@@ -1612,7 +1676,7 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
 5. Питання формулюй чітко, без підказок у тексті; ${material ? "кожне питання має мати відповідь у матеріалі" : "спирайся лише на достовірні факти"}.
 6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.`;
   const btn = $("ai-go"), html = btn.innerHTML;
-  const lock = on => $("m-ai").querySelectorAll("input,textarea,.seg button,.achips button,.num-in button").forEach(e => e.disabled = on);
+  const lock = on => $("m-ai").querySelectorAll("#ai-p1 input,#ai-p1 textarea,#ai-p1 .seg button,#ai-p1 .achips button,#ai-p1 .num-in button").forEach(e => e.disabled = on);
   btn.disabled = true; btn.innerHTML = `<span class="spin"></span>Генерую ${count} ${plural(count, ["питання", "питання", "питань"])}…`;
   lock(true);
   try {
@@ -1634,11 +1698,7 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
       note = !v.ok ? " (перевірку якості виконати не вдалося)" : v.fixed || v.dropped ? ` (виправлено ${v.fixed}, прибрано ${v.dropped})` : " (перевірку пройдено)";
       if (!add.length) throw new Error("після перевірки не лишилось надійних питань: спробуйте інші вимоги чи додайте матеріал");
     }
-    const from = S.qs.length;
-    S.qs.push(...add.map(normQ)); S.cur = from;
-    closeModal();
-    afterStructChange();
-    toast(`Додано ${add.length} ${plural(add.length, ["питання", "питання", "питань"])}${note}`, "", { label: "Скасувати", fn: () => { S.qs.splice(from, add.length); S.cur = clamp(from - 1, 0, S.qs.length - 1); afterStructChange(); } });
+    showAiReview(add, { note: note.replace(/^ \(|\)$/g, ""), skipped });
   } catch (e){
     toast("AI: " + e.message, "err");
   } finally {
@@ -1646,6 +1706,63 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
     lock(false);
   }
 }
+
+// ─── Модалка AI: два кроки — налаштування і перегляд результату ──────────────
+let _aiRes = [];
+const aiSrc = () => $("ai-src").querySelector(".on")?.dataset.v || "topic";
+function syncAiSrc(v){
+  $("ai-src-topic").querySelector("label").textContent = v === "text" ? "Тема (необов'язково)" : "Тема";
+  $("ai-src-text").hidden = v !== "text";
+  $("ai-topic").placeholder = v === "text" ? "Підставимо назву тесту, якщо залишити порожнім" : "Наприклад: Типи даних у Python";
+  if (v === "text") setTimeout(() => $("ai-mat").focus(), 0);
+}
+function aiStep(n){
+  $("ai-p1").hidden = n !== 1; $("ai-p2").hidden = n !== 2;
+  $("ai-t").textContent = n === 1 ? "Питання від AI" : "Перегляньте питання";
+  $("ai-sub").textContent = n === 1 ? "Опишіть, про що тест, а решту AI складе сам." : "Зніміть позначки з тих, що не потрібні. Решту можна буде відредагувати в тесті.";
+  $("m-ai").querySelector(".mb").scrollTop = 0;
+}
+function aiAnswers(q){
+  const li = (t, ok) => `<li${ok ? ' class="ok"' : ""}><i></i><span>${esc(t)}</span></li>`;
+  if (q.options) return q.options.map((o, i) => li(o, q.correct.includes(i))).join("");
+  if (q.items) return q.items.map((o, i) => li(`${i + 1}. ${o}`, false)).join("");
+  if (q.pairs) return q.pairs.map(p => li(`${p.left} → ${p.options[p.correct]}`, false)).join("");
+  if (q.type === "long") return li("Перевіряє викладач", false);
+  return li(String(q.correct), true);
+}
+function renderAiList(){
+  $("ai-list").innerHTML = _aiRes.map((r, i) => `<label class="ai-q${r.on ? "" : " off"}" data-i="${i}">
+    <input type="checkbox" ${r.on ? "checked" : ""}><span class="ai-ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    <span class="ai-qb"><span class="ai-qt" style="--c:${typeOf(r.q).c}">${esc(typeOf(r.q).label)}</span><div class="ai-qx">${esc(plain(r.q.text))}</div><ul class="ai-qa">${aiAnswers(r.q)}</ul></span></label>`).join("");
+  const n = _aiRes.filter(r => r.on).length;
+  $("ai-rev-t").textContent = `Готово: ${_aiRes.length} ${plural(_aiRes.length, ["питання", "питання", "питань"])}`;
+  $("ai-all").textContent = n === _aiRes.length ? "Зняти всі" : "Вибрати всі";
+  const add = $("ai-add"); add.disabled = !n;
+  add.textContent = n ? `Додати в тест: ${n}` : "Нічого не вибрано";
+}
+function showAiReview(list, { note = "", skipped = 0 } = {}){
+  _aiRes = list.map(q => ({ q, on: true }));
+  const nt = $("ai-note"), parts = [note, skipped ? `${skipped} ${plural(skipped, ["повтор або непридатне питання відкинуто", "повтори чи непридатні питання відкинуто", "повторів чи непридатних питань відкинуто"])}` : ""].filter(Boolean);
+  nt.hidden = !parts.length; nt.textContent = parts.join(" · ");
+  renderAiList(); aiStep(2);
+}
+function aiAddSelected(){
+  const add = _aiRes.filter(r => r.on).map(r => r.q);
+  if (!add.length) return;
+  const from = S.qs.length;
+  S.qs.push(...add.map(normQ)); S.cur = from;
+  closeModal();
+  afterStructChange();
+  toast(`Додано ${add.length} ${plural(add.length, ["питання", "питання", "питань"])}`, "", { label: "Скасувати", fn: () => { S.qs.splice(from, add.length); S.cur = clamp(from - 1, 0, S.qs.length - 1); afterStructChange(); } });
+}
+document.addEventListener("change", e => {
+  const row = e.target.closest?.(".ai-q"); if (!row) return;
+  _aiRes[+row.dataset.i].on = e.target.checked; renderAiList();
+});
+document.addEventListener("click", e => {
+  const src = e.target.closest("#ai-src button"); if (src) syncAiSrc(src.dataset.v);
+});
+document.addEventListener("input", e => { if (e.target.id === "ai-mat") $("ai-mat-n").textContent = `${e.target.value.length} / 8000`; });
 
 async function aiRephrase(btn){
   const why = aiBlocked(); if (why){ toast(why, "err"); return; }
@@ -1684,7 +1801,8 @@ async function openAi(){
   $("ai-off").hidden = !why; $("ai-off").innerHTML = why ? `${ic("alert", 15)}<span>${esc(why)}</span>` : "";
   $("ai-go").disabled = !!why;
   if (!$("ai-topic").value && S.title) $("ai-topic").value = S.title;
-  openModal("m-ai", "ai-topic");
+  aiStep(1); syncAiSrc(aiSrc());
+  openModal("m-ai", aiSrc() === "text" ? "ai-mat" : "ai-topic");
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2104,6 +2222,10 @@ document.addEventListener("click", async e => {
     case "preview": return preview();
     case "ai": return openAi();
     case "ai-run": return aiGenerate();
+    case "ai-back": return aiStep(1);
+    case "ai-add": return aiAddSelected();
+    case "ai-all": { const all = _aiRes.every(r => r.on); _aiRes.forEach(r => r.on = !all); return renderAiList(); }
+    case "ai-more": { const m = $("ai-more"); m.hidden = !m.hidden; b.setAttribute("aria-expanded", String(!m.hidden)); return; }
     case "ai-inc": case "ai-dec": { const n = $("ai-count"); n.value = clamp((+n.value || 10) + (a === "ai-inc" ? 1 : -1), 1, 30); return; }
     case "import": if (CAPS?.flags.import === false) return toast(`«${CAP_FLAGS.import.label}» вимкнено адміністратором`, "err"); return openImport();
     case "import-run": return runImport();

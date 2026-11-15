@@ -27,12 +27,15 @@ async function generate(page, { verify = false } = {}) {
   if (!verify) await page.locator(".ai-verify").click();        // перемикач за замовчуванням увімкнений
   await page.locator("#ai-go").click();
 }
+// Другий крок модалки: питання показано для перегляду, додаємо вибрані
+const accept = async page => { await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 }); await page.locator("#ai-add").click(); };
 
 test("конструктор: генерація питань іде через воркер з токеном викладача й без ключа", async ({ page, errors }) => {
   const calls = [];
   await fakeWorker(page, calls);
   await seed(page, db(), "t1");
   await generate(page);
+  await accept(page);
   await expect(page.getByText("Додано 1 питання")).toBeVisible({ timeout: 8000 });
   expect(calls.length).toBe(1);
   expect(calls[0].path).toBe("/ai");
@@ -90,13 +93,16 @@ test("генерація: матеріал, типи й кількість ва�
   await page.goto("/constructor?id=T2");
   await page.locator('.tb[data-act="ai"]').click();
   await page.locator("#ai-topic").fill("Столиці");
-  await page.locator("#ai-mat").fill("Париж є столицею Франції, а Рим столицею Італії.");
+  await page.locator('#ai-src [data-v="text"]').click();
+  await page.locator("#ai-mat").fill("Париж є столицею Франції, а Рим столицею Італії. Берлін — столиця Німеччини, Мадрид — столиця Іспанії.");
+  await page.locator("#ai-more-t").click();
   await page.locator("#ai-aud").fill("9 клас");
   await page.locator('#ai-types [data-v="number"]').click();
   await page.locator('#ai-types [data-v="multi"]').click();       // вимикаємо «Кілька»
   await page.locator('#ai-opts [data-v="5"]').click();
   await page.locator(".ai-verify").click();
   await page.locator("#ai-go").click();
+  await accept(page);
   await expect(page.getByText("Додано 1 питання")).toBeVisible({ timeout: 8000 });
   const prompt = calls[0].messages[0].content;
   expect(prompt).toContain("МАТЕРІАЛ");
@@ -113,7 +119,9 @@ test("перевірка якості: сумнівне питання без в
   await scripted(page, calls, [TWO, JSON.stringify([{ i: 0, ok: true }, { i: 1, ok: false, reason: "Рим, а не Париж" }])]);
   await seed(page, db(), "t1");
   await generate(page, { verify: true });
-  await expect(page.getByText("Додано 1 питання (виправлено 0, прибрано 1)")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-note")).toContainText("виправлено 0, прибрано 1", { timeout: 8000 });
+  await accept(page);
+  await expect(page.getByText("Додано 1 питання")).toBeVisible();
   expect(calls.length).toBe(2);
   expect(calls[1].messages[0].content).toContain("суворий рецензент");
   expect(errors).toEqual([]);
@@ -125,7 +133,9 @@ test("перевірка якості: виправлене питання за�
   await scripted(page, calls, [TWO, JSON.stringify([{ i: 0, ok: true }, { i: 1, ok: false, fix }])]);
   await seed(page, db(), "t1");
   await generate(page, { verify: true });
-  await expect(page.getByText("Додано 2 питання (виправлено 1, прибрано 0)")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-note")).toContainText("виправлено 1, прибрано 0", { timeout: 8000 });
+  await accept(page);
+  await expect(page.getByText("Додано 2 питання")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -134,7 +144,9 @@ test("перевірка якості: збій другого проходу н
   await scripted(page, calls, [TWO, "це не JSON"]);
   await seed(page, db(), "t1");
   await generate(page, { verify: true });
-  await expect(page.getByText("Додано 2 питання (перевірку якості виконати не вдалося)")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-note")).toContainText("перевірку якості виконати не вдалося", { timeout: 8000 });
+  await accept(page);
+  await expect(page.getByText("Додано 2 питання")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -151,6 +163,7 @@ test("правильна відповідь зберігається після 
     await page.locator("#ai-topic").fill("Столиці Європи");
     if (i === 0) await page.locator(".ai-verify").click();
     await page.locator("#ai-go").click();
+    await accept(page);
     await expect(page.locator(".qi")).toHaveCount(before + 1, { timeout: 8000 });
     const right = await page.locator(".opt.ok input[data-f='opt']").first().inputValue();
     expect(right.trim()).toBe(C[i][1]);
@@ -165,5 +178,42 @@ test("повтори питань, що вже є в тесті, відсіюю�
   const d = db(); d.teachers.t1.tests.T2.questions = [{ id: "x1", type: "text", text: "Яка столиця Франції?", correct: "Париж" }];
   await seed(page, d, "t1");
   await generate(page);
+  await accept(page);
   await expect(page.getByText("Додано 1 питання")).toBeVisible({ timeout: 8000 });
+});
+
+test("модалка: два кроки; результат можна переглянути, зняти зайві питання й повернутись до налаштувань", async ({ page, errors }) => {
+  const calls = [];
+  await scripted(page, calls, [TWO]);
+  await seed(page, db(), "t1");
+  await generate(page);
+  await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-p1")).toBeHidden();
+  await expect(page.locator(".ai-q")).toHaveCount(2);
+  await expect(page.locator(".ai-qa li.ok").first()).toBeVisible();      // правильна відповідь виділена
+  await page.locator(".ai-q").first().click();                           // зняли перше
+  await expect(page.locator("#ai-add")).toHaveText("Додати в тест: 1");
+  await page.locator("#ai-all").click();                                 // «Вибрати всі»
+  await expect(page.locator("#ai-add")).toHaveText("Додати в тест: 2");
+  await page.locator("#ai-all").click();                                 // «Зняти всі»
+  await expect(page.locator("#ai-add")).toBeDisabled();
+  await page.locator('[data-act="ai-back"]').click();                    // назад: налаштування збереглись
+  await expect(page.locator("#ai-p1")).toBeVisible();
+  await expect(page.locator("#ai-topic")).toHaveValue("Столиці Європи");
+  expect(errors).toEqual([]);
+});
+
+test("модалка: додаткові налаштування сховані, режим «За текстом» вимагає текст", async ({ page, errors }) => {
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await page.locator('.tb[data-act="ai"]').click();
+  await expect(page.locator("#ai-more")).toBeHidden();
+  await page.locator("#ai-more-t").click();
+  await expect(page.locator("#ai-more")).toBeVisible();
+  await expect(page.locator("#ai-mat")).toBeHidden();
+  await page.locator('#ai-src [data-v="text"]').click();
+  await expect(page.locator("#ai-mat")).toBeVisible();
+  await page.locator("#ai-go").click();
+  await expect(page.getByText("Вставте текст")).toBeVisible();
+  expect(errors).toEqual([]);
 });
