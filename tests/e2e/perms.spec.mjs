@@ -28,10 +28,11 @@ test("особисте налаштування сильніше за роль �
   expect(resolvePerms(cfg, prof).src.export).toBe("user");
 });
 
-test("кілька ролей: достатньо однієї, що дозволяє", () => {
-  const cfg = { v: 2, roles: { a: { perms: { "ai": false } }, b: { perms: { "ai": true } } } };
+test("ролі лише додають: достатньо однієї, що дозволяє; «Ні» в ролі нічого не забороняє", () => {
+  const cfg = { v: 2, perms: { ai: false }, roles: { a: { perms: { "ai": false } }, b: { perms: { "ai": true } } } };
   expect(T(cfg, { role: "teacher", customRoleIds: { a: true, b: true } }).ai).toBe(true);
-  expect(T(cfg, { role: "teacher", customRoleIds: { a: true } }).ai).toBe(false);
+  expect(T(cfg, { role: "teacher", customRoleIds: { a: true } }).ai).toBe(false);   // база закрита, роль не дає
+  expect(T({ v: 2, roles: { a: { perms: { ai: false } } } }, { role: "teacher", customRoleIds: { a: true } }).ai).toBe(true);   // база відкрита, «Ні» в ролі не діє
 });
 
 test("залежності вмикаються самі, але особисте «Ні» не відновлюється", () => {
@@ -44,7 +45,7 @@ test("залежності вмикаються самі, але особист�
 });
 
 test("роль «лише ігри»: тести бачить для вибору, сторінки «Тести» і редагування немає", () => {
-  const cfg = { v: 2, roles: { g: { perms: { "tests.view": false, "tests.edit": false, "tests.import": false, "tests.share": false, "links.manage": false, "games.run": true } } } };
+  const cfg = { v: 2, perms: { "tests.view": false, "tests.edit": false, "tests.import": false, "tests.share": false, "links.manage": false }, roles: { g: { perms: { "games.run": true } } } };
   const p = T(cfg, { role: "teacher", customRoleIds: { g: true } });
   expect(p["games.run"]).toBe(true);
   expect(p["tests.use"]).toBe(true);
@@ -57,7 +58,7 @@ test("роль «лише ігри»: тести бачить для вибор�
 });
 
 test("роль «лише тести»: ігор немає", () => {
-  const cfg = { v: 2, roles: { t: { perms: { "games.run": false, "games.history": false, "online.view": false } } } };
+  const cfg = { v: 2, perms: { "games.run": false, "games.history": false, "online.view": false }, roles: { t: { perms: { "tests.use": true } } } };
   const p = T(cfg, { role: "teacher", customRoleIds: { t: true } });
   expect(p["games.run"]).toBe(false);
   expect(pageAllowed(p, "history")).toBe(false);
