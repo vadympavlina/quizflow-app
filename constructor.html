@@ -272,16 +272,57 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .seg button:hover{color:var(--ink)}
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(11,20,55,.1)}
 .seg button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
-#ai-focus button{padding:0 6px;font-size:12px}
 .ai-src{margin-bottom:2px}
 .ai-cnt{font:600 11.5px 'Geist Mono',monospace;color:var(--faint);text-align:right;margin-top:4px}
 .grid3{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:end}
 .grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:end}
-.ai-more-t{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:6px 2px;font-size:13px;font-weight:700;color:var(--muted)}
-.ai-more-t:hover{color:var(--ink)}
-.ai-more-t svg{transition:transform .18s}
-.ai-more-t[aria-expanded="true"] svg{transform:rotate(180deg)}
-.ai-more{padding:2px 0 4px}
+.ai-mix-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.ai-mix-h .fl{margin-bottom:6px}
+.ai-mode{margin-top:14px;min-width:230px}
+.ai-auto{display:flex;align-items:center;gap:14px;margin-top:8px}
+.ai-hint{margin:0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.ai-mix{margin-top:8px;border:1px solid var(--line);border-radius:14px;padding:4px 12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px}
+.ai-mix-sum{grid-column:1/-1}
+.ai-mix-r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line-2)}
+.ai-mix-n{min-width:0}
+.ai-mix-n{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.ai-mix-n i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--faint))}
+.ai-mix-r.on .ai-mix-n{color:var(--ink)}
+.ai-step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ai-step button{width:28px;height:28px;font-size:16px;font-weight:700;color:var(--muted)}
+.ai-step button:hover:not(:disabled){background:var(--hover);color:var(--ink)}
+.ai-step button:disabled{opacity:.35}
+.ai-step output{min-width:30px;text-align:center;font:700 14px 'Geist Mono',monospace;color:var(--faint)}
+.ai-mix-r.on output{color:var(--pri,#2D5BE3)}
+.ai-mix-sum{padding:9px 0 6px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.ai-mix-sum b{color:var(--ink)}
+.ai-wish-t{margin-top:14px;padding:4px 0;font-size:13px;font-weight:700;color:var(--pri,#2D5BE3)}
+.ai-wish-t:hover{text-decoration:underline}
+#ai-wish{margin-top:6px}
+.mb.busy>:not(.ai-splash){display:none!important}
+.ai-splash{position:relative;min-height:400px;margin:-24px;border-radius:inherit;background:radial-gradient(120% 80% at 50% 0%,#F4EEFF 0%,#fff 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center;animation:spIn .25s ease}
+.ai-splash[hidden]{display:none}
+@keyframes spIn{from{opacity:0}to{opacity:1}}
+.ai-orb{position:relative;width:112px;height:112px;display:grid;place-items:center;margin-bottom:4px}
+.ai-orb span{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:#8B5CF6;border-right-color:rgba(139,92,246,.25);animation:spSpin 1.6s linear infinite}
+.ai-orb span:nth-child(2){inset:14px;border-top-color:#2D5BE3;border-right-color:rgba(45,91,227,.2);animation-duration:2.2s;animation-direction:reverse}
+.ai-orb span:nth-child(3){inset:28px;background:radial-gradient(circle,#EDE4FF,#F7F3FF);border:0;animation:spPulse 1.8s ease-in-out infinite}
+.ai-orb svg{position:relative;width:34px;height:34px;color:#7C3AED;animation:spPulse 1.8s ease-in-out infinite}
+@keyframes spSpin{to{transform:rotate(360deg)}}
+@keyframes spPulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.06)}}
+.ai-sp-t{font-size:18px;font-weight:800;color:var(--ink)}
+.ai-sp-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;text-align:left}
+.ai-sp-steps li{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:var(--faint);transition:color .2s}
+.ai-sp-steps li i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;transition:all .2s}
+.ai-sp-steps li.on{color:var(--ink)}
+.ai-sp-steps li.on i{border-color:#8B5CF6;border-top-color:transparent;animation:spSpin .8s linear infinite}
+.ai-sp-steps li.ok{color:#047857}
+.ai-sp-steps li.ok i{border-color:#10B981;background:#10B981 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/11px no-repeat}
+.ai-sp-steps li.skip{display:none}
+.ai-sp-note{margin:0;max-width:320px;font-size:12.5px;line-height:1.5;color:var(--muted);min-height:18px}
+@media (prefers-reduced-motion:reduce){.ai-orb span,.ai-orb svg,.ai-sp-steps li.on i{animation:none}.ai-splash{animation:none}}
+@media (max-width:560px){.ai-mix{grid-template-columns:1fr}}
+@media (max-width:480px){.ai-mix-h{flex-direction:column;align-items:stretch;gap:0}.ai-mode{min-width:0}.ai-auto{flex-direction:column;align-items:flex-start;gap:8px}}
 .ai-rev-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
 .ai-rev-h b{font-size:15px;font-weight:800}
 .ai-all{font-size:12.5px;font-weight:700;color:var(--pri,#2D5BE3);padding:4px 6px;border-radius:8px}
@@ -304,11 +345,6 @@ body.has-restore .body{height:calc(100vh - var(--top-h) - 45px);height:calc(100d
 .ai-qa li i{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--line);transform:translateY(-1px)}
 .ai-qa li.ok i{background:#10B981}
 @media (max-width:480px){.grid3,.grid2e{grid-template-columns:1fr}}
-.achips{display:flex;flex-wrap:wrap;gap:6px}
-.achips button{height:32px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:12.5px;font-weight:700;transition:all .15s}
-.achips button:hover{color:var(--ink)}
-.achips button.on{border-color:var(--pri,#2D5BE3);background:var(--pri-soft);color:var(--pri,#2D5BE3)}
-.achips button:focus-visible{outline:2px solid var(--pri,#2D5BE3);outline-offset:2px}
 .ai-verify{display:flex;align-items:flex-start;gap:10px;margin-top:14px;font-size:13px;font-weight:700;flex-wrap:wrap}
 .ai-verify small{flex-basis:100%;font-weight:500;color:var(--muted);font-size:12px;line-height:1.45;margin-left:46px;margin-top:-6px}
 .sp-note{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.45}
@@ -695,57 +731,44 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
         <div class="ai-cnt" id="ai-mat-n">0 / 8000</div>
       </div>
 
-      <div class="grid3">
-        <div>
-          <label class="fl">Скільки питань</label>
-          <div class="num-in">
-            <button data-act="ai-dec" aria-label="Менше">−</button>
-            <input id="ai-count" type="number" min="1" max="30" value="10" aria-label="Кількість питань">
-            <button data-act="ai-inc" aria-label="Більше">+</button>
-          </div>
-        </div>
-        <div>
-          <label class="fl">Складність</label>
-          <div class="seg" id="ai-diff">
-            <button data-v="легка">Легка</button><button data-v="середня" class="on">Середня</button><button data-v="складна">Складна</button>
-          </div>
-        </div>
+      <label class="fl">Складність</label>
+      <div class="seg" id="ai-diff">
+        <button data-v="легка">Легка</button><button data-v="середня" class="on">Середня</button><button data-v="складна">Складна</button>
       </div>
 
-      <label class="fl">Які типи питань</label>
-      <div class="achips" id="ai-types" role="group" aria-label="Типи питань">
-        <button type="button" data-v="single" class="on">Одна відповідь</button><button type="button" data-v="multi" class="on">Кілька відповідей</button><button type="button" data-v="text" class="on">Коротка відповідь</button><button type="button" data-v="number">Число</button><button type="button" data-v="ordering">Порядок</button><button type="button" data-v="matching">Зіставлення</button><button type="button" data-v="long">Розгорнута</button>
+      <div class="ai-mix-h">
+        <label class="fl">Питання</label>
+        <div class="seg ai-mode" id="ai-mode" role="group" aria-label="Склад питань"><button type="button" data-v="auto" class="on">Автоматично</button><button type="button" data-v="mix">Вибрати типи</button></div>
+      </div>
+      <div class="ai-auto" id="ai-auto">
+        <div class="num-in">
+          <button data-act="ai-dec" aria-label="Менше">−</button>
+          <input id="ai-count" type="number" min="1" max="30" value="10" aria-label="Кількість питань">
+          <button data-act="ai-inc" aria-label="Більше">+</button>
+        </div>
+        <p class="ai-hint">AI сам підбере типи під тему: вибір однієї чи кількох відповідей, коротку відповідь, число, порядок.</p>
+      </div>
+      <div class="ai-mix" id="ai-mix" hidden>
+          <div class="ai-mix-r" data-t="single"><span class="ai-mix-n"><i></i>Одна відповідь</span><div class="ai-step" role="group" aria-label="Одна відповідь: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="multi"><span class="ai-mix-n"><i></i>Кілька відповідей</span><div class="ai-step" role="group" aria-label="Кілька відповідей: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="text"><span class="ai-mix-n"><i></i>Коротка відповідь</span><div class="ai-step" role="group" aria-label="Коротка відповідь: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="number"><span class="ai-mix-n"><i></i>Число</span><div class="ai-step" role="group" aria-label="Число: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="ordering"><span class="ai-mix-n"><i></i>Порядок</span><div class="ai-step" role="group" aria-label="Порядок: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="matching"><span class="ai-mix-n"><i></i>Зіставлення</span><div class="ai-step" role="group" aria-label="Зіставлення: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+          <div class="ai-mix-r" data-t="long"><span class="ai-mix-n"><i></i>Розгорнута</span><div class="ai-step" role="group" aria-label="Розгорнута: кількість"><button type="button" data-act="mix-dec" aria-label="Менше">−</button><output>0</output><button type="button" data-act="mix-inc" aria-label="Більше">+</button></div></div>
+        <div class="ai-mix-sum" id="ai-mix-sum">Оберіть, скільки питань кожного типу</div>
       </div>
 
-      <button type="button" class="ai-more-t" id="ai-more-t" data-act="ai-more" aria-expanded="false">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>Додаткові налаштування
-      </button>
-      <div class="ai-more" id="ai-more" hidden>
-        <label class="fl" for="ai-desc">Що врахувати</label>
-        <textarea class="in" id="ai-desc" rows="2" maxlength="800" placeholder="Наприклад: більше практики, без дат, лише змінні й цикли"></textarea>
-        <div class="grid2e">
-          <div>
-            <label class="fl" for="ai-aud">Для кого</label>
-            <input class="in" id="ai-aud" maxlength="80" placeholder="9 клас, 1 курс…">
-          </div>
-          <div>
-            <label class="fl">Варіантів у виборі</label>
-            <div class="seg" id="ai-opts">
-              <button data-v="3">3</button><button data-v="4" class="on">4</button><button data-v="5">5</button><button data-v="6">6</button>
-            </div>
-          </div>
-        </div>
-        <label class="fl">Що перевіряють питання</label>
-        <div class="seg" id="ai-focus">
-          <button data-v="факти">Факти й терміни</button><button data-v="розуміння" class="on">Розуміння</button><button data-v="застосування">Практика</button>
-        </div>
+      <button type="button" class="ai-wish-t" id="ai-wish-t" data-act="ai-wish" aria-expanded="false">+ Додати побажання</button>
+      <div id="ai-wish" hidden>
+        <input class="in" id="ai-desc" maxlength="400" placeholder="Наприклад: більше практики, без дат">
       </div>
 
-      <label class="sw ai-verify"><input type="checkbox" id="ai-verify" checked><b></b>Перевірити відповіді перед показом<small>Займає трохи довше, але AI виправить або прибере питання з помилками.</small></label>
+      <label class="sw ai-verify"><input type="checkbox" id="ai-verify" checked><b></b>Перевірити відповіді перед показом<small>AI ще раз перевіряє кожну відповідь і виправляє або прибирає питання з помилками.</small></label>
       <div class="hint ai-off" id="ai-off" hidden></div>
       <div class="mb-foot">
         <button class="btn ghost" data-act="close-modal">Скасувати</button>
-        <button class="btn ai" id="ai-go" data-act="ai-run"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg>Згенерувати</button>
+        <button class="btn ai" id="ai-go" data-act="ai-run"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg><span id="ai-go-t">Згенерувати 10 питань</span></button>
       </div>
     </div>
 
@@ -757,6 +780,17 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
         <button class="btn ghost" data-act="ai-back">Змінити налаштування</button>
         <button class="btn ai" id="ai-add" data-act="ai-add">Додати в тест</button>
       </div>
+    </div>
+    <div class="ai-splash" id="ai-splash" hidden aria-live="polite">
+      <div class="ai-orb" aria-hidden="true"><span></span><span></span><span></span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div>
+      <b class="ai-sp-t" id="ai-sp-t">Складаю питання…</b>
+      <ol class="ai-sp-steps" id="ai-sp-steps">
+        <li data-s="gen"><i></i>Складаю питання</li>
+        <li data-s="check"><i></i>Перевіряю відповіді</li>
+        <li data-s="done"><i></i>Готую до перегляду</li>
+      </ol>
+      <p class="ai-sp-note" id="ai-sp-note"></p>
+      <button type="button" class="btn ghost" data-act="ai-cancel">Скасувати</button>
     </div>
   </div>
 </div>
@@ -1205,7 +1239,7 @@ function renderEditor(focus){
           <span class="rb-sep"></span>
           <button class="rb rb-color" data-act="color-menu" title="Колір тексту"><b style="font-size:14px;font-weight:800">A</b><u></u></button>
           <button class="rb" data-fmt="removeFormat" title="Прибрати форматування">${ic("eraser", 15)}</button>
-          <button class="rte-ai" data-act="rephrase" title="Переформулювати питання${q.options ? " і варіанти" : ""} за допомогою AI">${ic("spark", 14)}<span>Перефразувати</span></button>
+          <button class="rte-ai" data-act="ai-menu" aria-haspopup="menu" title="AI: перефразувати, покращити або перевірити відповідь">${ic("spark", 14)}<span>AI-помічник</span>${ic("down", 13, 2.4)}</button>
         </div>
         <div class="q-text" id="q-text" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Текст питання" data-ph="Введіть текст питання…"></div>
       </div>
@@ -1653,6 +1687,47 @@ fix додавай лише якщо можеш надійно виправит�
   } catch (e){ return { list, fixed: 0, dropped: 0, ok: false }; }
 }
 
+// ─── Модалка генерації: склад питань, сплеш, скасування ───────────────────────
+const MIX_TYPES = ["single", "multi", "text", "number", "ordering", "matching", "long"];
+const AUTO_TYPES = ["single", "multi", "text", "number", "ordering"];
+const MIX = Object.fromEntries(MIX_TYPES.map(t => [t, 0]));
+const aiMode = () => $("ai-mode").querySelector(".on")?.dataset.v || "auto";
+const mixTotal = () => MIX_TYPES.reduce((n, t) => n + MIX[t], 0);
+function renderMix(){
+  const total = mixTotal();
+  $("ai-mix").querySelectorAll(".ai-mix-r").forEach(r => {
+    const t = r.dataset.t, n = MIX[t];
+    r.classList.toggle("on", n > 0); r.style.setProperty("--c", TYPES[t].c);
+    r.querySelector("output").textContent = n;
+    r.querySelector('[data-act="mix-dec"]').disabled = n <= 0;
+    r.querySelector('[data-act="mix-inc"]').disabled = total >= 30;
+  });
+  $("ai-mix-sum").innerHTML = total ? `Разом: <b>${total}</b> ${plural(total, ["питання", "питання", "питань"])}` : "Оберіть, скільки питань кожного типу";
+  syncAiGo();
+}
+function syncAiGo(){
+  const n = aiMode() === "mix" ? mixTotal() : clamp(Number($("ai-count").value) || 10, 1, 30);
+  $("ai-go-t").textContent = n ? `Згенерувати ${n} ${plural(n, ["питання", "питання", "питань"])}` : "Згенерувати";
+}
+function syncAiMode(v){
+  $("ai-auto").hidden = v !== "auto"; $("ai-mix").hidden = v !== "mix";
+  if (v === "mix") renderMix(); else syncAiGo();
+}
+let _aiRun = 0;
+function aiSplash(step, note = ""){
+  const sp = $("ai-splash"), mb = $("m-ai").querySelector(".mb");
+  if (!step){ sp.hidden = true; mb.classList.remove("busy"); return; }
+  mb.classList.add("busy"); mb.scrollTop = 0; sp.hidden = false;
+  const order = ["gen", "check", "done"], at = order.indexOf(step);
+  sp.querySelectorAll("li").forEach(li => {
+    const k = order.indexOf(li.dataset.s);
+    li.classList.toggle("ok", k < at); li.classList.toggle("on", k === at);
+    li.classList.toggle("skip", li.dataset.s === "check" && !$("ai-verify").checked);
+  });
+  $("ai-sp-t").textContent = step === "gen" ? "Складаю питання…" : step === "check" ? "Перевіряю відповіді…" : "Майже готово…";
+  $("ai-sp-note").textContent = note;
+}
+
 async function aiGenerate(){
   const why = aiBlocked(); if (why){ toast(why, "err"); return; }
   const fromText = aiSrc() === "text";
@@ -1662,22 +1737,22 @@ async function aiGenerate(){
   const topic = fromText ? ($("ai-topic").value.trim() || S.title || material.slice(0, 80)) : $("ai-topic").value.trim();
   if (!topic){ $("ai-topic").focus(); toast("Вкажіть тему", "err"); return; }
   const desc = $("ai-desc").value.trim();
-  const aud = $("ai-aud").value.trim();
   const diff = $("ai-diff").querySelector(".on")?.dataset.v || "середня";
-  const focus = $("ai-focus").querySelector(".on")?.dataset.v || "розуміння";
-  const nOpts = Number($("ai-opts").querySelector(".on")?.dataset.v) || 4;
-  const types = [...$("ai-types").querySelectorAll(".on")].map(b => b.dataset.v);
-  if (!types.length){ toast("Оберіть хоча б один тип питань", "err"); return; }
+  const nOpts = 4;
+  const mix = aiMode() === "mix";
+  const plan = mix ? MIX_TYPES.filter(t => MIX[t] > 0).map(t => [t, MIX[t]]) : null;
+  if (mix && !plan.length){ toast("Оберіть, скільки питань якого типу потрібно", "err"); return; }
+  const count = mix ? mixTotal() : clamp(Number($("ai-count").value) || 10, 1, 30);
+  const types = mix ? plan.map(([t]) => t) : AUTO_TYPES;
   const verify = $("ai-verify").checked;
-  const count = clamp(Number($("ai-count").value) || 10, 1, 30);
   const existing = S.qs.map(q => plain(q.text)).filter(Boolean).slice(-40);
   const prompt = `Склади рівно ${count} унікальних тестових питань.
 
-Тема: "${topic}"${aud ? `\nАудиторія: ${aud}` : ""}${desc ? `\nВимоги викладача: ${desc}` : ""}
+Тема: "${topic}"${desc ? `\nВимоги викладача: ${desc}` : ""}
 Складність: ${diff}
-Акцент: ${{ факти: "знання фактів, термінів, дат", розуміння: "розуміння причин і зв'язків", застосування: "застосування знань у практичних ситуаціях і задачах" }[focus]}
-Типи питань (${types.length > 1 ? "розподіли порівну між ними" : "лише цей"}):
-${types.map(t => "- " + AI_FORMATS[t]).join("\n")}
+${mix
+  ? `Склад (дотримуйся точно):\n${plan.map(([t, n]) => `- ${n} × ${AI_FORMATS[t]}`).join("\n")}`
+  : `Типи обери сам під тему, щоб тест був різноманітним і перевіряв розуміння (більшість — single, решта на твій розсуд):\n${types.map(t => "- " + AI_FORMATS[t]).join("\n")}`}
 ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай фактів, яких у ньому немає):\n"""${material}"""\n` : ""}${existing.length ? `\nУ тесті ВЖЕ є такі питання — не повторюй їх:\n${existing.map(t => "- " + t.slice(0, 120)).join("\n")}\n` : ""}
 ПРАВИЛА:
 1. Усе — тільки українською мовою.
@@ -1686,12 +1761,12 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
 4. text/number: у correct допустимі синоніми через «/»; число без одиниць.
 5. Питання формулюй чітко, без підказок у тексті; ${material ? "кожне питання має мати відповідь у матеріалі" : "спирайся лише на достовірні факти"}.
 6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.`;
-  const btn = $("ai-go"), html = btn.innerHTML;
-  const lock = on => $("m-ai").querySelectorAll("#ai-p1 input,#ai-p1 textarea,#ai-p1 .seg button,#ai-p1 .achips button,#ai-p1 .num-in button").forEach(e => e.disabled = on);
-  btn.disabled = true; btn.innerHTML = `<span class="spin"></span>Генерую ${count} ${plural(count, ["питання", "питання", "питань"])}…`;
-  lock(true);
+  const run = ++_aiRun;
+  const alive = () => run === _aiRun && $("m-ai").classList.contains("on");   // скасовано або модалку закрито
+  aiSplash("gen", `${count} ${plural(count, ["питання", "питання", "питань"])} на тему «${topic.slice(0, 60)}»`);
   try {
     const raw = await callAI(prompt, Math.max(2000, count * 380), .4);
+    if (!alive()) return;                                   // скасовано
     const kept = [];
     let skipped = 0;
     toArr(parseJSON(raw, "[")).forEach(r => {
@@ -1703,18 +1778,22 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
     if (!kept.length) throw new Error("AI не повернув жодного придатного питання");
     let add = kept, note = "";
     if (verify){
-      btn.innerHTML = `<span class="spin"></span>Перевіряю якість…`;
+      aiSplash("check", `Перевіряю ${kept.length} ${plural(kept.length, ["питання", "питання", "питань"])}: чи правильні відповіді й чи немає двозначностей`);
       const v = await aiVerify(kept, material, nOpts);
+      if (!alive()) return;
       add = v.list;
-      note = !v.ok ? " (перевірку якості виконати не вдалося)" : v.fixed || v.dropped ? ` (виправлено ${v.fixed}, прибрано ${v.dropped})` : " (перевірку пройдено)";
+      note = !v.ok ? "перевірку якості виконати не вдалося" : v.fixed || v.dropped ? `виправлено ${v.fixed}, прибрано ${v.dropped}` : "перевірку пройдено";
       if (!add.length) throw new Error("після перевірки не лишилось надійних питань: спробуйте інші вимоги чи додайте матеріал");
     }
-    showAiReview(add, { note: note.replace(/^ \(|\)$/g, ""), skipped });
+    aiSplash("done");
+    await new Promise(r => setTimeout(r, 260));
+    if (!alive()) return;
+    aiSplash(null);
+    showAiReview(add, { note, skipped });
   } catch (e){
+    if (!alive()) return;
+    aiSplash(null);
     toast("AI: " + e.message, "err");
-  } finally {
-    btn.disabled = false; btn.innerHTML = html;
-    lock(false);
   }
 }
 
@@ -1772,7 +1851,9 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("click", e => {
   const src = e.target.closest("#ai-src button"); if (src) syncAiSrc(src.dataset.v);
+  const md = e.target.closest("#ai-mode button"); if (md) syncAiMode(md.dataset.v);
 });
+document.addEventListener("input", e => { if (e.target.id === "ai-count") syncAiGo(); });
 document.addEventListener("input", e => { if (e.target.id === "ai-mat") $("ai-mat-n").textContent = `${e.target.value.length} / 8000`; });
 
 async function aiRephrase(btn){
@@ -1805,6 +1886,81 @@ ${hasOpts ? `Варіанти: ${JSON.stringify(q.options)}\nФормат: {"que
   }
 }
 
+// ─── AI-дії з одним питанням: перефразувати, покращити (разом з відповідями), перевірити відповідь ───
+const aiQMenu = q => {
+  const it = (v, t, d) => `<button class="pi" data-v="${v}"><span class="type-ic" style="--c:#7C3AED">${ic("spark", 13, 2.2)}</span><div class="pi-txt"><div>${t}</div><div class="d">${d}</div></div></button>`;
+  return `<div class="pop-h">AI-помічник</div>`
+    + it("rephrase", "Перефразувати", "Інші слова, той самий зміст і відповіді")
+    + (q.type === "long" ? "" : it("improve", "Покращити питання", "Чіткіше формулювання, сильніші варіанти, перевірені відповіді"))
+    + (q.type === "text" || q.type === "number" ? it("check", "Перевірити відповідь", "Чи правильна відповідь, і які ще варіанти зарахувати") : "");
+};
+const _aiBusy = (btn, on, label) => {
+  if (!btn?.isConnected) return;
+  if (on){ btn.dataset.html = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin dark"></span>${label}`; }
+  else { btn.disabled = false; if (btn.dataset.html) btn.innerHTML = btn.dataset.html; }
+};
+const _undoQ = (id, before) => () => { const i = S.qs.findIndex(x => x.id === id); if (i >= 0){ S.qs[i] = JSON.parse(before); afterStructChange(); } };
+
+// «Покращити»: те саме питання (тема й ідея), але якісніше; відповіді перевіряє ще один прохід
+async function aiImprove(btn){
+  const why = aiBlocked(); if (why){ toast(why, "err"); return; }
+  const q = cq(), text = plain(q.text);
+  if (!text){ toast("Спочатку введіть текст питання", "err"); $("q-text")?.focus(); return; }
+  const id = q.id, type = q.type;
+  const prompt = `Покращи тестове питання. Збережи тему, ідею й тип "${type}", але зроби його якіснішим:
+- формулювання чітке й однозначне, без підказок;
+- правильна відповідь справді правильна (перевір ще раз);
+- неправильні варіанти правдоподібні, приблизно однакової довжини, без «усі вищезазначені»;
+- для text/number у correct додай допустимі синоніми через «/».
+${S.title ? `Тест: "${S.title}"\n` : ""}Поточне питання: ${JSON.stringify(briefQ(q, 0))}
+Формат: ${AI_FORMATS[type]}
+Відповідай ТІЛЬКИ JSON-об'єктом цього формату, українською, без markdown.`;
+  _aiBusy(btn, true, "Покращую…");
+  try {
+    const r = parseJSON(await callAI(prompt, 900, .5), "{");
+    let nq = fromAI({ type, ...r }, Math.max(4, q.options?.length || 4));
+    if (!nq) throw new Error("AI не повернув придатного питання");
+    const v = await aiVerify([nq], "", Math.max(4, q.options?.length || 4));
+    if (v.ok && v.list.length) nq = v.list[0];
+    else if (v.ok && !v.list.length) throw new Error("перевірка не підтвердила відповіді, спробуйте ще раз");
+    const target = S.qs.find(x => x.id === id); if (!target) return;
+    const before = JSON.stringify(target), i = S.qs.indexOf(target);
+    S.qs[i] = normQ({ ...nq, id });
+    afterStructChange();
+    toast(v.fixed ? "Питання покращено, відповідь виправлено перевіркою" : "Питання покращено й перевірено", "", { label: "Повернути", fn: _undoQ(id, before) });
+  } catch (e){ toast("AI: " + e.message, "err"); }
+  finally { _aiBusy(btn, false); }
+}
+
+// «Перевірити відповідь» для текстових і числових питань
+async function aiCheckAnswer(btn){
+  const why = aiBlocked(); if (why){ toast(why, "err"); return; }
+  const q = cq(), text = plain(q.text), cur = String(q.correct || "").trim();
+  if (!text){ toast("Спочатку введіть текст питання", "err"); $("q-text")?.focus(); return; }
+  const id = q.id;
+  const prompt = `Перевір правильну відповідь на тестове питання з ${q.type === "number" ? "числовою" : "короткою текстовою"} відповіддю.
+Питання: ${JSON.stringify(text)}
+Поточна відповідь викладача: ${JSON.stringify(cur || "(не вказана)")}
+${q.type === "number" ? "Відповідь — одне число без одиниць." : "Додай синоніми й допустимі написання, які слід зарахувати, через «/» (основна відповідь — першою)."}
+Відповідай ТІЛЬКИ JSON: {"ok":true|false,"correct":"${q.type === "number" ? "число" : "основна / синонім / …"}","note":"одне коротке речення українською"}
+ok — чи поточна відповідь правильна по суті.`;
+  _aiBusy(btn, true, "Перевіряю…");
+  try {
+    const r = parseJSON(await callAI(prompt, 400, .1), "{");
+    let ans = String(r.correct ?? "").trim();
+    if (q.type === "number") ans = ans.replace(/\s+/g, "").replace(",", ".");
+    if (!ans) throw new Error("AI не дав відповіді");
+    const note = String(r.note || "").trim().slice(0, 160);
+    const target = S.qs.find(x => x.id === id); if (!target) return;
+    if (ans === String(target.correct || "").trim()){ toast(r.ok === false ? `Сумнівно: ${note || "перевірте відповідь"}` : `Відповідь правильна${note ? `: ${note}` : ""}`, r.ok === false ? "err" : ""); return; }
+    const before = JSON.stringify(target);
+    target.correct = ans;
+    afterStructChange();
+    toast(r.ok === false ? `Відповідь виправлено: ${ans}` : `Додано варіанти відповіді: ${ans}`, "", { label: "Повернути", fn: _undoQ(id, before) });
+  } catch (e){ toast("AI: " + e.message, "err"); }
+  finally { _aiBusy(btn, false); }
+}
+
 async function openAi(){
   await aiReady;
   $("ai-prov").textContent = AI.provider === "gemini" ? `Gemini · ${AI.geminiModel.replace(/^gemini-/, "")}` : `Groq · ${AI.groqModel.replace(/-versatile|-instant/, "")}`;
@@ -1812,7 +1968,7 @@ async function openAi(){
   $("ai-off").hidden = !why; $("ai-off").innerHTML = why ? `${ic("alert", 15)}<span>${esc(why)}</span>` : "";
   $("ai-go").disabled = !!why;
   if (!$("ai-topic").value && S.title) $("ai-topic").value = S.title;
-  aiStep(1); syncAiSrc(aiSrc());
+  aiStep(1); syncAiSrc(aiSrc()); syncAiMode(aiMode()); aiSplash(null);
   openModal("m-ai", aiSrc() === "text" ? "ai-mat" : "ai-topic");
 }
 
@@ -2246,8 +2402,6 @@ document.addEventListener("click", async e => {
   if (fb){ fmt(fb.dataset.fmt); return; }
   const qi = e.target.closest(".qi");
   if (qi && !e.target.closest("[data-act]")){ select(+qi.dataset.i); return; }
-  const chip = e.target.closest(".achips button");
-  if (chip){ if (!chip.disabled) chip.classList.toggle("on"); return; }
   const seg = e.target.closest(".seg button");
   if (seg){
     seg.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === seg)); return;
@@ -2265,8 +2419,10 @@ document.addEventListener("click", async e => {
     case "ai-back": return aiStep(1);
     case "ai-add": return aiAddSelected();
     case "ai-all": { const all = _aiRes.every(r => r.on); _aiRes.forEach(r => r.on = !all); return renderAiList(); }
-    case "ai-more": { const m = $("ai-more"); m.hidden = !m.hidden; b.setAttribute("aria-expanded", String(!m.hidden)); return; }
-    case "ai-inc": case "ai-dec": { const n = $("ai-count"); n.value = clamp((+n.value || 10) + (a === "ai-inc" ? 1 : -1), 1, 30); return; }
+    case "ai-wish": { const m = $("ai-wish"); m.hidden = !m.hidden; b.setAttribute("aria-expanded", String(!m.hidden)); b.textContent = m.hidden ? "+ Додати побажання" : "− Сховати побажання"; if (!m.hidden) setTimeout(() => $("ai-desc").focus(), 0); return; }
+    case "ai-cancel": { _aiRun++; aiSplash(null); return; }
+    case "mix-inc": case "mix-dec": { const t = b.closest(".ai-mix-r").dataset.t; MIX[t] = clamp(MIX[t] + (a === "mix-inc" ? 1 : -1), 0, 30); if (mixTotal() > 30) MIX[t]--; return renderMix(); }
+    case "ai-inc": case "ai-dec": { const n = $("ai-count"); n.value = clamp((+n.value || 10) + (a === "ai-inc" ? 1 : -1), 1, 30); return syncAiGo(); }
     case "import": if (CAPS?.flags.import === false) return toast(`«${CAP_FLAGS.import.label}» вимкнено адміністратором`, "err"); return openImport();
     case "import-run": return runImport();
     case "im-tab": return imTab(b.dataset.tab);
@@ -2293,6 +2449,7 @@ document.addEventListener("click", async e => {
     case "q-dup": { const c = JSON.parse(JSON.stringify(q)); c.id = genId(); S.qs.splice(S.cur + 1, 0, c); S.cur++; afterStructChange(); toast("Питання продубльовано"); return; }
     case "q-del": return delQ(S.cur);
     case "rephrase": return aiRephrase(b);
+    case "ai-menu": return openPop(b, aiQMenu(q), v => v === "rephrase" ? aiRephrase(b) : v === "improve" ? aiImprove(b) : aiCheckAnswer(b), { width: 300, sheet: true });
     case "color-menu": {
       const pop = openPop(b, `<div class="pop-h">Колір тексту</div><div class="swatches">${COLORS.map(c => `<button class="swatch" data-v="${c}" style="background:${c}" title="${c}"></button>`).join("")}<button class="swatch none" data-v="" title="Без кольору">${ic("x", 13, 2.4)}</button></div>`, c => {
         const el = $("q-text"); if (!el) return;

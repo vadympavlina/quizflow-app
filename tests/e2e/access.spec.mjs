@@ -200,6 +200,8 @@ test("дозволи з кешу працюють одразу, без мере�
   await seed(page, GAMES_ONLY(), "t1");
   await page.goto("/");
   await expect(page.locator("#sidebar a[data-page=history]")).toBeVisible();
+  // кеш пишеться після першого розрахунку дозволів: чекаємо, поки з'явиться (під навантаженням це не миттєво)
+  await expect.poll(() => page.evaluate(() => !!localStorage.getItem("qf_perms_cache"))).toBe(true);
   const cached = await page.evaluate(() => JSON.parse(localStorage.getItem("qf_perms_cache")));
   expect(cached.perms["tests.view"]).toBe(false);
   expect(cached.perms["games.run"]).toBe(true);
