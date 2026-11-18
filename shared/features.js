@@ -2612,7 +2612,7 @@ window.G = {
     const url = ($("nt-kh-url")?.value || "").trim(), msg = $("nt-kh-msg"), btn = $("nt-kh-go");
     if (!url || btn?.disabled) return;
     const say = (t, kind) => { msg.hidden = !t; msg.textContent = t || ""; msg.className = "nt-kh-msg" + (kind ? " " + kind : ""); };
-    btn.disabled = true; btn.textContent = "Завантажую…"; say("");
+    btn.disabled = true; btn.textContent = "Завантажую…"; say("Завантажуємо тест із Kahoot…");
     try {
       const wurl = String((await get(ref(db, "settings/mail/workerUrl"))).val() || "").replace(/\/+$/, "");
       if (!wurl) throw new Error("Сервер імпорту не налаштовано. Зверніться до адміністратора.");

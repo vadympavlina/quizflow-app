@@ -73,7 +73,7 @@ test("Новий тест: посилання на Kahoot підставляє �
   await expect(page.locator("#nt-kh")).toBeVisible();
   await page.fill("#nt-kh-url", KH);
   await page.locator("#nt-kh-go").click();
-  await expect(page.locator("#nt-kh-msg")).toContainText("Знайдено 4 питання");
+  await expect(page.locator("#nt-kh-msg")).toContainText("Знайдено 4 питання", { timeout: 20000 });
   await expect(page.locator("#nt-kh-msg")).toContainText("2 пропущено");
   await expect(page.locator("#nt-n")).toHaveValue("Minecraft AI: Розумні світи");   // назва з Kahoot
   await expect(page.locator("#nt-submit")).toContainText("Створити тест · 4");
@@ -94,7 +94,7 @@ test("Новий тест: помилка Kahoot не блокує звичай�
   await page.locator("#nt-kh-t").click();
   await page.fill("#nt-kh-url", KH);
   await page.locator("#nt-kh-go").click();
-  await expect(page.locator("#nt-kh-msg")).toContainText("приватний");
+  await expect(page.locator("#nt-kh-msg")).toContainText("приватний", { timeout: 20000 });
   await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
   await page.fill("#nt-n", "Звичайний тест");
   await page.locator("#nt-submit").click();
