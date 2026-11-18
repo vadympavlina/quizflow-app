@@ -875,6 +875,7 @@ const _saveTS = () => { try { localStorage.setItem(_TSTORE, JSON.stringify({ sor
 // Сумісність зі старим кодом, що читає ці глобали
 window._testsView = TS.view;
 
+const TYPE_SHORT = { single: "одна відповідь", multi: "кілька", text: "коротка відповідь", ordering: "порядок" };
 const _plural = (n, one, few, many) => {
   const a = Math.abs(n) % 100, b = a % 10;
   if (a > 10 && a < 20) return many;
@@ -2597,7 +2598,7 @@ window.G = {
     const err = $("nt-err"); if (err) err.textContent = "";
     const btn = $("nt-submit"); if (btn){ btn.disabled = false; btn.textContent = "Створити тест →"; }
     G._khQs = null; G._khTitle = "";
-    { const kh = $("nt-kh"); if (kh) kh.hidden = true; const t = $("nt-kh-t"); if (t) t.setAttribute("aria-expanded", "false"); const u = $("nt-kh-url"); if (u) u.value = ""; const m = $("nt-kh-msg"); if (m) m.hidden = true; }
+    { const kh = $("nt-kh"); if (kh) kh.hidden = true; const t = $("nt-kh-t"); if (t) t.setAttribute("aria-expanded", "false"); const u = $("nt-kh-url"); if (u) u.value = ""; const m = $("nt-kh-msg"); if (m) m.hidden = true; G.khReset(true); }
     openM("m-test");
     buildChips();
   },
@@ -2607,6 +2608,18 @@ window.G = {
     const kh = $("nt-kh"), t = $("nt-kh-t"); if (!kh) return;
     kh.hidden = !kh.hidden; t.setAttribute("aria-expanded", String(!kh.hidden));
     if (!kh.hidden) setTimeout(() => $("nt-kh-url")?.focus(), 30);
+  },
+  // «Змінити»: назад до поля посилання (питання скидаються); silent — без фокусу, при відкритті модалки
+  khReset(silent){
+    G._khQs = null; G._khTitle = "";
+    const res = $("nt-kh-res"), row = $("nt-kh")?.querySelector(".nt-kh-row"); if (!res || !row) return;
+    res.hidden = true; row.hidden = false; $("nt-kh-pv").hidden = true; $("nt-kh-pvt").setAttribute("aria-expanded", "false"); $("nt-kh-pvt").textContent = "Переглянути питання";
+    const sb = $("nt-submit"); if (sb) sb.textContent = "Створити тест →";
+    if (!silent){ $("nt-kh-url").value = ""; $("nt-kh-msg").hidden = true; $("nt-kh-url").focus(); }
+  },
+  khPreview(){
+    const pv = $("nt-kh-pv"), t = $("nt-kh-pvt"); pv.hidden = !pv.hidden;
+    t.setAttribute("aria-expanded", String(!pv.hidden)); t.textContent = pv.hidden ? "Переглянути питання" : "Сховати питання";
   },
   async khLoad(){
     const url = ($("nt-kh-url")?.value || "").trim(), msg = $("nt-kh-msg"), btn = $("nt-kh-go");
@@ -2629,11 +2642,16 @@ window.G = {
       G._khTitle = d.title || "";
       const nEl = $("nt-n"); if (nEl && d.title){ nEl.value = d.title.slice(0, 120); nEl.classList.remove("er"); $("nt-err").textContent = ""; }
       const n = G._khQs.length;
-      say(`Знайдено ${n} ${_plural(n, "питання", "питання", "питань")}${d.skipped ? `, ${d.skipped} пропущено (опитування, слайди)` : ""}. Натисніть «Створити» і тест відкриється в конструкторі.`, "ok");
-      const sb = $("nt-submit"); if (sb) sb.textContent = `Створити тест · ${n} →`;
+      say("");
+      $("nt-kh-rtitle").textContent = d.title || "Тест Kahoot";
+      $("nt-kh-rmeta").textContent = `${n} ${_plural(n, "питання", "питання", "питань")} готово${d.skipped ? ` · ${d.skipped} пропущено (опитування, слайди)` : ""}`;
+      $("nt-kh-pv").innerHTML = G._khQs.map(q => `<li>${esc(String(q.text).replace(/&[a-z]+;/g, " ").slice(0, 110))}<i>${esc(TYPE_SHORT[q.type] || "")}</i></li>`).join("");
+      $("nt-kh-res").hidden = false; $("nt-kh").querySelector(".nt-kh-row").hidden = true;
+      const sb = $("nt-submit"); if (sb){ sb.textContent = `Створити тест · ${n} →`; sb.focus(); }
     } catch (e){
       G._khQs = null; G._khTitle = "";
       const sb = $("nt-submit"); if (sb) sb.textContent = "Створити тест →";
+      $("nt-kh-res").hidden = true; $("nt-kh").querySelector(".nt-kh-row").hidden = false;
       say(e.message, "err");
     } finally { btn.disabled = false; btn.textContent = "Завантажити"; }
   },

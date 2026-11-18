@@ -73,8 +73,16 @@ test("Новий тест: посилання на Kahoot підставляє �
   await expect(page.locator("#nt-kh")).toBeVisible();
   await page.fill("#nt-kh-url", KH);
   await page.locator("#nt-kh-go").click();
-  await expect(page.locator("#nt-kh-msg")).toContainText("Знайдено 4 питання", { timeout: 20000 });
-  await expect(page.locator("#nt-kh-msg")).toContainText("2 пропущено");
+  await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
+  await expect(page.locator("#nt-kh-rtitle")).toHaveText("Minecraft AI: Розумні світи");
+  await expect(page.locator("#nt-kh-rmeta")).toContainText("4 питання готово");
+  await expect(page.locator("#nt-kh-rmeta")).toContainText("2 пропущено");
+  await expect(page.locator("#nt-kh .nt-kh-row")).toBeHidden();                  // поле посилання сховане, є картка
+  await expect(page.locator("#nt-submit")).toBeFocused();                         // Enter одразу створює тест
+  await expect(page.locator("#nt-kh-pv")).toBeHidden();
+  await page.locator("#nt-kh-pvt").click();                                       // перегляд списку питань
+  await expect(page.locator("#nt-kh-pv li")).toHaveCount(4);
+  await expect(page.locator("#nt-kh-pv li").first()).toContainText("Що таке Minecraft Education?");
   await expect(page.locator("#nt-n")).toHaveValue("Minecraft AI: Розумні світи");   // назва з Kahoot
   await expect(page.locator("#nt-submit")).toContainText("Створити тест · 4");
   expect(calls[0].auth).toBe("Bearer mock-token-t1");
@@ -101,4 +109,29 @@ test("Новий тест: помилка Kahoot не блокує звичай�
   await page.waitForURL(/constructor\?id=/);
   await expect(page.locator("#title")).toHaveValue("Звичайний тест");         // створився порожній тест, як і раніше
   expect(errors.filter(e => !/404/.test(e))).toEqual([]);
+});
+
+test("Новий тест: «Змінити» повертає до поля посилання й скидає питання; модалка при повторному відкритті чиста", async ({ page, errors }) => {
+  const calls = [];
+  await fakeWorker(page, calls, { body: OK });
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.locator("#sb-new").click();
+  await page.locator("#nt-kh-t").click();
+  await page.fill("#nt-kh-url", KH);
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
+  await page.locator("#nt-kh-res >> text=Змінити").click();
+  await expect(page.locator("#nt-kh .nt-kh-row")).toBeVisible();
+  await expect(page.locator("#nt-kh-url")).toHaveValue("");
+  await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
+  await page.fill("#nt-kh-url", KH);
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
+  await page.keyboard.press("Escape");
+  await page.locator("#sb-new").click();                                          // повторне відкриття
+  await expect(page.locator("#nt-kh")).toBeHidden();
+  await expect(page.locator("#nt-kh-res")).toBeHidden();
+  await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
+  expect(errors).toEqual([]);
 });

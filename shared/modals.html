@@ -15,6 +15,11 @@
         <button type="button" class="btn bs" id="nt-kh-go" onclick="G.khLoad()">Завантажити</button>
       </div>
       <div class="nt-kh-msg" id="nt-kh-msg" role="status" hidden></div>
+      <div class="nt-kh-res" id="nt-kh-res" hidden>
+        <div class="nt-kh-rt"><div><b id="nt-kh-rtitle"></b><span id="nt-kh-rmeta"></span></div><button type="button" class="nt-kh-lnk" onclick="G.khReset()">Змінити</button></div>
+        <button type="button" class="nt-kh-lnk" id="nt-kh-pvt" onclick="G.khPreview()" aria-expanded="false" aria-controls="nt-kh-pv">Переглянути питання</button>
+        <ol class="nt-kh-pv" id="nt-kh-pv" hidden></ol>
+      </div>
     </div>
     <div class="fl"><label for="nt-n">Назва *</label><input class="fi" id="nt-n" placeholder="Наприклад: HTML Основи" maxlength="120" autocomplete="off" autofocus oninput="this.classList.remove('er');document.getElementById('nt-err').textContent=''"></div>
     <div class="fl"><label for="nt-d">Опис <span class="opt">необов'язково</span></label><textarea class="fi" id="nt-d" rows="2" placeholder="Що перевіряє тест, для кого…"></textarea></div>
