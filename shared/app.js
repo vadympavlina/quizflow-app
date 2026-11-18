@@ -576,7 +576,7 @@ async function loadModals() {
   // Якщо сторінка уже містить <div id="modals-root"> — туди й вставимо,
   // інакше створимо новий контейнер перед </body>
   try {
-    const resp = await fetch("shared/modals?v=26");
+    const resp = await fetch("shared/modals?v=27");
     if (!resp.ok) throw new Error("modals.html " + resp.status);
     const html = await resp.text();
     let root = document.getElementById("modals-root");
