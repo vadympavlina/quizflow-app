@@ -409,6 +409,8 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
 .btn.full{width:100%}
 .prov{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px;border-radius:999px;background:#F3EEFF;color:#6D28D9;font-size:11.5px;font-weight:700;font-family:'Geist Mono',monospace}
 .ai-off{margin-top:14px}
+.kh-row{display:flex;gap:8px;margin-top:2px}.kh-row .in{flex:1;min-width:0}
+.kh-msg{margin-top:10px;font-size:13px;font-weight:600;color:var(--muted)}.kh-msg.err{color:#B91C1C}
 .drop{border:2px dashed var(--line);border-radius:14px;padding:26px 16px;text-align:center;cursor:pointer;transition:all .15s;background:var(--hover)}
 .drop:hover,.drop.over{border-color:var(--pri-2);background:var(--pri-soft)}
 .drop b{display:block;margin:10px 0 3px;font-size:14px}
@@ -770,6 +772,7 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
     <div class="imtabs" role="tablist">
       <button class="on" role="tab" data-act="im-tab" data-tab="file">З файлу</button>
       <button role="tab" data-act="im-tab" data-tab="text">Вставити текст</button>
+      <button role="tab" data-act="im-tab" data-tab="kahoot">З Kahoot</button>
     </div>
     <div id="im-pane-file">
     <div class="fmt">
@@ -793,6 +796,14 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
 Скільки буде 2+2?
 Відповідь: 4</pre><span>Питання розділяйте порожнім рядком. Правильний варіант — із <b>*</b> на початку (кілька — кілька зірочок). Без варіантів — рядок <b>Відповідь: …</b>.</span></div>
       <textarea class="ta im-text" id="im-text" placeholder="Вставте питання тут…" spellcheck="false" aria-label="Текст з питаннями"></textarea>
+    </div>
+    <div id="im-pane-kahoot" hidden>
+      <div class="fmt one"><span>Вставте посилання на публічний тест Kahoot, наприклад <b>create.kahoot.it/share/назва/…</b>. Підтримуються питання з вибором, з кількома відповідями, коротка відповідь і порядок. Опитування, слайди й картинки не переносяться.</span></div>
+      <div class="kh-row">
+        <input class="in" id="kh-url" type="url" inputmode="url" placeholder="https://create.kahoot.it/share/…" spellcheck="false" autocomplete="off" aria-label="Посилання на Kahoot">
+        <button class="btn pri" type="button" id="kh-go" data-act="kh-load">Завантажити</button>
+      </div>
+      <div class="kh-msg" id="kh-msg" role="status" hidden></div>
     </div>
     <div class="pv" id="im-pv" hidden>
       <div class="pv-h"><div id="im-sum"></div><span id="im-skip"></span></div>
@@ -1881,7 +1892,7 @@ function renderImportPreview(skipped){
   $("im-sum").textContent = `${_imp.length} ${plural(_imp.length, ["питання", "питання", "питань"])}`;
   $("im-skip").textContent = [bad ? `${bad} без правильної відповіді` : "", skipped ? `${skipped} пропущено` : ""].filter(Boolean).join(" · ");
   $("im-list").innerHTML = _imp.slice(0, 50).map((q, i) => {
-    const ans = q.options ? q.options.map((o, k) => q.correct.includes(k) ? `<b style="color:var(--ok);display:inline;font-weight:700">${esc(o)}</b>` : esc(o)).join(" · ") : esc(q.correct || "—");
+    const ans = q.options ? q.options.map((o, k) => q.correct.includes(k) ? `<b style="color:var(--ok);display:inline;font-weight:700">${esc(o)}</b>` : esc(o)).join(" · ") : q.items ? esc(q.items.join(" → ")) : esc(q.correct || "—");
     return `<div class="pv-row${q._bad ? " bad" : ""}"><span class="n">${i + 1}</span><div class="t"><b>${q.text}</b><span>${ans}</span></div><span class="k">${q._bad ? "немає відповіді" : TYPES[q.type].short}</span></div>`;
   }).join("") + (_imp.length > 50 ? `<div class="pv-row"><span class="n"></span><div class="t"><span>…і ще ${_imp.length - 50}</span></div></div>` : "");
   $("im-pv").hidden = false;
@@ -1890,10 +1901,39 @@ function renderImportPreview(skipped){
 }
 function imTab(tab){
   document.querySelectorAll(".imtabs button").forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
-  $("im-pane-file").hidden = tab !== "file"; $("im-pane-text").hidden = tab !== "text";
-  $("im-sub").textContent = tab === "file" ? "Перший рядок — заголовки, він пропускається." : "Вставте питання з Word, чату чи нотаток.";
+  $("im-pane-file").hidden = tab !== "file"; $("im-pane-text").hidden = tab !== "text"; $("im-pane-kahoot").hidden = tab !== "kahoot";
+  $("im-sub").textContent = tab === "file" ? "Перший рядок — заголовки, він пропускається." : tab === "kahoot" ? "Питання з публічного тесту Kahoot за посиланням." : "Вставте питання з Word, чату чи нотаток.";
+  document.querySelector('[data-act="template"]').hidden = tab !== "file";
   _imp = []; $("im-pv").hidden = true; $("im-go").disabled = true; $("im-go").textContent = "Імпортувати";
   if (tab === "text"){ setTimeout(() => $("im-text").focus(), 30); if ($("im-text").value.trim()) onImText(); }
+  if (tab === "kahoot"){ $("kh-msg").hidden = true; setTimeout(() => $("kh-url").focus(), 30); }
+}
+// Імпорт з Kahoot: воркер завантажує публічний тест і віддає питання, далі той самий перегляд, що й для файлу
+async function loadKahoot(){
+  const url = $("kh-url").value.trim(), msg = $("kh-msg"), btn = $("kh-go");
+  const say = (t, err) => { msg.hidden = !t; msg.textContent = t || ""; msg.classList.toggle("err", !!err); };
+  if (!url){ say("Вставте посилання на тест Kahoot", true); $("kh-url").focus(); return; }
+  btn.disabled = true; btn.textContent = "Завантажую…"; say("");
+  try {
+    const wurl = String((await get(ref(db, "settings/mail/workerUrl"))).val() || "").replace(/\/+$/, "");
+    if (!wurl) throw new Error("Сервер імпорту не налаштовано. Зверніться до адміністратора.");
+    const tok = await auth.currentUser.getIdToken();
+    let res;
+    try { res = await fetch(wurl + "/import/kahoot", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ url }) }); }
+    catch { throw new Error("Не вдалося з'єднатися із сервером. Перевірте інтернет."); }
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || d.ok === false) throw new Error(d.error || `Помилка ${res.status}`);
+    _imp = d.questions.map(q => {
+      if (q.options) return { id: genId(), type: q.type, text: esc(q.text), options: q.options, correct: q.correct, _bad: !q.correct.length };
+      if (q.items) return { id: genId(), type: "ordering", text: esc(q.text), items: q.items, _bad: false };
+      return { id: genId(), type: "text", text: esc(q.text), correct: q.correct, _bad: false };
+    });
+    say(d.title ? `«${d.title}»` : "");
+    renderImportPreview(d.skipped || 0);
+  } catch (e){
+    _imp = []; $("im-pv").hidden = true; $("im-go").disabled = true; $("im-go").textContent = "Імпортувати";
+    say(e.message, true);
+  } finally { btn.disabled = false; btn.textContent = "Завантажити"; }
 }
 let _imT = 0;
 function onImText(){
@@ -2230,6 +2270,7 @@ document.addEventListener("click", async e => {
     case "import": if (CAPS?.flags.import === false) return toast(`«${CAP_FLAGS.import.label}» вимкнено адміністратором`, "err"); return openImport();
     case "import-run": return runImport();
     case "im-tab": return imTab(b.dataset.tab);
+    case "kh-load": return loadKahoot();
     case "template": return downloadTemplate();
     case "close-modal": return closeModal();
     case "toggle-side": document.body.classList.remove("list-open"); document.body.classList.toggle("side-open"); return;
@@ -2322,6 +2363,7 @@ function hideRestore(){ $("restore").hidden = true; document.body.classList.remo
 
 // ── Налаштування ──
 $("title").addEventListener("input", e => { S.title = e.target.value; e.target.classList.remove("err"); markDirty(); });
+$("kh-url").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); loadKahoot(); } });
 $("title").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } });
 $("desc").addEventListener("input", e => { S.desc = e.target.value; updDescCnt(); markDirty(); });
 $("time").addEventListener("input", e => { const v = parseInt(e.target.value, 10); if (v > 0){ S.timeMin = clamp(v, 1, 300); S.noTime = false; markDirty(); $("presets").querySelectorAll("button").forEach(x => x.classList.toggle("on", +x.dataset.m === S.timeMin)); } });
