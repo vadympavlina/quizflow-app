@@ -95,11 +95,13 @@ test("генерація: матеріал, типи й кількість ва�
   await page.locator("#ai-topic").fill("Столиці");
   await page.locator('#ai-src [data-v="text"]').click();
   await page.locator("#ai-mat").fill("Париж є столицею Франції, а Рим столицею Італії. Берлін — столиця Німеччини, Мадрид — столиця Іспанії.");
-  await page.locator("#ai-more-t").click();
-  await page.locator("#ai-aud").fill("9 клас");
-  await page.locator('#ai-types [data-v="number"]').click();
-  await page.locator('#ai-types [data-v="multi"]').click();       // вимикаємо «Кілька»
-  await page.locator('#ai-opts [data-v="5"]').click();
+  await page.locator("#ai-wish-t").click();
+  await page.locator("#ai-desc").fill("Більше практики");
+  await page.locator('#ai-mode [data-v="mix"]').click();          // свій склад: 2 числа й 1 вибір
+  const inc = t => page.locator(`.ai-mix-r[data-t="${t}"] [data-act="mix-inc"]`).click();
+  await inc("number"); await inc("number"); await inc("single");
+  await expect(page.locator("#ai-mix-sum")).toContainText("Разом: 3");
+  await expect(page.locator("#ai-go")).toContainText("Згенерувати 3 питання");
   await page.locator(".ai-verify").click();
   await page.locator("#ai-go").click();
   await accept(page);
@@ -107,10 +109,12 @@ test("генерація: матеріал, типи й кількість ва�
   const prompt = calls[0].messages[0].content;
   expect(prompt).toContain("МАТЕРІАЛ");
   expect(prompt).toContain("Париж є столицею Франції");
-  expect(prompt).toContain("Аудиторія: 9 клас");
-  expect(prompt).toContain("number —");
+  expect(prompt).toContain("Вимоги викладача: Більше практики");
+  expect(prompt).toContain("Склади рівно 3");
+  expect(prompt).toContain("2 × number —");
+  expect(prompt).toContain("1 × single —");
   expect(prompt).not.toContain("multi —");
-  expect(prompt).toContain("рівно 5 варіанти");
+  expect(prompt).toContain("рівно 4 варіанти");
   expect(errors).toEqual([]);
 });
 
@@ -203,17 +207,101 @@ test("модалка: два кроки; результат можна пере�
   expect(errors).toEqual([]);
 });
 
-test("модалка: додаткові налаштування сховані, режим «За текстом» вимагає текст", async ({ page, errors }) => {
+test("модалка: побажання сховані, «Автоматично» — лише кількість, «Вибрати типи» — склад; «За текстом» вимагає текст", async ({ page, errors }) => {
   await seed(page, db(), "t1");
   await page.goto("/constructor?id=T2");
   await page.locator('.tb[data-act="ai"]').click();
-  await expect(page.locator("#ai-more")).toBeHidden();
-  await page.locator("#ai-more-t").click();
-  await expect(page.locator("#ai-more")).toBeVisible();
+  await expect(page.locator("#ai-wish")).toBeHidden();
+  await expect(page.locator("#ai-auto")).toBeVisible();
+  await expect(page.locator("#ai-mix")).toBeHidden();
+  await expect(page.locator("#ai-go")).toContainText("Згенерувати 10 питань");
+  await page.locator('[data-act="ai-inc"]').click();
+  await expect(page.locator("#ai-go")).toContainText("Згенерувати 11 питань");
+  await page.locator('#ai-mode [data-v="mix"]').click();
+  await expect(page.locator("#ai-mix .ai-mix-r")).toHaveCount(7);
+  await page.locator("#ai-go").click();
+  await expect(page.getByText("Оберіть, скільки питань якого типу")).toBeVisible();
+  await page.locator('#ai-mode [data-v="auto"]').click();
   await expect(page.locator("#ai-mat")).toBeHidden();
   await page.locator('#ai-src [data-v="text"]').click();
   await expect(page.locator("#ai-mat")).toBeVisible();
   await page.locator("#ai-go").click();
   await expect(page.getByText("Вставте текст")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("генерація: поки AI працює, показується сплеш із кроками; «Скасувати» повертає до налаштувань", async ({ page, errors }) => {
+  let release;
+  const gate = new Promise(r => { release = r; });
+  await page.context().route(`${WORKER}/**`, async route => {
+    const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
+    if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: cors });
+    await gate;
+    route.fulfill({ status: 200, contentType: "application/json", headers: cors, body: JSON.stringify({ ok: true, text: ANSWER, tokens: 5, provider: "groq" }) });
+  });
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await page.locator('.tb[data-act="ai"]').click();
+  await page.locator("#ai-topic").fill("Столиці");
+  await page.locator("#ai-go").click();
+  await expect(page.locator("#ai-splash")).toBeVisible();
+  await expect(page.locator('#ai-sp-steps li[data-s="gen"]')).toHaveClass(/on/);
+  await expect(page.locator("#ai-sp-t")).toHaveText("Складаю питання…");
+  await page.locator('[data-act="ai-cancel"]').click();
+  await expect(page.locator("#ai-splash")).toBeHidden();
+  await expect(page.locator("#ai-p1")).toBeVisible();
+  release();
+  await page.waitForTimeout(500);
+  await expect(page.locator("#ai-p2")).toBeHidden();                 // відповідь після скасування ігнорується
+  expect(errors).toEqual([]);
+});
+
+// ── AI-помічник у питанні: перефразувати, покращити, перевірити відповідь ──
+async function openAiMenu(page){ await page.locator('[data-act="ai-menu"]').click(); await expect(page.locator(".pop")).toBeVisible(); }
+
+test("AI-помічник: «Покращити» замінює питання з відповідями після перевірки; «Повернути» відновлює", async ({ page, errors }) => {
+  const calls = [];
+  const better = { type: "single", text: "Що таке змінна в Python і для чого вона потрібна?", options: ["Іменоване посилання на значення", "Тип даних", "Цикл", "Модуль"], correct: [0] };
+  await scripted(page, calls, [JSON.stringify(better), JSON.stringify([{ i: 0, ok: true }])]);
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await openAiMenu(page);
+  await expect(page.locator('.pop [data-v="check"]')).toHaveCount(0);       // для вибору немає «Перевірити відповідь»
+  await page.locator('.pop [data-v="improve"]').click();
+  await expect(page.getByText("Питання покращено й перевірено")).toBeVisible({ timeout: 8000 });
+  expect(calls.length).toBe(2);
+  expect(calls[0].messages[0].content).toContain("Покращи тестове питання");
+  expect(calls[1].messages[0].content).toContain("суворий рецензент");
+  await expect(page.locator("#q-text")).toContainText("для чого вона потрібна");
+  await page.locator("#toast button").click();                                // «Повернути»
+  await expect(page.locator("#q-text")).toHaveText("Що таке змінна в Python?");
+  expect(errors).toEqual([]);
+});
+
+test("AI-помічник: «Перевірити відповідь» для текстового питання додає синоніми; правильну лишає", async ({ page, errors }) => {
+  const calls = [];
+  await scripted(page, calls, [JSON.stringify({ ok: true, correct: "Київ / Kyiv / м. Київ", note: "Відповідь правильна, додано варіанти написання." }), JSON.stringify({ ok: true, correct: "Київ / Kyiv / м. Київ", note: "Усе гаразд." })]);
+  const d = db(); d.teachers.t1.tests.T2.questions[0] = { id: "T2q0", type: "text", text: "Столиця України?", correct: "Київ", points: 1 };
+  await seed(page, d, "t1");
+  await page.goto("/constructor?id=T2");
+  await openAiMenu(page);
+  await page.locator('.pop [data-v="check"]').click();
+  await expect(page.getByText("Додано варіанти відповіді: Київ / Kyiv / м. Київ")).toBeVisible({ timeout: 8000 });
+  expect(calls[0].messages[0].content).toContain("Поточна відповідь викладача: \"Київ\"");
+  await openAiMenu(page);
+  await page.locator('.pop [data-v="check"]').click();                      // тепер відповідь та сама — лише повідомлення
+  await expect(page.getByText("Відповідь правильна: Усе гаразд.")).toBeVisible({ timeout: 8000 });
+  expect(errors).toEqual([]);
+});
+
+test("AI-помічник: «Перефразувати» з меню працює як раніше", async ({ page, errors }) => {
+  const calls = [];
+  await scripted(page, calls, [JSON.stringify({ question: "Що означає змінна в Python?", options: ["А", "Б", "В", "Г"] })]);
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await openAiMenu(page);
+  await page.locator('.pop [data-v="rephrase"]').click();
+  await expect(page.getByText("Питання перефразовано")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#q-text")).toHaveText("Що означає змінна в Python?");
   expect(errors).toEqual([]);
 });
