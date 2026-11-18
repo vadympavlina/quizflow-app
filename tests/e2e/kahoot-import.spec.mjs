@@ -61,3 +61,44 @@ test("Kahoot: помилка воркера показується під пол
   expect(calls.length).toBe(1);
   expect(errors.filter(e => !/404/.test(e))).toEqual([]);
 });
+
+test("Новий тест: посилання на Kahoot підставляє назву й питання, тест створюється одразу з ними і відкривається в конструкторі", async ({ page, errors }) => {
+  const calls = [];
+  await fakeWorker(page, calls, { body: OK });
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.locator("#sb-new").click();
+  await expect(page.locator("#nt-kh")).toBeHidden();
+  await page.locator("#nt-kh-t").click();                                      // маленька кнопка «Імпортувати з Kahoot»
+  await expect(page.locator("#nt-kh")).toBeVisible();
+  await page.fill("#nt-kh-url", KH);
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-msg")).toContainText("Знайдено 4 питання");
+  await expect(page.locator("#nt-kh-msg")).toContainText("2 пропущено");
+  await expect(page.locator("#nt-n")).toHaveValue("Minecraft AI: Розумні світи");   // назва з Kahoot
+  await expect(page.locator("#nt-submit")).toContainText("Створити тест · 4");
+  expect(calls[0].auth).toBe("Bearer mock-token-t1");
+  await page.locator("#nt-submit").click();
+  await page.waitForURL(/constructor\?id=/);
+  await expect(page.locator(".qi")).toHaveCount(4);                            // питання вже в конструкторі
+  await expect(page.locator("#title")).toHaveValue("Minecraft AI: Розумні світи");
+  expect(errors).toEqual([]);
+});
+
+test("Новий тест: помилка Kahoot не блокує звичайне створення тесту", async ({ page, errors }) => {
+  const calls = [];
+  await fakeWorker(page, calls, { status: 404, body: { ok: false, error: "Тест не знайдено або він приватний." } });
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.locator("#sb-new").click();
+  await page.locator("#nt-kh-t").click();
+  await page.fill("#nt-kh-url", KH);
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-msg")).toContainText("приватний");
+  await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
+  await page.fill("#nt-n", "Звичайний тест");
+  await page.locator("#nt-submit").click();
+  await page.waitForURL(/constructor\?id=/);
+  await expect(page.locator("#title")).toHaveValue("Звичайний тест");         // створився порожній тест, як і раніше
+  expect(errors.filter(e => !/404/.test(e))).toEqual([]);
+});

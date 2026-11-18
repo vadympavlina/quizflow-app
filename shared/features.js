@@ -10,6 +10,8 @@ import { buildQuestions, qVersionKey } from "./qorder.js?v=1";
 import { trackAI, tokensOf } from "./ai-usage.js?v=3";
 import { assertAiQuota } from "./caps.js?v=4";
 import { callAIRaw as aiCallRaw } from "./ai-call.js?v=2";
+import { getApps as _fbApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth as _fbAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const { db, ref, get, set, push, update, remove, onValue, off } = window._fb;
 const _arr = v => Array.isArray(v) ? v : Object.values(v || {});
@@ -2594,8 +2596,46 @@ window.G = {
     const tm = $("nt-tm"); if (tm){ tm.value = "10"; tm.classList.remove("er"); }
     const err = $("nt-err"); if (err) err.textContent = "";
     const btn = $("nt-submit"); if (btn){ btn.disabled = false; btn.textContent = "Створити тест →"; }
+    G._khQs = null; G._khTitle = "";
+    { const kh = $("nt-kh"); if (kh) kh.hidden = true; const t = $("nt-kh-t"); if (t) t.setAttribute("aria-expanded", "false"); const u = $("nt-kh-url"); if (u) u.value = ""; const m = $("nt-kh-msg"); if (m) m.hidden = true; }
     openM("m-test");
     buildChips();
+  },
+  // ─── Імпорт нового тесту з Kahoot: назва й питання підставляються, тест створюється одразу з питаннями ───
+  _khQs: null, _khTitle: "",
+  khToggle(){
+    const kh = $("nt-kh"), t = $("nt-kh-t"); if (!kh) return;
+    kh.hidden = !kh.hidden; t.setAttribute("aria-expanded", String(!kh.hidden));
+    if (!kh.hidden) setTimeout(() => $("nt-kh-url")?.focus(), 30);
+  },
+  async khLoad(){
+    const url = ($("nt-kh-url")?.value || "").trim(), msg = $("nt-kh-msg"), btn = $("nt-kh-go");
+    if (!url || btn?.disabled) return;
+    const say = (t, kind) => { msg.hidden = !t; msg.textContent = t || ""; msg.className = "nt-kh-msg" + (kind ? " " + kind : ""); };
+    btn.disabled = true; btn.textContent = "Завантажую…"; say("");
+    try {
+      const wurl = String((await get(ref(db, "settings/mail/workerUrl"))).val() || "").replace(/\/+$/, "");
+      if (!wurl) throw new Error("Сервер імпорту не налаштовано. Зверніться до адміністратора.");
+      const tok = await _fbAuth(_fbApps()[0]).currentUser.getIdToken();
+      let res;
+      try { res = await fetch(wurl + "/import/kahoot", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ url }) }); }
+      catch { throw new Error("Не вдалося з'єднатися із сервером. Перевірте інтернет."); }
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || d.ok === false) throw new Error(d.error || `Помилка ${res.status}`);
+      const gid = () => Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
+      G._khQs = d.questions.map(q => q.options ? { id: gid(), type: q.type, text: esc(q.text), options: q.options, correct: q.correct }
+        : q.items ? { id: gid(), type: "ordering", text: esc(q.text), items: q.items }
+        : { id: gid(), type: "text", text: esc(q.text), correct: q.correct });
+      G._khTitle = d.title || "";
+      const nEl = $("nt-n"); if (nEl && d.title){ nEl.value = d.title.slice(0, 120); nEl.classList.remove("er"); $("nt-err").textContent = ""; }
+      const n = G._khQs.length;
+      say(`Знайдено ${n} ${_plural(n, "питання", "питання", "питань")}${d.skipped ? `, ${d.skipped} пропущено (опитування, слайди)` : ""}. Натисніть «Створити» і тест відкриється в конструкторі.`, "ok");
+      const sb = $("nt-submit"); if (sb) sb.textContent = `Створити тест · ${n} →`;
+    } catch (e){
+      G._khQs = null; G._khTitle = "";
+      const sb = $("nt-submit"); if (sb) sb.textContent = "Створити тест →";
+      say(e.message, "err");
+    } finally { btn.disabled = false; btn.textContent = "Завантажити"; }
   },
   async submitTest(){
     const nEl = $("nt-n"), err = $("nt-err"), btn = $("nt-submit");
@@ -2610,7 +2650,7 @@ window.G = {
     const desc = $("nt-d").value.trim();
     const tags = [...new Set($("nt-tg").value.split(",").map(s => s.trim()).filter(Boolean))];
     try{
-      const id = await dbPush("tests", { title: n, description: desc, folderId: _fid || null, tags, timeLimit: mins * 60, status: "active", questions: [], createdAt: ts() });
+      const id = await dbPush("tests", { title: n, description: desc, folderId: _fid || null, tags, timeLimit: mins * 60, status: "active", questions: G._khQs || [], createdAt: ts() });
       location.href = `constructor?id=${id}`;
     }catch(e){
       fail(null, "Не вдалося створити: " + e.message);

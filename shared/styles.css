@@ -699,6 +699,11 @@ html.qf-lock{overflow:hidden;overscroll-behavior:none}
 .mx-head .msu{margin-bottom:0}
 .mx-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;box-shadow:0 6px 16px -8px rgba(45,91,227,.6);transition:background .2s}
 .mx-folder{position:relative}
+.nt-kh-t{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:6px 11px;border-radius:9px;border:1.5px solid var(--line,#E2E7F3);background:#fff;font:700 12.5px "Manrope",sans-serif;color:var(--muted);cursor:pointer;transition:all .15s}
+.nt-kh-t:hover,.nt-kh-t[aria-expanded="true"]{border-color:var(--pri,#2D5BE3);color:var(--pri,#2D5BE3);background:var(--pri-soft,#EAF0FF)}
+.nt-kh{margin:-4px 0 16px;padding:12px;border-radius:12px;background:var(--hover,#F4F6FC);border:1px solid var(--line,#E2E7F3)}
+.nt-kh-row{display:flex;gap:8px}.nt-kh-row .fi{flex:1;min-width:0}
+.nt-kh-msg{margin-top:8px;font-size:13px;font-weight:600;color:var(--muted)}.nt-kh-msg.ok{color:#047857}.nt-kh-msg.err{color:#B91C1C}
 .mx-row{display:grid;grid-template-columns:1fr 150px;gap:12px}
 .fl label .opt{text-transform:none;letter-spacing:0;font-size:12px;color:var(--light,#9aa3b8);font-weight:400;margin-left:4px}
 .mx-err{min-height:18px;font-size:13px;color:var(--rose,#be123c);font-weight:500;margin:-4px 0 2px}
