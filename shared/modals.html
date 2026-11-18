@@ -8,6 +8,14 @@
     <div><div class="mtl" id="m-test-title">Новий тест</div><div class="msu">Питання додасте в конструкторі одразу після створення</div></div>
   </div>
   <form onsubmit="event.preventDefault();G.submitTest()" novalidate>
+    <button type="button" class="nt-kh-t" id="nt-kh-t" onclick="G.khToggle()" aria-expanded="false" aria-controls="nt-kh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Імпортувати з Kahoot</button>
+    <div class="nt-kh" id="nt-kh" hidden>
+      <div class="nt-kh-row">
+        <input class="fi" id="nt-kh-url" type="url" inputmode="url" placeholder="Посилання на публічний тест Kahoot" spellcheck="false" autocomplete="off" aria-label="Посилання на тест Kahoot" onkeydown="if(event.key==='Enter'){event.preventDefault();G.khLoad()}" onpaste="setTimeout(()=>G.khLoad(),60)">
+        <button type="button" class="btn bs" id="nt-kh-go" onclick="G.khLoad()">Завантажити</button>
+      </div>
+      <div class="nt-kh-msg" id="nt-kh-msg" role="status" hidden></div>
+    </div>
     <div class="fl"><label for="nt-n">Назва *</label><input class="fi" id="nt-n" placeholder="Наприклад: HTML Основи" maxlength="120" autocomplete="off" autofocus oninput="this.classList.remove('er');document.getElementById('nt-err').textContent=''"></div>
     <div class="fl"><label for="nt-d">Опис <span class="opt">необов'язково</span></label><textarea class="fi" id="nt-d" rows="2" placeholder="Що перевіряє тест, для кого…"></textarea></div>
     <div class="fl"><label>Папка</label><div class="chips" id="nt-chips"></div></div>
