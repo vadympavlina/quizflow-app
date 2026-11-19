@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════
 // shared/support.js — «Підтримка»: кулька справа знизу на сторінках викладача й у конструкторі.
-// Вкладка «Нове» — повідомити про проблему чи запропонувати ідею (контекст сторінки додається сам,
-// можна вставити знімок екрана). Вкладка «Мої звернення» — свої звернення і їх статус з адмінки.
+// Вкладка «Нове» — повідомити про проблему чи запропонувати ідею (контекст сторінки додається сам). Вкладка «Мої звернення» — свої звернення і їх статус з адмінки.
 //
 // Дані:
 //   bugReports/{id}           — повне звернення (читає лише адмін; там і нотатки адміністратора)
@@ -13,14 +12,12 @@ import { ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.1
 const ICON = {
   bubble: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4"/><path d="M12 14h.01"/>',
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
-  img: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
   min: '<path d="M5 12h14"/>',
 };
 const svg = (k, s = 18, w = 2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const STATUS = { new: ["Надіслано", "n"], in_progress: ["У роботі", "w"], resolved: ["Виправлено", "d"], done: ["Виправлено", "d"] };
-const MAX_SHOT = 350000;   // знімок у базі — до ~350 КБ тексту (base64)
 
 const CSS = `
 .qfs-fab{position:fixed;right:20px;bottom:calc(20px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px));z-index:880;width:46px;height:46px;border-radius:50%;border:1px solid #DDE3EF;background:#fff;color:#2D5BE3;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 26px -10px rgba(15,30,92,.45),0 2px 6px rgba(15,30,92,.08);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,opacity .2s,visibility .2s;font:inherit}
@@ -55,11 +52,6 @@ const CSS = `
 .qfs-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
 .qfs-ctx{display:flex;gap:5px;flex-wrap:wrap;flex:1;min-width:0}
 .qfs-ctx span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:600;color:#5B6A8F;background:#F1F4FA;border-radius:7px;padding:3px 7px}
-.qfs-att{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:9px;border:1px dashed #C8D1E3;background:#fff;color:#5B6A8F;font:700 12px Manrope,system-ui,sans-serif;cursor:pointer}
-.qfs-att:hover{border-color:#2D5BE3;color:#2D5BE3}
-.qfs-shot{position:relative;margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid #E3E8F2;max-height:120px}
-.qfs-shot img{display:block;width:100%;max-height:120px;object-fit:cover}
-.qfs-shot button{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:8px;border:0;background:rgba(11,20,55,.7);color:#fff;display:grid;place-items:center;cursor:pointer}
 .qfs-hint{font-size:11.5px;color:#66728F;margin-top:6px}
 .qfs-err{font-size:12.5px;color:#B91C1C;margin-top:8px;min-height:0}
 .qfs-send{margin-top:10px;width:100%;height:40px;border:0;border-radius:11px;background:#2D5BE3;color:#fff;font:800 14px Manrope,system-ui,sans-serif;cursor:pointer;transition:background .15s}
@@ -130,7 +122,7 @@ export function initSupport(o){
   const $ = s => root.querySelector(s);
   const fab = $(".qfs-fab"), pop = $(".qfs-pop"), body = $("#qfs-b");
 
-  const S = { tab: "new", kind: "bug", shot: "", sending: false, sent: false, items: null, denied: false };
+  const S = { tab: "new", kind: "bug", sending: false, sent: false, items: null, denied: false };
   let draft = read("draft", "");
 
   // ─── Контекст ─────────────────────────────────────────────────────
@@ -161,10 +153,8 @@ export function initSupport(o){
         <button type="button" data-k="idea" class="${S.kind === "idea" ? "on" : ""}" aria-pressed="${S.kind === "idea"}">Ідея</button>
       </div>
       <textarea class="qfs-ta" maxlength="2000" aria-label="Опис" placeholder="${S.kind === "bug" ? "Що сталося? Що ви робили перед цим?" : "Що варто додати чи змінити?"}">${esc(draft)}</textarea>
-      ${S.shot ? `<div class="qfs-shot"><img src="${S.shot}" alt="Знімок екрана"><button type="button" data-unshot aria-label="Прибрати знімок">${svg("x", 14, 2.4)}</button></div>` : ""}
-      <div class="qfs-row"><div class="qfs-ctx" title="Додається автоматично">${chips(ctx())}</div>
-        ${S.shot ? "" : `<button type="button" class="qfs-att" data-att>${svg("img", 14)}Знімок</button>`}</div>
-      <div class="qfs-hint">Сторінка й браузер додаються автоматично. Знімок можна вставити з буфера (Ctrl+V).</div>
+      <div class="qfs-row"><div class="qfs-ctx" title="Додається автоматично">${chips(ctx())}</div></div>
+      <div class="qfs-hint">Сторінка й браузер додаються автоматично.</div>
       <div class="qfs-err" role="alert"></div>
       <button type="button" class="qfs-send" data-send ${S.sending ? "disabled" : ""}>${S.sending ? "Надсилаємо…" : "Надіслати"}</button>`;
     else body.innerHTML = renderList();
@@ -223,23 +213,6 @@ export function initSupport(o){
   }
   const toggle = () => pop.hidden ? open() : close();
 
-  // ─── Знімок екрана: стискаємо до JPEG, щоб не роздувати базу ──────
-  async function addShot(file){
-    if (!file || !/^image\//.test(file.type)) return;
-    const err = $(".qfs-err");
-    try {
-      const bmp = await createImageBitmap(file);
-      for (const [w, q] of [[1400, .78], [1100, .68], [860, .6]]){
-        const k = Math.min(1, w / bmp.width), c = document.createElement("canvas");
-        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
-        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-        const url = c.toDataURL("image/jpeg", q);
-        if (url.length <= MAX_SHOT){ S.shot = url; render(); return; }
-      }
-      if (err) err.textContent = "Знімок завеликий: оберіть менше зображення";
-    } catch { if (err) err.textContent = "Не вдалося прочитати зображення"; }
-  }
-
   // ─── Надсилання ───────────────────────────────────────────────────
   async function send(){
     const ta = $(".qfs-ta"), text = (ta?.value || "").trim(), err = $(".qfs-err");
@@ -250,11 +223,11 @@ export function initSupport(o){
     try {
       const r = push(ref(db, "bugReports"));
       await set(r, { message: text, reportType: S.kind === "idea" ? "improvement" : "bug", page: c.page, uid, userName, createdAt: at, status: "new",
-        ctx: c, ...(S.shot ? { shot: S.shot } : {}) });
+        ctx: c });
       const short = { t: text.slice(0, 300), k: S.kind, p: c.page, at };
       const sent = read("sent", []); sent.unshift({ id: r.key, ...short }); write("sent", sent.slice(0, 30));
       set(ref(db, `bugStatus/${uid}/${r.key}`), { ...short, s: "new" }).then(() => notify(r.key)).catch(() => {});
-      draft = ""; write("draft", ""); S.shot = ""; S.sent = true;
+      draft = ""; write("draft", ""); S.sent = true;
     } catch (e){
       S.sending = false; render();
       $(".qfs-err").textContent = "Не вдалося надіслати: " + (e?.message || "перевірте інтернет");
@@ -288,18 +261,9 @@ export function initSupport(o){
     const k = t.closest("[data-k]"); if (k){ draft = $(".qfs-ta")?.value || draft; S.kind = k.dataset.k; render(); $(".qfs-ta")?.focus(); return; }
     if (t.closest("[data-send]")) return send();
     if (t.closest("[data-more]")){ S.sent = false; render(); $(".qfs-ta")?.focus(); return; }
-    if (t.closest("[data-unshot]")){ S.shot = ""; render(); return; }
-    if (t.closest("[data-att]")){
-      const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
-      inp.onchange = () => addShot(inp.files?.[0]); inp.click(); return;
-    }
     if (t.closest("[data-hide]")){ close(); sessionStorage.setItem("qf_sup_hide", "1"); document.documentElement.classList.add("qfs-hide"); }
   });
   pop.addEventListener("input", e => { if (e.target.matches(".qfs-ta")){ draft = e.target.value; write("draft", draft); const er = $(".qfs-err"); if (er) er.textContent = ""; } });
-  pop.addEventListener("paste", e => {
-    const f = [...(e.clipboardData?.files || [])].find(x => /^image\//.test(x.type));
-    if (f){ e.preventDefault(); addShot(f); }
-  });
   pop.addEventListener("keydown", e => {
     if (e.key === "Escape"){ e.stopPropagation(); close(); }
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && e.target.matches(".qfs-ta")){ e.preventDefault(); send(); }
