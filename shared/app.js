@@ -906,6 +906,8 @@ export async function initApp(pageName, options = {}) {
     loadModals()
   ]);
   loadServiceNotices();   // оголошення й техроботи — у фоні, сторінку не затримують
+  import("./support.js?v=1").then(m => m.initSupport({ db, uid,   // кулька «Підтримка» справа знизу
+    userName: () => document.getElementById("sb-teacher-name")?.textContent?.trim() || user?.email || "—" })).catch(() => {});
   if (!options.skipData) {
     await loadAllData();
     setTimeout(backfillIndexes, 3000);
@@ -933,127 +935,11 @@ export async function initApp(pageName, options = {}) {
 // Явна функція щоб показати "все готово" — сторінка викликає після renderAll
 
 // ─── Bug Report ────────────────────────────────────────────────────────────
+// Пункт меню «Повідомити про помилку» відкриває ту саму «Підтримку», що й кулька справа знизу (shared/support.js)
 window.openBugReport = () => {
-  let ov = document.getElementById("qf-bug-ov");
-  if (!ov) {
-    ov = document.createElement("div");
-    ov.id = "qf-bug-ov";
-    ov.style.cssText = "position:fixed;inset:0;background:rgba(11,20,55,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px)";
-    ov.innerHTML = `<div style="background:#fff;border-radius:18px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(11,20,55,.2)">
-      <h3 style="margin:0 0 4px;font-size:17px;font-weight:800;color:#0B1437;font-family:Manrope,sans-serif">Повідомити</h3>
-      <p style="font-size:13px;color:#5B6A8F;margin:0 0 14px;font-family:Manrope,sans-serif">Оберіть тип та опишіть детально</p>
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <button id="qf-type-bug" onclick="window.selectBugType('bug')" style="flex:1;padding:9px 12px;border-radius:10px;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:2px solid #EF4444;background:#FEE2E2;color:#B91C1C;transition:all .15s">Проблема</button>
-        <button id="qf-type-imp" onclick="window.selectBugType('improvement')" style="flex:1;padding:9px 12px;border-radius:10px;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:2px solid #E3E8F2;background:#F4F6FB;color:#5B6A8F;transition:all .15s">Покращення</button>
-      </div>
-      <div style="font-size:12px;font-family:monospace;background:#F4F6FB;border:1px solid #E3E8F2;border-radius:7px;padding:6px 10px;color:#1E3A8A;margin-bottom:12px" id="qf-bug-pg"></div>
-      <textarea id="qf-bug-txt" placeholder="Опишіть детально..." style="width:100%;min-height:90px;border:1.5px solid #E3E8F2;border-radius:11px;padding:10px 12px;font-family:Manrope,sans-serif;font-size:14px;resize:vertical;outline:none;box-sizing:border-box;color:#0B1437"></textarea>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button onclick="window.closeBugReport()" style="flex:1;padding:10px;border-radius:9px;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:1px solid #E3E8F2;background:#F4F6FB;color:#5B6A8F">Скасувати</button>
-        <button id="qf-bug-sb" onclick="window.sendBugReport()" style="flex:1;padding:10px;border-radius:9px;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;background:#1E3A8A;color:#fff">Надіслати</button>
-      </div>
-      <div id="qf-bug-ok" style="display:none;text-align:center;padding:16px;font-size:14px;font-weight:700;color:#059669;font-family:Manrope,sans-serif">Дякуємо! Повідомлення надіслано.</div>
-    </div>`;
-    ov.addEventListener("click", e => { if (e.target === ov) window.closeBugReport(); });
-    document.body.appendChild(ov);
-  }
-  document.getElementById("qf-bug-pg").textContent = document.body.dataset.page || location.pathname.split("/").pop() || "—";
-  document.getElementById("qf-bug-txt").value = "";
-  window.selectBugType("bug");
-  document.getElementById("qf-bug-ok").style.display = "none";
-  const sb = document.getElementById("qf-bug-sb");
-  if (sb) { sb.disabled = false; sb.textContent = "Надіслати"; }
-  ov.style.display = "flex";
+  if (window.qfSupport) return window.qfSupport.open("new");
+  import("./support.js?v=1").then(m => (m.initSupport({ db, uid }) || window.qfSupport)?.open("new")).catch(() => {});
 };
-window.closeBugReport = () => {
-  const ov = document.getElementById("qf-bug-ov");
-  if (ov) ov.style.display = "none";
-};
-let _bugType = "bug";
-window.selectBugType = (type) => {
-  _bugType = type;
-  const bugBtn = document.getElementById("qf-type-bug");
-  const impBtn = document.getElementById("qf-type-imp");
-  if (!bugBtn || !impBtn) return;
-  if (type === "bug") {
-    bugBtn.style.border = "2px solid #EF4444"; bugBtn.style.background = "#FEE2E2"; bugBtn.style.color = "#B91C1C";
-    impBtn.style.border = "2px solid #E3E8F2"; impBtn.style.background = "#F4F6FB"; impBtn.style.color = "#5B6A8F";
-  } else {
-    impBtn.style.border = "2px solid #7C3AED"; impBtn.style.background = "#EDE9FE"; impBtn.style.color = "#6D28D9";
-    bugBtn.style.border = "2px solid #E3E8F2"; bugBtn.style.background = "#F4F6FB"; bugBtn.style.color = "#5B6A8F";
-  }
-};
-window.sendBugReport = async () => {
-  const text = (document.getElementById("qf-bug-txt")?.value || "").trim();
-  if (!text) { document.getElementById("qf-bug-txt")?.focus(); return; }
-  const btn = document.getElementById("qf-bug-sb");
-  if (btn) { btn.disabled = true; btn.textContent = "Надсилаємо..."; }
-  const page = document.body.dataset.page || location.pathname.split("/").pop() || "—";
-  const userName = document.getElementById("sb-teacher-name")?.textContent || "—";
-  try {
-    const { push, ref: fbR } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-    await push(fbR(db, "bugReports"), {
-      message: text,
-      reportType: _bugType,
-      page,
-      uid: uid || "—",
-      userName,
-      createdAt: Date.now(),
-      status: "new"
-    });
-    // Дублюємо в Telegram (не блокує основний флоу — помилка тут не заважає
-    // самому репорту, який уже успішно збережено вище)
-    notifyTelegramBugReport({ text, reportType: _bugType, page, userName }).catch(() => {});
-    const ok = document.getElementById("qf-bug-ok");
-    if (ok) ok.style.display = "block";
-    setTimeout(() => window.closeBugReport(), 2000);
-  } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = "Надіслати"; }
-    alert("Помилка: " + e.message);
-  }
-};
-
-// ─── Дублювання репортів у Telegram ────────────────────────────────────────
-// Читає settings/telegramBot (токен + увімкнено) і telegramChats (кому надсилати,
-// notify:true) — те саме сховище, яким керує адмінська сторінка admin/telegram.html.
-function escTg(s){
-  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
-
-async function notifyTelegramBugReport({ text, reportType, page, userName }) {
-  const { get: fbGet, ref: fbR } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-  const cfgSnap = await fbGet(fbR(db, "settings/telegramBot"));
-  const cfg = cfgSnap.exists() ? cfgSnap.val() : null;
-  if (!cfg?.enabled || !cfg?.token) return;
-
-  // Отримувачі — у settings/telegramBot/recipients (admin/telegram). Старий шлях
-  // через telegramChats (з усією історією переписки) лише як запасний.
-  let recipients = Object.keys(cfg.recipients || {}).filter(id => cfg.recipients[id]);
-  if (!cfg.recipients){
-    const chatsSnap = await fbGet(fbR(db, "telegramChats"));
-    const chats = chatsSnap.exists() ? chatsSnap.val() : {};
-    recipients = Object.keys(chats).filter(id => chats[id]?.notify);
-  }
-  if (!recipients.length) return;
-
-  const isImprovement = reportType === "improvement";
-  const emoji = isImprovement ? "💡" : "🐞";
-  const label = isImprovement ? "Ідея покращення" : "Проблема";
-  const now = new Date().toLocaleString("uk-UA", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-
-  const msg =
-    `<b>${emoji} QuizFlow · ${label}</b>\n` +
-    `<blockquote>${escTg(text)}</blockquote>\n` +
-    `${escTg(userName)} · <code>${escTg(page)}</code> · ${now}`;
-
-  await Promise.all(recipients.map(chatId =>
-    fetch(`https://api.telegram.org/bot${cfg.token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "HTML" })
-    }).catch(() => {})
-  ));
-}
 
 export function appReady() {
   ldr(false);

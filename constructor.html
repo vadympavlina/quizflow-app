@@ -2855,6 +2855,14 @@ async function preview(){
 
 // Старт
 document.execCommand("defaultParagraphSeparator", false, "div");
+// Кулька «Підтримка» справа знизу (shared/support.js): контекст — назва тесту й номер питання
+import("./shared/support.js?v=1").then(m => m.initSupport({
+  db, uid: UID,
+  userName: () => user.displayName || user.email || "—",
+  context: () => ({ page: "Конструктор", test: S.title?.trim() || null, q: S.qs.length ? S.cur + 1 : null }),
+  // На телефоні — над нижньою панеллю «Попереднє / Наступне»
+  lift: () => matchMedia("(max-width: 760px)").matches ? (document.querySelector(".qnav")?.offsetHeight || 0) + 6 : 0,
+})).catch(() => {});
 load();
 </script>
 </body>
