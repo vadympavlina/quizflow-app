@@ -247,12 +247,18 @@ test("генерація: поки AI працює, показується сп�
   await expect(page.locator("#ai-splash")).toBeVisible();
   await expect(page.locator('#ai-sp-steps li[data-s="gen"]')).toHaveClass(/on/);
   await expect(page.locator("#ai-sp-t")).toHaveText("Складаю питання…");
+  await expect.poll(async () => parseInt(await page.locator("#ai-sp-p").textContent(), 10)).toBeGreaterThan(3);   // відсоток росте
+  const w = await page.locator("#ai-sp-bar").evaluate(el => parseFloat(el.style.width));
+  expect(w).toBeGreaterThan(3);
+  await page.screenshot({ path: "/tmp/claude-0/-home-user-QuizFlow/45fb55bb-9a1f-5088-bc4a-437be91ed82d/scratchpad/gen-splash.png" });
   await page.locator('[data-act="ai-cancel"]').click();
   await expect(page.locator("#ai-splash")).toBeHidden();
   await expect(page.locator("#ai-p1")).toBeVisible();
   release();
   await page.waitForTimeout(500);
   await expect(page.locator("#ai-p2")).toBeHidden();                 // відповідь після скасування ігнорується
+  await page.locator("#ai-go").click();                              // новий запуск починається з нуля
+  await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 });
   expect(errors).toEqual([]);
 });
 

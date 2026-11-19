@@ -327,6 +327,10 @@ textarea.ta1::placeholder{color:#B5BED2;font-weight:500}
 @keyframes spSpin{to{transform:rotate(360deg)}}
 @keyframes spPulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.06)}}
 .ai-sp-t{font-size:18px;font-weight:800;color:var(--ink)}
+.ai-sp-prog{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(280px,100%);margin:-2px 0 4px}
+.ai-sp-p{font-family:'Geist Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:#6D28D9}
+.ai-sp-bar{width:100%;height:7px;border-radius:999px;background:color-mix(in srgb,#8B5CF6 15%,transparent);overflow:hidden}
+.ai-sp-bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#A78BFA,#6D28D9);transition:width .12s linear}
 .ai-sp-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;text-align:left}
 .ai-sp-steps li{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:var(--faint);transition:color .2s}
 .ai-sp-steps li i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;transition:all .2s}
@@ -795,6 +799,7 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
     <div class="ai-splash" id="ai-splash" hidden aria-live="polite">
       <div class="ai-orb" aria-hidden="true"><span></span><span></span><span></span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div>
       <b class="ai-sp-t" id="ai-sp-t">Складаю питання…</b>
+      <div class="ai-sp-prog" aria-hidden="true"><span class="ai-sp-p" id="ai-sp-p">0%</span><span class="ai-sp-bar"><i id="ai-sp-bar"></i></span></div>
       <ol class="ai-sp-steps" id="ai-sp-steps">
         <li data-s="gen"><i></i>Складаю питання</li>
         <li data-s="check"><i></i>Перевіряю відповіді</li>
@@ -1720,9 +1725,23 @@ function syncAiMode(v){
   if (v === "mix") renderMix(); else syncAiGo();
 }
 let _aiRun = 0;
-function aiSplash(step, note = ""){
+// Відсоток на заставці — оцінка за часом (AI віддає відповідь цілком): швидко росте, далі чекає; тривалість залежить від кількості питань
+const _sp = { from: 0, to: 0, tau: 1, t0: 0, pct: 0, timer: 0 };
+function spTick(){
+  if (_sp.to > _sp.from) _sp.pct = _sp.from + (_sp.to - _sp.from) * (1 - Math.exp(-(performance.now() - _sp.t0) / 1000 / _sp.tau));
+  const p = Math.min(100, Math.round(_sp.pct));
+  $("ai-sp-p").textContent = p + "%"; $("ai-sp-bar").style.width = p + "%";
+}
+function spAim(to, tau){
+  Object.assign(_sp, { from: _sp.pct, to, tau, t0: performance.now() });
+  clearInterval(_sp.timer); _sp.timer = setInterval(spTick, 100); spTick();
+}
+function aiSplash(step, note = "", tau = 0){
   const sp = $("ai-splash"), mb = $("m-ai").querySelector(".mb");
-  if (!step){ sp.hidden = true; mb.classList.remove("busy"); return; }
+  if (!step){ sp.hidden = true; mb.classList.remove("busy"); clearInterval(_sp.timer); Object.assign(_sp, { from: 0, to: 0, pct: 0 }); spTick(); return; }
+  if (step === "gen"){ Object.assign(_sp, { pct: 0 }); spAim($("ai-verify").checked ? 68 : 95, tau || 6); }
+  else if (step === "check") spAim(96, tau || 5);
+  else { clearInterval(_sp.timer); _sp.pct = 100; _sp.to = 0; spTick(); }
   mb.classList.add("busy"); mb.scrollTop = 0; sp.hidden = false;
   const order = ["gen", "check", "done"], at = order.indexOf(step);
   sp.querySelectorAll("li").forEach(li => {
@@ -1769,7 +1788,7 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
 6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.`;
   const run = ++_aiRun;
   const alive = () => run === _aiRun && $("m-ai").classList.contains("on");   // скасовано або модалку закрито
-  aiSplash("gen", `${count} ${plural(count, ["питання", "питання", "питань"])} на тему «${topic.slice(0, 60)}»`);
+  aiSplash("gen", `${count} ${plural(count, ["питання", "питання", "питань"])} на тему «${topic.slice(0, 60)}»`, 2.5 + count * .45);
   try {
     const raw = await callAI(prompt, Math.max(2000, count * 380), .4);
     if (!alive()) return;                                   // скасовано
@@ -1785,7 +1804,7 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
     kept.splice(count);                                     // AI іноді повертає більше, ніж просили
     let add = kept, note = "";
     if (verify){
-      aiSplash("check", `Перевіряю ${kept.length} ${plural(kept.length, ["питання", "питання", "питань"])}: чи правильні відповіді й чи немає двозначностей`);
+      aiSplash("check", `Перевіряю ${kept.length} ${plural(kept.length, ["питання", "питання", "питань"])}: чи правильні відповіді й чи немає двозначностей`, 1.5 + kept.length * .3);
       const v = await aiVerify(kept, material, nOpts);
       if (!alive()) return;
       add = v.list;
@@ -1793,7 +1812,7 @@ ${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай
       if (!add.length) throw new Error("після перевірки не лишилось надійних питань: спробуйте інші вимоги чи додайте матеріал");
     }
     aiSplash("done");
-    await new Promise(r => setTimeout(r, 260));
+    await new Promise(r => setTimeout(r, 420));
     if (!alive()) return;
     aiSplash(null);
     showAiReview(add, { note, skipped });
