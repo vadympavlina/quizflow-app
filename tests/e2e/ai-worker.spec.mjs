@@ -346,3 +346,80 @@ test("AI-помічник: поки AI покращує, картка розми
   expect(calls.length).toBe(2);
   expect(errors).toEqual([]);
 });
+
+test("вибрані типи: зайві типи відкидаються, яких не вистачило — доскладаються другим запитом", async ({ page, errors }) => {
+  const calls = [];
+  const first = JSON.stringify([
+    { type: "number", text: "Скільки континентів на Землі?", correct: "7" },
+    { type: "single", text: "Найбільший океан?", options: ["Тихий", "Атлантичний", "Індійський", "Північний Льодовитий"], correct: [0] },   // не замовляли
+    { type: "number", text: "Скільки океанів на Землі?", correct: 5 },
+  ]);
+  const second = JSON.stringify([
+    { type: "ordering", text: "Розташуйте планети від Сонця", items: ["Меркурій", "Венера", "Земля", "Марс"] },
+  ]);
+  await scripted(page, calls, [first, second]);
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await page.locator('.tb[data-act="ai"]').click();
+  await page.locator("#ai-topic").fill("Географія");
+  await page.locator('#ai-mode [data-v="mix"]').click();
+  const inc = t => page.locator(`.ai-mix-r[data-t="${t}"] [data-act="mix-inc"]`).click();
+  await inc("number"); await inc("number"); await inc("ordering");
+  await page.locator(".ai-verify").click();
+  await page.locator("#ai-go").click();
+  await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 });
+  expect(calls.length).toBe(2);
+  expect(calls[1].messages[0].content).toContain("Склади рівно 1");
+  expect(calls[1].messages[0].content).toContain("1 × ordering —");
+  expect(calls[1].messages[0].content).toContain("Скільки континентів");          // не повторювати вже складені
+  await expect(page.locator("#ai-list .ai-q")).toHaveCount(3);
+  await expect(page.locator("#ai-list")).not.toContainText("Найбільший океан");
+  await expect(page.locator("#ai-note")).toContainText("1 повтор або непридатне питання відкинуто");
+  expect(errors).toEqual([]);
+});
+
+test("вибрані типи: AI так і не склав потрібного — питання, що є, показуються, а нестача названа", async ({ page, errors }) => {
+  const calls = [];
+  await scripted(page, calls, [JSON.stringify([{ type: "number", text: "Скільки днів у тижні?", correct: "7" }]), "[]"]);
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await page.locator('.tb[data-act="ai"]').click();
+  await page.locator("#ai-topic").fill("Календар");
+  await page.locator('#ai-mode [data-v="mix"]').click();
+  await page.locator('.ai-mix-r[data-t="number"] [data-act="mix-inc"]').click();
+  await page.locator('.ai-mix-r[data-t="matching"] [data-act="mix-inc"]').click();
+  await page.locator('.ai-mix-r[data-t="matching"] [data-act="mix-inc"]').click();
+  await page.locator(".ai-verify").click();
+  await page.locator("#ai-go").click();
+  await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-list .ai-q")).toHaveCount(1);
+  await expect(page.locator("#ai-note")).toContainText("не вистачило: зіставлення — 2");
+  expect(errors).toEqual([]);
+});
+
+test("AI повертає «брудний» формат: варіанти-об'єкти, правильна як літера чи текст, обгортка questions — усе приймається", async ({ page, errors }) => {
+  const calls = [];
+  const messy = JSON.stringify({ questions: [
+    { type: "single", question: "Столиця Франції?", options: [{ text: "Рим" }, { text: "Париж" }, { text: "Берлін" }, { text: "Мадрид" }], correct: "B" },
+    { type: "multiple_choice", text: "Оберіть парні числа", options: ["1", "2", "3", "4"], correct: ["2", "4"] },
+    { type: "single", text: "Найдовша річка України?", options: [{ text: "Дністер" }, { text: "Дніпро", correct: true }, { text: "Десна" }, { text: "Буг" }] },
+    { type: "short_answer", text: "Хімічний символ золота?", correct: ["Au"] },
+    { type: "matching", text: "Зіставте країну й столицю", pairs: [["Україна", "Київ"], ["Польща", "Варшава"]] },
+    "просто рядок", null, 42,
+  ] });
+  await scripted(page, calls, [messy]);
+  await seed(page, db(), "t1");
+  await page.goto("/constructor?id=T2");
+  await page.locator('.tb[data-act="ai"]').click();
+  await page.locator("#ai-topic").fill("Різне");
+  await page.locator(".ai-verify").click();
+  await page.locator("#ai-go").click();
+  await expect(page.locator("#ai-p2")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#ai-list .ai-q")).toHaveCount(5);
+  await expect(page.locator("#ai-list .ai-q").nth(0).locator("li.ok")).toHaveText("Париж");
+  expect((await page.locator("#ai-list .ai-q").nth(1).locator("li.ok").allTextContents()).sort()).toEqual(["2", "4"]);   // варіанти перемішуються
+  await expect(page.locator("#ai-list .ai-q").nth(2).locator("li.ok")).toHaveText("Дніпро");
+  await page.locator("#ai-add").click();
+  await expect(page.getByText("Додано 5 питань")).toBeVisible();
+  expect(errors).toEqual([]);
+});
