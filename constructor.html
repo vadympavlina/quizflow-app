@@ -327,6 +327,12 @@ textarea.ta1::placeholder{color:#B5BED2;font-weight:500}
 @keyframes spSpin{to{transform:rotate(360deg)}}
 @keyframes spPulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.06)}}
 .ai-sp-t{font-size:18px;font-weight:800;color:var(--ink)}
+[data-act="ai-back"] .lbl-s{display:none}
+@media (max-width:640px){[data-act="ai-back"] .lbl-l{display:none}[data-act="ai-back"] .lbl-s{display:inline}}
+.ai-sp-prog{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(280px,100%);margin:-2px 0 4px}
+.ai-sp-p{font-family:'Geist Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:#6D28D9}
+.ai-sp-bar{width:100%;height:7px;border-radius:999px;background:color-mix(in srgb,#8B5CF6 15%,transparent);overflow:hidden}
+.ai-sp-bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#A78BFA,#6D28D9);transition:width .12s linear}
 .ai-sp-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;text-align:left}
 .ai-sp-steps li{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;color:var(--faint);transition:color .2s}
 .ai-sp-steps li i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;transition:all .2s}
@@ -788,13 +794,14 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
       <div class="ai-note" id="ai-note" hidden></div>
       <div class="ai-list" id="ai-list"></div>
       <div class="mb-foot">
-        <button class="btn ghost" data-act="ai-back">Змінити налаштування</button>
+        <button class="btn ghost" data-act="ai-back"><span class="lbl-l">Змінити налаштування</span><span class="lbl-s">Назад</span></button>
         <button class="btn ai" id="ai-add" data-act="ai-add">Додати в тест</button>
       </div>
     </div>
     <div class="ai-splash" id="ai-splash" hidden aria-live="polite">
       <div class="ai-orb" aria-hidden="true"><span></span><span></span><span></span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div>
       <b class="ai-sp-t" id="ai-sp-t">Складаю питання…</b>
+      <div class="ai-sp-prog" aria-hidden="true"><span class="ai-sp-p" id="ai-sp-p">0%</span><span class="ai-sp-bar"><i id="ai-sp-bar"></i></span></div>
       <ol class="ai-sp-steps" id="ai-sp-steps">
         <li data-s="gen"><i></i>Складаю питання</li>
         <li data-s="check"><i></i>Перевіряю відповіді</li>
@@ -1608,30 +1615,48 @@ const AI_FORMATS = {
 const shuffled = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
 // Варіанти на кшталт «усі вищезазначені» залежать від порядку: такі не чіпаємо
 const ORDER_BOUND = /(усі|всі|жодн|обидв|вищезазнач|перелічен|наведен)/i;
+// Рядок з того, що AI міг повернути як об'єкт ({text:…}) чи число
+const aiStr = o => String((o && typeof o === "object" ? (o.text ?? o.option ?? o.value ?? o.answer ?? o.label ?? "") : o) ?? "").trim();
+const TYPE_ALIAS = { single_choice: "single", multiple: "multi", multiple_choice: "multi", short: "text", short_answer: "text", numeric: "number", order: "ordering", sequence: "ordering", match: "matching", essay: "long", open: "long" };
 function fromAI(r, nOpts = 4){
-  const text = esc(String(r?.text || r?.question || "").trim());
+  if (!r || typeof r !== "object" || Array.isArray(r)) return null;
+  const text = esc(String(r.text || r.question || "").trim());
   if (!text) return null;
-  let type = TYPES[r?.type] ? r.type : Array.isArray(r?.options) ? "single" : "text";
+  const rt = String(r.type || "").toLowerCase().trim();
+  let type = TYPES[rt] ? rt : TYPE_ALIAS[rt] || (Array.isArray(r.options) ? "single" : "text");
   if (type === "text" || type === "number"){
-    const c = Array.isArray(r.correct) ? r.correct[0] : r.correct;
-    const val = String(c ?? r.answer ?? "").trim();
+    const c = Array.isArray(r.correct) ? r.correct.map(aiStr).filter(Boolean).join(" / ") : r.correct;
+    const val = aiStr(c ?? r.answer ?? "");
     if (!val) return null;
     return { id: genId(), type, text, correct: type === "number" ? val.replace(/\s+/g, "") : val };
   }
   if (type === "long") return { id: genId(), type, text };
   if (type === "ordering"){
-    const items = toArr(r.items).map(o => String(o ?? "").trim()).filter(Boolean).slice(0, 8);
+    const items = toArr(r.items ?? r.order).map(aiStr).filter(Boolean).slice(0, 8);
     return items.length >= 3 ? { id: genId(), type, text, items } : null;
   }
   if (type === "matching"){
-    const pr = toArr(r.pairs).map(x => ({ left: String(x?.left ?? "").trim(), right: String(x?.right ?? "").trim() })).filter(x => x.left && x.right).slice(0, 6);
+    const pr = toArr(r.pairs).map(x => Array.isArray(x) ? { left: aiStr(x[0]), right: aiStr(x[1]) } : { left: aiStr(x?.left ?? x?.term), right: aiStr(x?.right ?? x?.match ?? x?.definition) }).filter(x => x.left && x.right).slice(0, 6);
     if (pr.length < 2 || new Set(pr.map(x => x.right)).size !== pr.length) return null;
     const rights = shuffled(pr.map(x => x.right));
     return { id: genId(), type, text, pairs: pr.map(x => ({ left: x.left, options: rights, correct: rights.indexOf(x.right) })) };
   }
-  let options = toArr(r.options).map(o => String(o ?? "").trim()).filter(Boolean).slice(0, Math.max(nOpts, 4));
+  const rawOpts = toArr(r.options).filter(o => aiStr(o)).slice(0, Math.max(nOpts, 4));
+  let options = rawOpts.map(aiStr);
   if (options.length < 2 || new Set(options.map(o => o.toLowerCase())).size !== options.length) return null;
-  let correct = [...new Set(toArr(r.correct).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < options.length))];
+  // correct буває індексом, рядком-індексом, літерою (A), текстом варіанта або позначкою в самих варіантах
+  const toIdx = c => {
+    if (typeof c === "number") return c;
+    const t = aiStr(c); if (!t) return -1;
+    const byText = options.findIndex(o => o.toLowerCase() === t.toLowerCase());   // текст варіанта — найнадійніше («2» як варіант, а не індекс)
+    if (byText >= 0) return byText;
+    if (/^\d+$/.test(t)) return Number(t);
+    if (/^[A-Fa-f]$/.test(t)) return t.toUpperCase().charCodeAt(0) - 65;
+    return -1;
+  };
+  let marks = toArr(r.correct ?? r.answer).map(toIdx);
+  if (!marks.length) marks = rawOpts.map((o, i) => o && typeof o === "object" && (o.correct === true || o.isCorrect === true) ? i : -1);
+  let correct = [...new Set(marks.filter(i => Number.isInteger(i) && i >= 0 && i < options.length))];
   if (!correct.length) return null;
   if (type === "single") correct = correct.slice(0, 1);
   if (type === "multi" && correct.length === 1) type = "single";
@@ -1720,9 +1745,23 @@ function syncAiMode(v){
   if (v === "mix") renderMix(); else syncAiGo();
 }
 let _aiRun = 0;
-function aiSplash(step, note = ""){
+// Відсоток на заставці — оцінка за часом (AI віддає відповідь цілком): швидко росте, далі чекає; тривалість залежить від кількості питань
+const _sp = { from: 0, to: 0, tau: 1, t0: 0, pct: 0, timer: 0 };
+function spTick(){
+  if (_sp.to > _sp.from) _sp.pct = _sp.from + (_sp.to - _sp.from) * (1 - Math.exp(-(performance.now() - _sp.t0) / 1000 / _sp.tau));
+  const p = Math.min(100, Math.round(_sp.pct));
+  $("ai-sp-p").textContent = p + "%"; $("ai-sp-bar").style.width = p + "%";
+}
+function spAim(to, tau){
+  Object.assign(_sp, { from: _sp.pct, to, tau, t0: performance.now() });
+  clearInterval(_sp.timer); _sp.timer = setInterval(spTick, 100); spTick();
+}
+function aiSplash(step, note = "", tau = 0){
   const sp = $("ai-splash"), mb = $("m-ai").querySelector(".mb");
-  if (!step){ sp.hidden = true; mb.classList.remove("busy"); return; }
+  if (!step){ sp.hidden = true; mb.classList.remove("busy"); clearInterval(_sp.timer); Object.assign(_sp, { from: 0, to: 0, pct: 0 }); spTick(); return; }
+  if (step === "gen"){ Object.assign(_sp, { pct: 0 }); spAim($("ai-verify").checked ? 68 : 95, tau || 6); }
+  else if (step === "check") spAim(96, tau || 5);
+  else { clearInterval(_sp.timer); _sp.pct = 100; _sp.to = 0; spTick(); }
   mb.classList.add("busy"); mb.scrollTop = 0; sp.hidden = false;
   const order = ["gen", "check", "done"], at = order.indexOf(step);
   sp.querySelectorAll("li").forEach(li => {
@@ -1752,48 +1791,66 @@ async function aiGenerate(){
   const types = mix ? plan.map(([t]) => t) : AUTO_TYPES;
   const verify = $("ai-verify").checked;
   const existing = S.qs.map(q => plain(q.text)).filter(Boolean).slice(-40);
-  const prompt = `Склади рівно ${count} унікальних тестових питань.
+  const promptFor = (n, plan2, avoid) => `Склади рівно ${n} унікальних тестових питань.
 
 Тема: "${topic}"${desc ? `\nВимоги викладача: ${desc}` : ""}
 Складність: ${diff}
-${mix
-  ? `Склад (дотримуйся точно):\n${plan.map(([t, n]) => `- ${n} × ${AI_FORMATS[t]}`).join("\n")}`
+${plan2
+  ? `Склад (дотримуйся точно, кожне питання — з полем "type"):\n${plan2.map(([t, k]) => `- ${k} × ${AI_FORMATS[t]}`).join("\n")}`
   : `Типи обери сам під тему, щоб тест був різноманітним і перевіряв розуміння (більшість — single, решта на твій розсуд):\n${types.map(t => "- " + AI_FORMATS[t]).join("\n")}`}
-${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай фактів, яких у ньому немає):\n"""${material}"""\n` : ""}${existing.length ? `\nУ тесті ВЖЕ є такі питання — не повторюй їх:\n${existing.map(t => "- " + t.slice(0, 120)).join("\n")}\n` : ""}
+${material ? `\nМАТЕРІАЛ (єдине джерело; не додавай фактів, яких у ньому немає):\n"""${material}"""\n` : ""}${avoid.length ? `\nУ тесті ВЖЕ є такі питання — не повторюй їх:\n${avoid.map(t => "- " + t.slice(0, 120)).join("\n")}\n` : ""}
 ПРАВИЛА:
 1. Усе — тільки українською мовою.
 2. Жодних повторів чи дуже схожих формулювань; кожне питання перевіряє окрему думку.
-3. single/multi: рівно ${nOpts} варіанти, correct — масив індексів з 0. Правильну відповідь не став завжди першою; варіанти правдоподібні й приблизно однакової довжини; без «усі вищезазначені».
+3. single/multi: рівно ${nOpts} варіанти-рядки, correct — масив індексів з 0. Правильну відповідь не став завжди першою; варіанти правдоподібні й приблизно однакової довжини; без «усі вищезазначені».
 4. text/number: у correct допустимі синоніми через «/»; число без одиниць.
 5. Питання формулюй чітко, без підказок у тексті; ${material ? "кожне питання має мати відповідь у матеріалі" : "спирайся лише на достовірні факти"}.
-6. Відповідай ТІЛЬКИ JSON-масивом, без markdown і пояснень.`;
+6. Відповідай ТІЛЬКИ JSON-масивом об'єктів, без markdown і пояснень.`;
   const run = ++_aiRun;
   const alive = () => run === _aiRun && $("m-ai").classList.contains("on");   // скасовано або модалку закрито
-  aiSplash("gen", `${count} ${plural(count, ["питання", "питання", "питань"])} на тему «${topic.slice(0, 60)}»`);
-  try {
-    const raw = await callAI(prompt, Math.max(2000, count * 380), .4);
-    if (!alive()) return;                                   // скасовано
-    const kept = [];
-    let skipped = 0;
-    toArr(parseJSON(raw, "[")).forEach(r => {
-      const q = fromAI(r, nOpts); if (!q) { skipped++; return; }
+  aiSplash("gen", `${count} ${plural(count, ["питання", "питання", "питань"])} на тему «${topic.slice(0, 60)}»`, 2.5 + count * .45);
+  const want = mix ? Object.fromEntries(plan) : null;
+  const kept = [];
+  let skipped = 0;
+  // Розбір відповіді: непридатні й повтори відкидаємо; у «Вибрати типи» беремо не більше замовленого кожного типу
+  const take = raw => {
+    let arr = parseJSON(raw, "[");
+    if (!Array.isArray(arr)) arr = toArr(arr?.questions ?? arr);
+    toArr(arr).forEach(r => {
+      if (kept.length >= count) return;
+      const q = fromAI(r, nOpts); if (!q){ skipped++; return; }
+      if (want && !(want[q.type] > kept.filter(k => k.type === q.type).length)){ skipped++; return; }
       const t = plain(q.text);
-      if (existing.some(e => similar(e, t)) || kept.some(k => similar(plain(k.text), t))) { skipped++; return; }
+      if (existing.some(e => similar(e, t)) || kept.some(k => similar(plain(k.text), t))){ skipped++; return; }
       kept.push(q);
     });
+  };
+  const missing = () => want ? plan.map(([t, n]) => [t, n - kept.filter(k => k.type === t).length]).filter(([, n]) => n > 0) : [];
+  try {
+    take(await callAI(promptFor(count, plan, existing), Math.max(2000, count * 380), .4));
+    if (!alive()) return;                                   // скасовано
+    // Свій склад: якщо якогось типу не вистачило — один раз доскладаємо саме їх
+    const need = missing();
+    if (need.length){
+      const n = need.reduce((a, [, k]) => a + k, 0);
+      $("ai-sp-note").textContent = `Доскладаю ${n} ${plural(n, ["питання", "питання", "питань"])} потрібних типів`;
+      try { take(await callAI(promptFor(n, need, [...existing, ...kept.map(k => plain(k.text))].slice(-60)), Math.max(1500, n * 420), .5)); } catch {}
+      if (!alive()) return;
+    }
     if (!kept.length) throw new Error("AI не повернув жодного придатного питання");
-    kept.splice(count);                                     // AI іноді повертає більше, ніж просили
-    let add = kept, note = "";
+    if (want) kept.sort((a, b) => MIX_TYPES.indexOf(a.type) - MIX_TYPES.indexOf(b.type));
+    const short = missing();
+    let add = kept, note = short.length ? `не вистачило: ${short.map(([t, n]) => `${TYPES[t].label.toLowerCase()} — ${n}`).join(", ")}` : "";
     if (verify){
-      aiSplash("check", `Перевіряю ${kept.length} ${plural(kept.length, ["питання", "питання", "питань"])}: чи правильні відповіді й чи немає двозначностей`);
+      aiSplash("check", `Перевіряю ${kept.length} ${plural(kept.length, ["питання", "питання", "питань"])}: чи правильні відповіді й чи немає двозначностей`, 1.5 + kept.length * .3);
       const v = await aiVerify(kept, material, nOpts);
       if (!alive()) return;
       add = v.list;
-      note = !v.ok ? "перевірку якості виконати не вдалося" : v.fixed || v.dropped ? `виправлено ${v.fixed}, прибрано ${v.dropped}` : "перевірку пройдено";
+      note = [note, !v.ok ? "перевірку якості виконати не вдалося" : v.fixed || v.dropped ? `виправлено ${v.fixed}, прибрано ${v.dropped}` : "перевірку пройдено"].filter(Boolean).join(" · ");
       if (!add.length) throw new Error("після перевірки не лишилось надійних питань: спробуйте інші вимоги чи додайте матеріал");
     }
     aiSplash("done");
-    await new Promise(r => setTimeout(r, 260));
+    await new Promise(r => setTimeout(r, 420));
     if (!alive()) return;
     aiSplash(null);
     showAiReview(add, { note, skipped });
