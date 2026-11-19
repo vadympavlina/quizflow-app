@@ -305,3 +305,38 @@ test("AI-помічник: «Перефразувати» з меню працю
   await expect(page.locator("#q-text")).toHaveText("Що означає змінна в Python?");
   expect(errors).toEqual([]);
 });
+
+test("AI-помічник: поки AI покращує, картка розмита, видно відсоток; бали питання зберігаються", async ({ page, errors }) => {
+  const calls = [];
+  const better = { type: "single", text: "Що таке змінна в Python і для чого вона потрібна?", options: ["Іменоване посилання на значення", "Тип даних", "Цикл", "Модуль"], correct: [0] };
+  await page.context().route(`${WORKER}/**`, async route => {
+    const req = route.request(), cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
+    if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: cors });
+    calls.push(1);
+    await new Promise(r => setTimeout(r, 1500));
+    const text = calls.length === 1 ? JSON.stringify(better) : JSON.stringify([{ i: 0, ok: true }]);
+    route.fulfill({ status: 200, contentType: "application/json", headers: cors, body: JSON.stringify({ ok: true, text, tokens: 50, provider: "groq" }) });
+  });
+  const d = db(); d.teachers.t1.tests.T2.questions[0].points = 3;
+  await seed(page, d, "t1");
+  await page.goto("/constructor?id=T2");
+  await openAiMenu(page);
+  await page.locator('.pop [data-v="improve"]').click();
+  const cover = page.locator(".qc .ai-cover");
+  await expect(cover).toBeVisible();
+  await expect(cover).toContainText("Покращую питання");
+  await expect(page.locator(".qc")).toHaveClass(/ai-busy/);
+  await expect.poll(async () => parseInt(await cover.locator(".ai-cov-p").textContent(), 10)).toBeGreaterThan(5);
+  await expect(page.locator(".qc .rte")).toHaveJSProperty("inert", true);     // редагувати під час роботи AI не можна
+  await openAiMenu(page).catch(() => {});                                       // друга дія під час роботи не стартує
+  await expect(page.getByText("Питання покращено й перевірено")).toBeVisible({ timeout: 10000 });
+  await expect(cover).toHaveCount(0);
+  await expect(page.locator(".qc")).not.toHaveClass(/ai-busy/);
+  await page.locator("#save-btn").click();
+  await expect.poll(async () => {                                                // бали пережили заміну питання
+    const q = Object.values((await readDb(page)).teachers.t1.tests.T2.questions || {})[0];
+    return q && /для чого/.test(q.text) ? q.points : null;
+  }, { timeout: 10000 }).toBe(3);
+  expect(calls.length).toBe(2);
+  expect(errors).toEqual([]);
+});
