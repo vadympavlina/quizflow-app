@@ -198,14 +198,14 @@ export const THEMES = {
 };
 
 const PAT_DEFS = [
-  ["grid","Сітка","64px 64px"], ["dots","Крапки","16px 16px"], ["waves","Хвилі","64px 48px"],
-  ["hex","Соти","60px 66px"], ["diag","Діагоналі","48px 48px"], ["target","Мішень","64px 64px"],
-  ["star","Зірки","40px 40px"], ["snow","Сніжинки","32px 32px"], ["heart","Серця","40px 32px"],
-  ["flower","Квіти","48px 48px"], ["leaf","Листя","48px 48px"], ["prism","Призма","40px 36px"],
-  ["wave2","Хвилі 2","48px 48px"],
+  ["grid","Сітка","64px 64px"], ["dots","Крапки","28px 28px"], ["waves","Хвилі","120px 56px"],
+  ["hex","Соти","45.033px 78px"], ["diag","Діагоналі","36px 36px"], ["target","Мішень","112px 112px"],
+  ["star","Зірки","96px 96px"], ["snow","Сніжинки","96px 96px"], ["heart","Серця","96px 96px"],
+  ["flower","Квіти","104px 104px"], ["leaf","Листя","96px 96px"], ["prism","Призма","88px 88px"],
+  ["wave2","Хвилі 2","64px 40px"],
 ];
 export const PATTERNS = Object.fromEntries(PAT_DEFS.map(([id, name, size]) => [id, {
-  name, size, bg: `url("${pageUrl(`patterns/${id}.svg`)}")`,
+  name, size, bg: `url("${pageUrl(`patterns/${id}.svg?v=2`)}")`,
 }]));
 
 export const DEFAULT_THEME = { grad: "g-default", pat: "grid" };
@@ -221,7 +221,7 @@ export function applyTheme(theme, gradEl, patEl) {
     patEl.style.backgroundImage = p ? p.bg : "none";
     patEl.style.backgroundSize = p ? p.size : "";
     patEl.style.backgroundRepeat = "repeat";
-    patEl.style.opacity = p ? ".55" : "0";   // візерунок — фактура, а не головне: тексти й плитки мають читатися
+    patEl.style.opacity = p ? "1" : "0";   // яскравість задана в самих SVG: дрібні мотиви з повітрям, а не суцільна рябизна
   }
 }
 
