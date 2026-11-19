@@ -99,3 +99,81 @@ for (const [n, vp] of [["комп'ютер", { width: 1280, height: 800 }], ["т
     expect(errors).toEqual([]);
   });
 }
+
+// Телефон: шторка знизу. Сторінка під нею не гортається, «Назад» і свайп униз закривають шторку.
+test.describe("телефон: шторка підтримки", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const swipe = async (page, x, y1, y2) => {
+    const c = await page.context().newCDPSession(page);
+    await c.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y: y1 }] });
+    for (let i = 1; i <= 6; i++) await c.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y1 + (y2 - y1) * i / 6 }] });
+    await c.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+
+  test("сторінка під шторкою стоїть на місці; гортання списку — усередині шторки; «Назад» закриває шторку", async ({ page, errors }) => {
+    const d = rich(Date.now());
+    d.bugStatus = { t1: Object.fromEntries(Array.from({ length: 12 }, (_, i) => ["b" + i, { t: "Звернення номер " + (i + 1) + " — довгий опис проблеми, щоб список був вищим за екран", k: "bug", p: "Тести", at: Date.now() - i * 864e5, s: "new" }])) };
+    await seed(page, d, "t1");
+    await page.goto("/"); await page.waitForTimeout(1200);
+    await page.evaluate(() => scrollTo(0, 300)); await page.waitForTimeout(400);
+    const y0 = await page.evaluate(() => scrollY);
+    await page.locator(".qfs-fab").tap();
+    const pop = page.locator(".qfs-pop");
+    await expect(pop).toBeVisible();
+    await expect(page.locator("html")).toHaveClass(/qfs-lock/);
+    // шторка — на всю ширину і притиснута до низу
+    const b = await pop.boundingBox();
+    expect(Math.round(b.x)).toBe(0); expect(Math.round(b.width)).toBe(390); expect(Math.round(b.y + b.height)).toBeGreaterThanOrEqual(843);
+    // клавіатура сама не відкривається: фокус не в полі
+    expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe("TEXTAREA");
+    // свайп по затемненню і по заголовку шторки не гортає сторінку
+    await swipe(page, 200, 120, 40);
+    await swipe(page, 200, b.y + 40, b.y + 10);
+    expect(await page.evaluate(() => scrollY)).toBe(y0);
+    // довгий список у «Моїх зверненнях» гортається всередині шторки
+    await page.locator('.qfs-tabs [data-tab="mine"]').tap();
+    const body = page.locator(".qfs-b");
+    await expect(page.locator(".qfs-it").first()).toBeVisible();
+    const bb = await body.boundingBox();
+    await swipe(page, 200, bb.y + bb.height - 30, bb.y + 30);
+    await page.waitForTimeout(400);
+    expect(await body.evaluate(el => el.scrollTop)).toBeGreaterThan(20);
+    expect(await page.evaluate(() => scrollY)).toBe(y0);
+    await page.screenshot({ path: `${S}/sheet-mine.png` });
+    // «Назад» (Android) закриває шторку і лишає на сторінці
+    const url = page.url();
+    await page.goBack(); await page.waitForTimeout(300);
+    await expect(pop).toBeHidden();
+    expect(page.url()).toBe(url);
+    await expect(page.locator("html")).not.toHaveClass(/qfs-lock/);
+    expect(await page.evaluate(() => scrollY)).toBe(y0);
+    expect(errors).toEqual([]);
+  });
+
+  test("стягнути шторку вниз за верх — закривається; затемнення — теж; історія не росте", async ({ page, errors }) => {
+    await seed(page, rich(Date.now()), "t1");
+    await page.goto("/tests"); await page.waitForTimeout(1200);
+    const len0 = await page.evaluate(() => history.length);
+    const pop = page.locator(".qfs-pop");
+    await page.locator(".qfs-fab").tap();
+    await expect(pop).toBeVisible();
+    await page.waitForTimeout(400); await page.screenshot({ path: `${S}/sheet-new.png` });
+    const b = await pop.boundingBox();
+    await swipe(page, 195, b.y + 8, b.y + 260);
+    await expect(pop).toBeHidden();
+    await expect(page.locator(".qfs-fab")).toBeVisible();
+    await page.locator(".qfs-fab").tap();
+    await expect(pop).toBeVisible();
+    await page.locator(".qfs-bd").tap({ position: { x: 100, y: 60 } });
+    await expect(pop).toBeHidden();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => history.length)).toBeLessThanOrEqual(len0 + 1);
+    expect(await page.evaluate(() => history.state?.qfs)).toBeFalsy();
+    // надсилання з телефона працює як і раніше
+    await page.locator(".qfs-fab").tap();
+    await page.locator(".qfs-ta").fill("Не відкривається журнал");
+    await page.locator(".qfs-send").tap();
+    await expect(page.locator(".qfs-ok")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+});
