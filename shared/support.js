@@ -20,11 +20,14 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const STATUS = { new: ["Надіслано", "n"], in_progress: ["У роботі", "w"], resolved: ["Виправлено", "d"], done: ["Виправлено", "d"] };
 
 const CSS = `
-.qfs-fab{position:fixed;right:20px;bottom:calc(20px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px));z-index:880;width:46px;height:46px;border-radius:50%;border:1px solid #DDE3EF;background:#fff;color:#2D5BE3;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 26px -10px rgba(15,30,92,.45),0 2px 6px rgba(15,30,92,.08);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,opacity .2s,visibility .2s;font:inherit}
-.qfs-fab:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(15,30,92,.5),0 2px 6px rgba(15,30,92,.08)}
+.qfs-fab{position:fixed;right:20px;bottom:calc(20px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px));z-index:880;height:44px;padding:0 16px 0 13px;gap:8px;border-radius:999px;border:1px solid rgba(45,91,227,.16);background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);color:#0B1437;display:inline-flex;align-items:center;cursor:pointer;box-shadow:0 12px 28px -14px rgba(15,30,92,.55),0 1px 3px rgba(15,30,92,.08);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s,color .2s,opacity .2s,visibility .2s;font:700 13.5px Manrope,system-ui,sans-serif;letter-spacing:-.01em;-webkit-tap-highlight-color:transparent}
+.qfs-fab .qfs-ic{width:26px;height:26px;margin-left:-4px;border-radius:50%;display:grid;place-items:center;background:#2D5BE3;color:#fff;flex:none;transition:background .2s,color .2s}
+.qfs-fab:hover{transform:translateY(-2px);background:#fff;box-shadow:0 16px 32px -14px rgba(15,30,92,.6),0 1px 3px rgba(15,30,92,.08)}
+.qfs-fab:active{transform:translateY(0) scale(.97)}
 .qfs-fab:focus-visible,.qfs-tab:focus-visible{outline:3px solid rgba(45,91,227,.35);outline-offset:2px}
-.qfs-fab.on{background:#2D5BE3;color:#fff;border-color:#2D5BE3}
-.qfs-fab .qfs-dot{position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:#10B981;border:2px solid #fff;display:none}
+.qfs-fab.on{background:#0B1437;color:#fff;border-color:#0B1437}
+.qfs-fab.on .qfs-ic{background:rgba(255,255,255,.14)}
+.qfs-fab .qfs-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:#10B981;border:2px solid #fff;display:none}
 .qfs-fab.has-dot .qfs-dot{display:block}
 .qfs-hide .qfs-fab,.qfs-blocked .qfs-fab,.qfs-blocked .qfs-tab{opacity:0;visibility:hidden;pointer-events:none;transform:scale(.8)}
 .qfs-tab{position:fixed;right:0;bottom:calc(84px + var(--qfs-lift,0px));z-index:880;width:12px;height:44px;border:0;border-radius:8px 0 0 8px;background:#2D5BE3;opacity:.55;cursor:pointer;display:none;transition:width .15s,opacity .15s}
@@ -75,11 +78,18 @@ const CSS = `
 .qfs-f button{border:0;background:none;font:600 12px Manrope,system-ui,sans-serif;color:#66728F;cursor:pointer;padding:4px 6px;border-radius:7px}
 .qfs-f button:hover{color:#0B1437;background:#F1F4FA}
 @media (max-width:640px){
-  .qfs-fab{right:14px;width:44px;height:44px}
+  .qfs-fab{right:14px;width:48px;height:48px;padding:0;justify-content:center;background:#2D5BE3;border-color:#2D5BE3;color:#fff;box-shadow:0 10px 24px -10px rgba(45,91,227,.7),0 2px 6px rgba(15,30,92,.12)}
+  .qfs-fab:hover{background:#2D5BE3}
+  .qfs-fab .qfs-ic{margin:0;background:none;width:auto;height:auto}
+  .qfs-fab svg{width:22px;height:22px}
+  .qfs-fab .qfs-lb{display:none}
+  .qfs-fab.on{background:#0B1437;border-color:#0B1437}
+  .qfs-fab.on .qfs-ic{background:none}
+  .qfs-tuck .qfs-fab:not(.on){transform:translateX(calc(100% + 2px)) translateX(-14px);opacity:.55}
   .qfs-pop{right:12px;left:12px;width:auto;bottom:calc(72px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px))}
   .qfs-ta{font-size:16px}
 }
-@media (prefers-reduced-motion:reduce){.qfs-pop{animation:none}.qfs-fab{transition:none}}
+@media (prefers-reduced-motion:reduce){.qfs-pop{animation:none}.qfs-fab{transition:opacity .2s,visibility .2s}}
 `;
 
 /**
@@ -107,7 +117,7 @@ export function initSupport(o){
   const st = document.createElement("style"); st.id = "qfs-css"; st.textContent = CSS; document.head.appendChild(st);
   const root = document.createElement("div"); root.id = "qfs-root";
   root.innerHTML = `
-    <button type="button" class="qfs-fab" aria-label="Підтримка: повідомити про проблему" aria-expanded="false" aria-controls="qfs-pop" title="Повідомити про проблему">${svg("bubble", 21)}<span class="qfs-dot"></span></button>
+    <button type="button" class="qfs-fab" aria-label="Підтримка: повідомити про проблему" aria-expanded="false" aria-controls="qfs-pop" title="Повідомити про проблему"><span class="qfs-ic">${svg("bubble", 16, 2.2)}</span><span class="qfs-lb">Підтримка</span><span class="qfs-dot"></span></button>
     <button type="button" class="qfs-tab" aria-label="Показати кнопку підтримки" title="Підтримка"></button>
     <section class="qfs-pop" id="qfs-pop" role="dialog" aria-label="Підтримка" hidden>
       <div class="qfs-h"><b>Підтримка</b><button type="button" class="qfs-ib" data-x aria-label="Закрити">${svg("x", 17)}</button></div>
@@ -285,6 +295,18 @@ export function initSupport(o){
   new MutationObserver(later).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class", "style"], childList: true });
   addEventListener("resize", later); document.addEventListener("focusin", later); document.addEventListener("focusout", () => setTimeout(later, 50));
   sync();
+
+  // На телефоні під час гортання вниз кулька ховається за край і не закриває вміст; повертається, коли гортання зупинилось або пішло вгору
+  const tops = new WeakMap(); let tuckT = 0;
+  const tuck = on => document.documentElement.classList.toggle("qfs-tuck", on);
+  document.addEventListener("scroll", e => {
+    if (!matchMedia("(max-width: 640px)").matches || !pop.hidden) return;
+    const el = e.target === document ? document.scrollingElement : e.target;
+    if (!el || root.contains(el)) return;
+    const y = el.scrollTop, prev = tops.get(el) ?? y; tops.set(el, y);
+    if (y - prev > 4 && y > 80) tuck(true); else if (prev - y > 4) tuck(false);
+    clearTimeout(tuckT); tuckT = setTimeout(() => tuck(false), 900);
+  }, { capture: true, passive: true });
 
   // Статуси з адмінки: живе оновлення, щоб крапка з'являлась одразу
   try {
