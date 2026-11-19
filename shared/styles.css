@@ -931,6 +931,9 @@ textarea.fi{height:auto;padding:11px 14px;line-height:1.5}
 .lk-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lk-limit{display:flex;align-items:center;gap:10px}
 .lk-limit .lk-in{width:96px;flex:0 0 auto;font-family:'Geist Mono',monospace;font-weight:600}
+.lk-limit .lk-unit{font-size:13px;font-weight:600;color:#6B7897;margin-left:-4px}
+.lk-time{gap:8px}
+.lk-limit .lk-in:disabled{opacity:.5}
 .lk-sw{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--qf-ink-700);cursor:pointer;user-select:none}
 .lk-sw input{position:absolute;opacity:0;pointer-events:none}
 .lk-sw b{width:34px;height:20px;border-radius:999px;background:#D3DAE8;position:relative;transition:background .2s;flex:0 0 auto}
