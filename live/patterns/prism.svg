@@ -1,3 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="40" height="36">
-  <polygon points="20,3 37,33 3,33" stroke="rgba(255,255,255,.15)" stroke-width="1.5" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
+  <polygon points="22,12.762666666666666 30.0,26.618666666666666 14.0,26.618666666666666" stroke="rgba(255,255,255,0.14)" stroke-width="1.3" stroke-linejoin="round" fill="none"/>
+  <polygon points="66,72.928 72.0,62.536 60.0,62.536" stroke="rgba(255,255,255,0.12)" stroke-width="1.3" stroke-linejoin="round" fill="none"/>
+
 </svg>

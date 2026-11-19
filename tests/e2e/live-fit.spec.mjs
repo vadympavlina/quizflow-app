@@ -80,3 +80,15 @@ test("усі фони гри темні: білий текст і кольоро
   const bad = themes.filter(([, , css]) => (css.match(/#[0-9a-f]{6}/gi) || []).some(h => 1.05 / (lum(h) + .05) < 7)).map(m => m[1]);
   expect(bad).toEqual([]);
 });
+
+test("непарна кількість варіантів: остання плитка по центру; 2 довгі варіанти — поруч, як і короткі", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const d = dbFor({ q: [{ type: "single", text: "Питання?", options: ["Один", "Два", "Три"] }], key: { 0: 0 }, ans: () => ({ value: 0 }) }, "speed");
+  d.rooms["12345678"] = { ...d.rooms["12345678"], status: "question", questionStartedAt: Date.now() };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  await page.waitForTimeout(800);
+  const c = await page.evaluate(() => { const g = document.getElementById("answers-grid").getBoundingClientRect(), t = document.querySelectorAll("#answers-grid .ans")[2].getBoundingClientRect(); return Math.abs((t.left + t.right) / 2 - (g.left + g.right) / 2); });
+  expect(c).toBeLessThan(2);
+  expect(errors).toEqual([]);
+});

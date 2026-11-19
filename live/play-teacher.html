@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=11">
+<link rel="modulepreload" href="live-core.js?v=12">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -122,6 +122,8 @@
   .ans .letter{width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,.3);display:grid;place-items:center;font-family:"Geist Mono",monospace;font-size:22px;flex:0 0 auto;border:1px solid rgba(255,255,255,.2)}
   .ans .txt{flex:1;min-width:0;overflow-wrap:break-word;hyphens:auto;line-height:1.22}
   .answers.many .ans{padding:8px 20px;min-height:0}
+  /* Непарна кількість варіантів: остання плитка по центру рядка, а не сама зліва */
+  .answers > .ans:last-child:nth-child(odd){grid-column:1 / -1;justify-self:center;width:calc(50% - 7px)}
   .ans .count{display:none;font-family:"Geist Mono",monospace;font-size:clamp(22px,2.2vw,34px);font-weight:800;background:rgba(0,0,0,.28);border-radius:12px;padding:4px 14px;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
   .ans .count small{font-size:.5em;opacity:.8;margin-left:6px}
   .revealed .ans .count{display:block}
@@ -229,6 +231,7 @@
   }
   @media (max-width: 760px){
     .answers{grid-template-columns:1fr !important}
+    .answers > .ans:last-child:nth-child(odd){width:auto;justify-self:stretch}
     .stage,.topbar{padding-left:16px;padding-right:16px}
     .vol-wrap,.footer .hint{display:none}
   }
@@ -344,7 +347,7 @@ import {
   OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=11";
+} from "./live-core.js?v=12";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -575,8 +578,7 @@ function renderQuestion(qi) {
       <span class="count">0</span>
     </div>`).join("");
   $("key-line").innerHTML = "";
-  const longest = Math.max(0, ...(q.options || []).map(o => String(o ?? "").length));
-  grid.style.gridTemplateColumns = (q.options || []).length <= 2 && longest > 40 ? "1fr" : "1fr 1fr";
+  grid.style.gridTemplateColumns = "";   // завжди дві колонки — однаково для коротких і довгих варіантів
   grid.classList.toggle("many", (q.options || []).length >= 5);
   renderAnswered();
   refit();
