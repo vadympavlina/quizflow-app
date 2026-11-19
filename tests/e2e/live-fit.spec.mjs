@@ -51,3 +51,32 @@ test("блок очікування текстових відповідей: с�
   expect(+(st.bg.match(/[\d.]+/g)[3] ?? 1)).toBeGreaterThanOrEqual(.8);
   expect(errors).toEqual([]);
 });
+
+test("питання на екрані викладача — по центру, а не притиснуте догори", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const d = dbFor(SC["вибір, короткі варіанти"], "speed");
+  d.rooms["12345678"] = { ...d.rooms["12345678"], status: "question", questionStartedAt: Date.now() };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  await page.waitForTimeout(800);
+  const g = await page.evaluate(() => {
+    const st = document.getElementById("stage").getBoundingClientRect();
+    const top = document.querySelector(".meta-row").getBoundingClientRect().top - st.top;
+    const bottom = st.bottom - document.getElementById("answers-grid").getBoundingClientRect().bottom;
+    return { top, bottom };
+  });
+  expect(g.top).toBeGreaterThan(60);
+  expect(Math.abs(g.top - g.bottom)).toBeLessThan(40);
+  expect(errors).toEqual([]);
+});
+
+test("усі фони гри темні: білий текст і кольорові плитки на них читаються", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../../live/live-core.js", import.meta.url), "utf8");
+  const themes = [...src.matchAll(/"(g-[a-z]+)":\s*\{[^}]*css:"([^"]+)"/g)];
+  expect(themes.length).toBeGreaterThanOrEqual(13);
+  const lum = h => { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+  // контраст білого тексту з кожним кольором фону — не менше 7:1
+  const bad = themes.filter(([, , css]) => (css.match(/#[0-9a-f]{6}/gi) || []).some(h => 1.05 / (lum(h) + .05) < 7)).map(m => m[1]);
+  expect(bad).toEqual([]);
+});
