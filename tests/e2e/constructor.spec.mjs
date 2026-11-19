@@ -74,8 +74,8 @@ test("перевірка якості: однакові питання й одн
   await expect(page.locator("#issues")).toContainText("Таке саме питання, як №1");
   await expect(page.locator("#ql-list .qi").nth(1).locator(".qi-warn")).toHaveCount(1);
   // однакові варіанти
-  await page.locator('#opts input[data-f="opt"]').nth(0).fill("Париж");
-  await page.locator('#opts input[data-f="opt"]').nth(1).fill("париж");
+  await page.locator('#opts [data-f="opt"]').nth(0).fill("Париж");
+  await page.locator('#opts [data-f="opt"]').nth(1).fill("париж");
   await expect(page.locator("#q-hint")).toContainText("однакові варіанти");
   expect(errors).toEqual([]);
 });
@@ -148,4 +148,22 @@ test.describe("телефон", () => {
     await expect.poll(() => page.evaluate(() => document.body.classList.contains("list-open"))).toBe(false);
     expect(errors).toEqual([]);
   });
+});
+
+test("телефон: довгі варіанти відповідей переносяться, а не обрізаються; Enter додає варіант", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const d = rich(Date.now());
+  const long = "Програма, що фільтрує мережевий трафік за заданими правилами й блокує небажані з'єднання";
+  d.teachers.t1.tests.T2.questions[0] = { id: "T2q0", type: "single", text: "Що таке фаєрвол?", options: [long, "Б", "В", "Г"], correct: [0] };
+  await seed(page, d, "t1");
+  await page.goto("/constructor?id=T2");
+  const opt = page.locator('#opts [data-f="opt"]').first();
+  await expect(opt).toHaveValue(long);
+  const fits = await opt.evaluate(el => el.scrollHeight <= el.clientHeight + 1 && el.clientHeight > 50);
+  expect(fits).toBe(true);                                                    // висота підлаштувалась під кілька рядків
+  await opt.click(); await page.keyboard.press("End"); await page.keyboard.press("Enter");
+  await expect(page.locator('#opts [data-f="opt"]')).toHaveCount(5);          // Enter — новий варіант, не новий рядок
+  const head = await page.locator(".qc-head").evaluate(el => el.getBoundingClientRect().height);
+  expect(head).toBeLessThan(60);                                              // шапка питання в один рядок
+  expect(errors).toEqual([]);
 });

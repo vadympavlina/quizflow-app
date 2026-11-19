@@ -169,7 +169,7 @@ test("правильна відповідь зберігається після 
     await page.locator("#ai-go").click();
     await accept(page);
     await expect(page.locator(".qi")).toHaveCount(before + 1, { timeout: 8000 });
-    const right = await page.locator(".opt.ok input[data-f='opt']").first().inputValue();
+    const right = await page.locator(".opt.ok [data-f='opt']").first().inputValue();
     expect(right.trim()).toBe(C[i][1]);
     await page.waitForTimeout(150);
   }
