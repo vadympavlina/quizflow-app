@@ -370,17 +370,11 @@ textarea.ta1::placeholder{color:#B5BED2;font-weight:500}
 .sw input:checked+b{background:var(--pri-2)}
 .sw input:checked+b::after{transform:translateX(14px)}
 .sw input:focus-visible+b{outline:2px solid var(--pri-2);outline-offset:2px}
-.time-row{display:flex;align-items:center;gap:10px}
 .num-in{display:flex;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;transition:all .15s}
 .num-in button{width:32px;height:36px;color:var(--muted);font-size:16px;font-weight:700}
 .num-in button:hover{background:var(--hover);color:var(--ink)}
 .num-in input{width:52px;height:36px;border:none;outline:none;text-align:center;font-family:'Geist Mono',monospace;font-weight:600;font-size:15px;-moz-appearance:textfield}
 .num-in input::-webkit-inner-spin-button{display:none}
-.presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.presets button{height:26px;padding:0 9px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);font-family:'Geist Mono',monospace}
-.presets button:hover{border-color:var(--pri-line);color:var(--pri)}
-.presets button.on{background:var(--pri);border-color:var(--pri);color:#fff}
-.time-off .time-row,.time-off .presets{opacity:.4;pointer-events:none}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .stat{padding:10px 12px;border-radius:12px;background:var(--hover);border:1px solid var(--line-2)}
 .stat b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em}
@@ -680,21 +674,6 @@ textarea.in{height:auto;padding:10px 12px;line-height:1.5;resize:vertical}
       <div class="tags" id="tags"><input id="tag-in" type="text" placeholder="Додати тег" autocomplete="off" maxlength="40"></div>
     </div>
 
-    <div class="sp-sec" id="time-sec">
-      <div class="sp-l">Ліміт часу
-        <label class="sw"><input type="checkbox" id="no-time"><b></b>Без ліміту</label>
-      </div>
-      <div class="time-row">
-        <div class="num-in">
-          <button data-act="time-dec" aria-label="Менше">−</button>
-          <input id="time" type="number" min="1" max="300" value="10" aria-label="Хвилин">
-          <button data-act="time-inc" aria-label="Більше">+</button>
-        </div>
-        <span style="font-size:13px;color:var(--muted);font-weight:600">хвилин</span>
-      </div>
-      <div class="presets" id="presets"></div>
-    </div>
-
     <div class="sp-sec">
       <div class="sp-l">Огляд</div>
       <div class="stats">
@@ -972,7 +951,6 @@ const TYPES = {
 const TYPE_ORDER = ["single", "multi", "text", "number", "long", "matching", "ordering"];
 const typeOf = q => TYPES[q?.type] || TYPES.single;
 
-const TIME_PRESETS = [5, 10, 15, 20, 30, 45, 60, 90];
 
 // ═══════════════════════════════════════════════════════════════════════
 // ОЧИЩЕННЯ ТЕКСТУ ПИТАННЯ
@@ -1047,7 +1025,7 @@ const S = {
   test: null,          // оригінал з бази
   qs: [],              // питання (редагуються на місці)
   cur: 0,              // індекс активного питання
-  title: "", desc: "", folderId: null, tags: [], timeMin: 10, noTime: false, status: "active",
+  title: "", desc: "", folderId: null, tags: [], status: "active",
   folders: [],
   dirty: false, ver: 0, saving: false,
   filter: "",
@@ -1407,12 +1385,6 @@ function renderTags(){
     box.insertBefore(el, inp);
   });
 }
-function renderTime(){
-  $("time-sec").classList.toggle("time-off", S.noTime);
-  $("no-time").checked = S.noTime;
-  if (document.activeElement !== $("time")) $("time").value = S.timeMin;
-  $("presets").innerHTML = TIME_PRESETS.map(m => `<button data-act="preset" data-m="${m}" class="${!S.noTime && S.timeMin === m ? "on" : ""}">${m}</button>`).join("");
-}
 function renderSummary(){
   const n = S.qs.length;
   $("st-q").textContent = n;
@@ -1457,7 +1429,6 @@ function payload(){
     description: S.desc.trim(),
     folderId: S.folderId || null,
     tags: S.tags,
-    timeLimit: S.noTime ? 0 : clamp(Math.round(S.timeMin) || 10, 1, 300) * 60,
     status: S.status,
     questions: S.qs.map(cleanQ),
     updatedAt: Date.now(),
@@ -1527,13 +1498,11 @@ function applyData(d){
   S.title = d.title || ""; S.desc = d.description || "";
   S.folderId = d.folderId || null;
   S.tags = toArr(d.tags).map(String).filter(Boolean);
-  const tl = d.timeLimit ?? 600;
-  S.noTime = Number(tl) === 0; S.timeMin = S.noTime ? 10 : Math.max(1, Math.round((Number(tl) || 600) / 60));
   S.status = d.status === "archived" ? "archived" : "active";
   S.qs = toArr(d.questions).map(normQ);
   S.cur = clamp(S.cur, 0, Math.max(0, S.qs.length - 1));
   $("title").value = S.title; $("desc").value = S.desc; updDescCnt();
-  renderStatus(); renderFolder(); renderTags(); renderTime(); renderList(); renderEditor(); renderSummary();
+  renderStatus(); renderFolder(); renderTags(); renderList(); renderEditor(); renderSummary();
   histReset();
 }
 const updDescCnt = () => { $("desc-cnt").textContent = S.desc.length > 350 ? `${S.desc.length}/500` : ""; };
@@ -2532,13 +2501,6 @@ document.addEventListener("click", async e => {
       return;
     }
     case "tag-del": S.tags.splice(i, 1); renderTags(); markDirty(); $("tag-in").focus(); return;
-    case "time-inc": case "time-dec": {
-      const t = S.timeMin;
-      S.noTime = false;
-      S.timeMin = clamp(a === "time-inc" ? Math.floor(t / 5) * 5 + 5 : Math.ceil(t / 5) * 5 - 5, 1, 300);
-      renderTime(); markDirty(); return;
-    }
-    case "preset": S.noTime = false; S.timeMin = +b.dataset.m; renderTime(); markDirty(); return;
   }
 });
 function hideRestore(){ $("restore").hidden = true; document.body.classList.remove("has-restore"); }
@@ -2548,9 +2510,6 @@ $("title").addEventListener("input", e => { S.title = e.target.value; e.target.c
 $("kh-url").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); loadKahoot(); } });
 $("title").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } });
 $("desc").addEventListener("input", e => { S.desc = e.target.value; updDescCnt(); markDirty(); });
-$("time").addEventListener("input", e => { const v = parseInt(e.target.value, 10); if (v > 0){ S.timeMin = clamp(v, 1, 300); S.noTime = false; markDirty(); $("presets").querySelectorAll("button").forEach(x => x.classList.toggle("on", +x.dataset.m === S.timeMin)); } });
-$("time").addEventListener("blur", () => renderTime());
-$("no-time").addEventListener("change", e => { S.noTime = e.target.checked; renderTime(); markDirty(); });
 $("tags").addEventListener("click", e => { if (e.target === $("tags")) $("tag-in").focus(); });
 function addTags(raw){
   const add = raw.split(",").map(s => s.trim().replace(/^#/, "")).filter(Boolean);

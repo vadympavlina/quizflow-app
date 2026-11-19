@@ -24,10 +24,7 @@
     <div class="fl"><label for="nt-n">Назва *</label><input class="fi" id="nt-n" placeholder="Наприклад: HTML Основи" maxlength="120" autocomplete="off" autofocus oninput="this.classList.remove('er');document.getElementById('nt-err').textContent=''"></div>
     <div class="fl"><label for="nt-d">Опис <span class="opt">необов'язково</span></label><textarea class="fi" id="nt-d" rows="2" placeholder="Що перевіряє тест, для кого…"></textarea></div>
     <div class="fl"><label>Папка</label><div class="chips" id="nt-chips"></div></div>
-    <div class="mx-row">
-      <div class="fl"><label for="nt-tg">Теги <span class="opt">через кому</span></label><input class="fi" id="nt-tg" placeholder="html, css, js" autocomplete="off"></div>
-      <div class="fl"><label for="nt-tm">Ліміт часу, хв</label><input class="fi" type="number" id="nt-tm" value="10" min="1" max="600" inputmode="numeric" oninput="this.classList.remove('er')"></div>
-    </div>
+    <div class="fl"><label for="nt-tg">Теги <span class="opt">через кому</span></label><input class="fi" id="nt-tg" placeholder="html, css, js" autocomplete="off"></div>
     <div class="mx-err" id="nt-err" role="alert"></div>
     <div class="ma"><button type="button" class="btn bs" onclick="closeM('m-test')">Скасувати</button><button type="submit" class="btn bp" id="nt-submit">Створити тест</button></div>
   </form>
@@ -154,6 +151,23 @@
                 <input class="lk-in" type="number" id="nl-m" min="1" max="5000" value="30" inputmode="numeric">
                 <label class="lk-sw"><input type="checkbox" id="nl-unl" onchange="G._nlPresetsSync()"><b></b>Без ліміту</label>
               </div>
+            </div>
+          </div>
+
+          <div class="lk-f lk-time">
+            <label class="lk-l" for="nl-tm">Час на проходження</label>
+            <div class="lk-limit">
+              <input class="lk-in" type="number" id="nl-tm" min="1" max="600" value="20" inputmode="numeric" aria-label="Хвилин" oninput="G._nlTimeSync()">
+              <span class="lk-unit">хв</span>
+              <label class="lk-sw"><input type="checkbox" id="nl-tm-off" onchange="G._nlTimeSync()"><b></b>Без ліміту</label>
+            </div>
+            <div class="lk-presets" id="nl-tm-presets">
+              <button type="button" data-m="10" onclick="G.nlTime(10)">10 хв</button>
+              <button type="button" data-m="20" onclick="G.nlTime(20)">20 хв</button>
+              <button type="button" data-m="30" onclick="G.nlTime(30)">30 хв</button>
+              <button type="button" data-m="45" onclick="G.nlTime(45)">45 хв</button>
+              <button type="button" data-m="60" onclick="G.nlTime(60)">1 год</button>
+              <button type="button" data-m="90" onclick="G.nlTime(90)">1,5 год</button>
             </div>
           </div>
 

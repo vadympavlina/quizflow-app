@@ -987,7 +987,6 @@ function buildTestCard(t, idx, stats, showFolder){
       <button class="t-qc-title" data-act="edit" data-id="${esc(t.id)}" title="${esc(t.title)}">${esc(t.title)}</button>
       <div class="t-qc-meta">
         <span>${I.cal}${qCnt} пит.</span>
-        ${t.timeLimit ? `<span>${I.clock}${Math.round(t.timeLimit / 60)} хв</span>` : ""}
         ${folder ? `<span class="t-qc-folder" style="--fc:${_folderColor(folder)}">${esc(folder.name)}</span>` : showFolder ? `<span class="t-qc-folder" style="--fc:#636E8B">Без папки</span>` : ""}
       </div>
     </div>
@@ -1951,6 +1950,7 @@ function _atReset(){
 const TEST_ORIGIN = "https://test.quizflow.space";
 const linkUrl = id => `${TEST_ORIGIN}/?link=${encodeURIComponent(id)}&t=${encodeURIComponent(_uid)}`;
 const _lnkMax = l => Number(l.maxAttempts) > 0 ? Number(l.maxAttempts) : 0;   // 0 — без ліміту
+const _lnkTime = (l, t) => typeof l?.timeLimit === "number" ? l.timeLimit : (Number(t?.timeLimit) || 0);   // секунди, 0 — без ліміту
 const _fmtDT = t => new Date(t).toLocaleString("uk-UA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 function _inWords(ms){
   const m = Math.round(Math.abs(ms) / 60000);
@@ -2159,7 +2159,7 @@ function _linkCard(l, st, s = {}, now){
         ${s.now && open ? `<span class="l-pill live">${s.now} зараз проходить</span>` : ""}
       </div>
       <a class="l-title" href="${t ? `constructor?id=${encodeURIComponent(l.testId)}` : "#"}" title="Відкрити тест у конструкторі">${esc(t?.title || "Тест видалено")}</a>
-      <div class="l-sub">${t ? `${qn} ${_plural(qn, "питання", "питання", "питань")}${t.timeLimit ? ` · ${Math.round(t.timeLimit / 60)} хв` : " · без ліміту часу"}` : "—"}${l.shuffleQuestions || l.shuffleAnswers ? ` · перемішування` : ""}</div>
+      <div class="l-sub">${t ? `${qn} ${_plural(qn, "питання", "питання", "питань")}${_lnkTime(l, t) ? ` · ${Math.round(_lnkTime(l, t) / 60)} хв` : " · без ліміту часу"}` : "—"}${l.shuffleQuestions || l.shuffleAnswers ? ` · перемішування` : ""}</div>
     </div>
     ${warnHtml}
     <div class="l-url">
@@ -2392,12 +2392,13 @@ window.G = {
       summary.style.display = "flex";
       summary.innerHTML = `
         <div class="lk-tic">${_lic("file", 15)}</div>
-        <div class="lk-tsum"><b>${esc(t?.title || "Тест")}</b><span>${qn} ${_plural(qn, "питання", "питання", "питань")}${t?.timeLimit ? ` · ${Math.round(t.timeLimit / 60)} хв` : " · без ліміту часу"}</span></div>
+        <div class="lk-tsum"><b>${esc(t?.title || "Тест")}</b><span>${qn} ${_plural(qn, "питання", "питання", "питань")}</span></div>
         <button type="button" onclick="G.changeNlTest()">Змінити</button>`;
     }
     if (box) box.style.display = "none";
     if (details) details.style.display = "flex";
     G._nlTestWarn(testId);
+    if (!window._editLinkId) G._nlTimeSet(t?.timeLimit || 0);
     setTimeout(() => $("nl-g")?.focus(), 30);
   },
   changeNlTest(){
@@ -2594,7 +2595,6 @@ window.G = {
     if (window.qfLimit && !window.qfLimit("maxTests", tests.filter(x => x.status !== "archived").length)) return;
     _fid = fid && folders.some(f => f.id === fid) ? fid : null;
     ["nt-n", "nt-d", "nt-tg"].forEach(k => { const el = $(k); if (el){ el.value = ""; el.classList.remove("er"); } });
-    const tm = $("nt-tm"); if (tm){ tm.value = "10"; tm.classList.remove("er"); }
     const err = $("nt-err"); if (err) err.textContent = "";
     const btn = $("nt-submit"); if (btn){ btn.disabled = false; btn.textContent = "Створити тест →"; }
     G._khQs = null; G._khTitle = "";
@@ -2661,14 +2661,12 @@ window.G = {
     const n = nEl.value.replace(/\s+/g, " ").trim();
     if (!n) return fail(nEl, "Введіть назву тесту");
     if (n.length > 120) return fail(nEl, "Назва задовга — до 120 символів");
-    const mins = parseInt($("nt-tm").value, 10);
-    if (!Number.isFinite(mins) || mins < 1 || mins > 600) return fail($("nt-tm"), "Ліміт часу — від 1 до 600 хвилин");
     if (btn?.disabled) return;
     if (btn){ btn.disabled = true; btn.textContent = "Створюємо…"; }
     const desc = $("nt-d").value.trim();
     const tags = [...new Set($("nt-tg").value.split(",").map(s => s.trim()).filter(Boolean))];
     try{
-      const id = await dbPush("tests", { title: n, description: desc, folderId: _fid || null, tags, timeLimit: mins * 60, status: "active", questions: G._khQs || [], createdAt: ts() });
+      const id = await dbPush("tests", { title: n, description: desc, folderId: _fid || null, tags, status: "active", questions: G._khQs || [], createdAt: ts() });
       location.href = `constructor?id=${id}`;
     }catch(e){
       fail(null, "Не вдалося створити: " + e.message);
@@ -2865,6 +2863,7 @@ window.G = {
     $("nl-close").value = l?.closeAt && (edit || l.closeAt > now) ? _toLocalDT(l.closeAt) : "";
     $("nl-sq").checked = !!l?.shuffleQuestions;
     $("nl-sa").checked = !!l?.shuffleAnswers;
+    G._nlTimeSet(l ? _lnkTime(l, tests.find(x => x.id === l.testId)) : 0);
     G._nlGroupChips();
     $("nl-err").textContent = "";
     $("nl-hint").textContent = edit && linkState(l) === "expired" ? "Термін дії минув. Вкажіть новий час закриття або очистіть поле — посилання знову відкриється." : "";
@@ -2926,6 +2925,19 @@ window.G = {
     $("nl-err").textContent = "";
     G._nlPresetsSync();
   },
+  // Ліміт часу живе в посиланні; старі посилання без нього беруть час із тесту
+  _nlTimeSet(sec){
+    const m = Math.round((Number(sec) || 0) / 60);
+    $("nl-tm-off").checked = !m;
+    $("nl-tm").value = m || 20;
+    G._nlTimeSync();
+  },
+  nlTime(m){ $("nl-tm-off").checked = false; $("nl-tm").value = m; $("nl-err").textContent = ""; G._nlTimeSync(); },
+  _nlTimeSync(){
+    const off = $("nl-tm-off").checked, m = parseInt($("nl-tm").value, 10);
+    $("nl-tm").disabled = off;
+    document.querySelectorAll("#nl-tm-presets [data-m]").forEach(b => b.classList.toggle("on", !off && +b.dataset.m === m));
+  },
   _nlPresetsSync(){
     const has = !!$("nl-close")?.value;
     document.querySelectorAll("#nl-presets [data-p]").forEach(b => b.classList.toggle("on", b.dataset.p === "none" && !has));
@@ -2948,7 +2960,10 @@ window.G = {
     const openAt = _fromLocalDT($("nl-open").value), closeAt = _fromLocalDT($("nl-close").value);
     if (closeAt && closeAt <= now) return err("Час закриття вже минув — оберіть пізніший");
     if (openAt && closeAt && closeAt <= openAt) return err("Закриття має бути пізніше за відкриття");
+    const tmOff = $("nl-tm-off").checked, tm = parseInt($("nl-tm").value, 10);
+    if (!tmOff && !(tm >= 1 && tm <= 600)) return err("Вкажіть час від 1 до 600 хвилин або позначте «Без ліміту»");
     const data = {
+      timeLimit: tmOff ? 0 : tm * 60,
       group: $("nl-g").value.trim().slice(0, 60),
       maxAttempts: max,
       openAt: openAt || null, closeAt: closeAt || null,
@@ -4539,7 +4554,7 @@ window.G = {
       const newRef=_p(_r(db,"teachers/"+G._shareSelectedUid+"/tests"));
       await _s(newRef,{
         title:test.title, description:test.description||"",
-        questions:test.questions||[], timeLimit:test.timeLimit||600,
+        questions:test.questions||[], ...(test.timeLimit ? { timeLimit: test.timeLimit } : {}),
         status:"active", folderId:null, tags:test.tags||[],
         sharedFrom:_user.name||_user.login, sharedAt:ts(), createdAt:ts()
       });
