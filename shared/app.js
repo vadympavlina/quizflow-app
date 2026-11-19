@@ -906,7 +906,7 @@ export async function initApp(pageName, options = {}) {
     loadModals()
   ]);
   loadServiceNotices();   // оголошення й техроботи — у фоні, сторінку не затримують
-  import("./support.js?v=1").then(m => m.initSupport({ db, uid,   // кулька «Підтримка» справа знизу
+  import("./support.js?v=2").then(m => m.initSupport({ db, uid,   // кулька «Підтримка» справа знизу
     userName: () => document.getElementById("sb-teacher-name")?.textContent?.trim() || user?.email || "—" })).catch(() => {});
   if (!options.skipData) {
     await loadAllData();
@@ -938,7 +938,7 @@ export async function initApp(pageName, options = {}) {
 // Пункт меню «Повідомити про помилку» відкриває ту саму «Підтримку», що й кулька справа знизу (shared/support.js)
 window.openBugReport = () => {
   if (window.qfSupport) return window.qfSupport.open("new");
-  import("./support.js?v=1").then(m => (m.initSupport({ db, uid }) || window.qfSupport)?.open("new")).catch(() => {});
+  import("./support.js?v=2").then(m => (m.initSupport({ db, uid }) || window.qfSupport)?.open("new")).catch(() => {});
 };
 
 export function appReady() {
