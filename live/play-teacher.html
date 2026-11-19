@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=10">
+<link rel="modulepreload" href="live-core.js?v=11">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -256,6 +256,31 @@
     .footer .stat:nth-of-type(n+2){display:none}
     .footer .right{flex:0 0 auto}
   }
+
+  /* ── Усе по центру екрана ──
+     Питання: тип, текст і варіанти — один блок посередині, а не текст угорі й порожнеча внизу.
+     safe center: якщо вмісту більше за екран, він починається згори й прокручується, а не обрізається. */
+  .stage:not(.revealed){justify-content:safe center}
+  .stage:not(.revealed) .answers{flex:0 1 auto;min-height:0;grid-auto-rows:minmax(0,clamp(84px,17vh,170px));align-content:center}
+  .stage:not(.revealed) .answers.many{grid-auto-rows:minmax(0,clamp(64px,12vh,120px))}
+  .stage:not(.revealed) .question-text{margin-bottom:clamp(18px,3.4vh,40px)}
+  @media (max-width: 1100px){ .stage.revealed{justify-content:safe center} }
+  @media (max-width: 640px){
+    .stage:not(.revealed) .answers,.stage:not(.revealed) .answers.many{grid-auto-rows:minmax(0,84px)}
+  }
+  /* Розкриття на широкому екрані: порожні рядки зверху й знизу центрують блок, лідери — поруч із варіантами */
+  @media (min-width: 1101px){
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))){grid-template-rows:minmax(0,1fr) auto auto auto minmax(0,max-content) auto minmax(0,1fr)}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) > .pause-banner{grid-row:2}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) > .meta-row{grid-row:3}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) > .question-text{grid-row:4;margin-bottom:clamp(18px,3vh,32px)}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .answers{grid-row:5;height:100%;grid-auto-rows:minmax(0,clamp(72px,15vh,150px));align-content:center}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .answers.many{grid-auto-rows:minmax(0,clamp(56px,10.5vh,110px))}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .key-line{grid-row:6}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .reveal-grid{grid-row:5 / -1;height:auto;max-height:100%;align-self:start;display:flex;flex-direction:column}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .reveal-grid .panel:not(.grading){flex:0 1 auto;min-height:0}
+    .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .reveal-grid .leaders{flex:0 1 auto}
+  }
 </style>
 <style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
 </head>
@@ -319,7 +344,7 @@ import {
   OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=10";
+} from "./live-core.js?v=11";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;

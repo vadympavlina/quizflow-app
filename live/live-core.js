@@ -183,18 +183,18 @@ export const fmtNum = (n) => Number(n || 0).toLocaleString("uk");
 // Єдине джерело правди для прев'ю в setup і для екранів гри.
 export const THEMES = {
   "g-default": { name:"Океан",     css:"linear-gradient(135deg,#1E3A8A,#0F1844)" },
-  "g-night":   { name:"Ніч",       css:"linear-gradient(135deg,#0A0F2C,#1F1F3F)" },
-  "g-forest":  { name:"Ліс",       css:"linear-gradient(135deg,#064E3B,#022C22)" },
-  "g-amber":   { name:"Янтар",     css:"linear-gradient(135deg,#9A3412,#7C2D12)" },
-  "g-grape":   { name:"Виноград",  css:"linear-gradient(135deg,#581C87,#312E81)" },
-  "g-sun":     { name:"Сонце",     css:"linear-gradient(135deg,#D97706,#92400E)" },
-  "g-ocean":   { name:"Глибина",   css:"linear-gradient(135deg,#0E7490,#1E3A8A)" },
-  "g-violet":  { name:"Електрик",  css:"linear-gradient(135deg,#7C3AED,#4338CA)" },
-  "g-mint":    { name:"Мʼята",     css:"linear-gradient(135deg,#0F9F75,#047857)" },
-  "g-sky":     { name:"Небо",      css:"linear-gradient(135deg,#3B82F6,#1E40AF)" },
-  "g-jade":    { name:"Джейд",     css:"linear-gradient(135deg,#14B8A6,#0F766E)" },
-  "g-rose":    { name:"Троянда",   css:"linear-gradient(135deg,#E11D48,#9F1239)" },
-  "g-magenta": { name:"Магента",   css:"linear-gradient(135deg,#C026D3,#86198F)" },
+  "g-night":   { name:"Ніч",       css:"linear-gradient(135deg,#161B45,#0A0D24)" },
+  "g-forest":  { name:"Ліс",       css:"linear-gradient(135deg,#1B4D2B,#0B2214)" },
+  "g-amber":   { name:"Янтар",     css:"linear-gradient(135deg,#7A2E10,#2E1106)" },
+  "g-grape":   { name:"Виноград",  css:"linear-gradient(135deg,#4C1D7A,#1E1648)" },
+  "g-sun":     { name:"Сонце",     css:"linear-gradient(135deg,#7A4A08,#2E1A04)" },
+  "g-ocean":   { name:"Глибина",   css:"linear-gradient(135deg,#0B5468,#0C1D4A)" },
+  "g-violet":  { name:"Електрик",  css:"linear-gradient(135deg,#4527A0,#1A1458)" },
+  "g-mint":    { name:"Мʼята",     css:"linear-gradient(135deg,#0C5C48,#052A24)" },
+  "g-sky":     { name:"Небо",      css:"linear-gradient(135deg,#1D4E9E,#0C2350)" },
+  "g-jade":    { name:"Джейд",     css:"linear-gradient(135deg,#0B5C5C,#052B30)" },
+  "g-rose":    { name:"Троянда",   css:"linear-gradient(135deg,#7A1838,#2E0816)" },
+  "g-magenta": { name:"Магента",   css:"linear-gradient(135deg,#6A1670,#2A0A33)" },
 };
 
 const PAT_DEFS = [
@@ -221,7 +221,7 @@ export function applyTheme(theme, gradEl, patEl) {
     patEl.style.backgroundImage = p ? p.bg : "none";
     patEl.style.backgroundSize = p ? p.size : "";
     patEl.style.backgroundRepeat = "repeat";
-    patEl.style.opacity = p ? "1" : "0";
+    patEl.style.opacity = p ? ".55" : "0";   // візерунок — фактура, а не головне: тексти й плитки мають читатися
   }
 }
 
