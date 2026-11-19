@@ -35,6 +35,9 @@ const CSS = `
 .qfs-hide .qfs-tab{display:block}
 .qfs-pop{position:fixed;right:20px;bottom:calc(78px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px));z-index:881;width:360px;max-width:calc(100vw - 24px);max-height:min(560px,calc(100dvh - 120px - var(--qfs-lift,0px)));display:flex;flex-direction:column;background:#fff;border:1px solid #E3E8F2;border-radius:18px;box-shadow:0 26px 60px -22px rgba(15,30,92,.5);font-family:Manrope,system-ui,sans-serif;color:#0B1437;transform-origin:calc(100% - 23px) calc(100% + 30px);animation:qfsIn .2s cubic-bezier(.2,.8,.2,1)}
 .qfs-pop[hidden]{display:none}
+.qfs-bd{display:none}
+.qfs-grab{display:none}
+@keyframes qfsUp{from{transform:translateY(100%)}to{transform:none}}
 @keyframes qfsIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
 .qfs-h{display:flex;align-items:center;gap:10px;padding:14px 14px 0 16px}
 .qfs-h b{flex:1;font-size:15px;font-weight:800}
@@ -86,10 +89,28 @@ const CSS = `
   .qfs-fab.on{background:#0B1437;border-color:#0B1437}
   .qfs-fab.on .qfs-ic{background:none}
   .qfs-tuck .qfs-fab:not(.on){transform:translateX(calc(100% + 2px)) translateX(-14px);opacity:.55}
-  .qfs-pop{right:12px;left:12px;width:auto;bottom:calc(72px + var(--qfs-lift,0px) + env(safe-area-inset-bottom,0px))}
-  .qfs-ta{font-size:16px}
+  /* Телефон: нижня шторка поверх затемнення; сторінка під нею не гортається, клавіатура її не ховає */
+  .qfs-bd{display:block;position:fixed;inset:0;z-index:881;background:rgba(11,20,55,.38);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;touch-action:none;-webkit-tap-highlight-color:transparent}
+  .qfs-open .qfs-bd{opacity:1;visibility:visible}
+  .qfs-pop{z-index:882;left:0;right:0;width:auto;max-width:none;bottom:var(--qfs-kb,0px);max-height:calc(var(--qfs-vh,100dvh) - 40px);border:0;border-radius:20px 20px 0 0;padding-bottom:calc(env(safe-area-inset-bottom,0px) * var(--qfs-safe,1));box-shadow:0 -12px 40px -16px rgba(11,20,55,.45);transform-origin:50% 100%;animation:qfsUp .26s cubic-bezier(.2,.8,.2,1);overscroll-behavior:contain;transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+  .qfs-pop.drag{transition:none}
+  .qfs-grab{display:block;flex:none;height:22px;margin-bottom:-12px;touch-action:none;cursor:grab;position:relative}
+  .qfs-grab::before{content:"";position:absolute;left:50%;top:8px;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:#D5DBE8}
+  .qfs-h{touch-action:none}
+  .qfs-h b{font-size:16px}
+  .qfs-ib{width:36px;height:36px}
+  .qfs-tabs button{height:36px;font-size:13.5px}
+  .qfs-kind button{height:40px}
+  .qfs-pop{touch-action:none}
+  .qfs-b,.qfs-ta{touch-action:pan-y}
+  .qfs-b{flex:1 1 auto;min-height:0;-webkit-overflow-scrolling:touch}
+  .qfs-ta{font-size:16px;min-height:110px;max-height:38vh;resize:none}
+  .qfs-send{height:46px;font-size:15px}
+  .qfs-f button{padding:8px 10px;font-size:12.5px}
+  .qfs-open .qfs-fab{opacity:0;visibility:hidden;pointer-events:none}
+  html.qfs-lock,html.qfs-lock body{overflow:hidden!important;overscroll-behavior:none}
 }
-@media (prefers-reduced-motion:reduce){.qfs-pop{animation:none}.qfs-fab{transition:opacity .2s,visibility .2s}}
+@media (prefers-reduced-motion:reduce){.qfs-pop{animation:none!important;transition:none!important}.qfs-bd{transition:none}.qfs-fab{transition:opacity .2s,visibility .2s}}
 `;
 
 /**
@@ -119,7 +140,9 @@ export function initSupport(o){
   root.innerHTML = `
     <button type="button" class="qfs-fab" aria-label="Підтримка: повідомити про проблему" aria-expanded="false" aria-controls="qfs-pop" title="Повідомити про проблему"><span class="qfs-ic">${svg("bubble", 16, 2.2)}</span><span class="qfs-lb">Підтримка</span><span class="qfs-dot"></span></button>
     <button type="button" class="qfs-tab" aria-label="Показати кнопку підтримки" title="Підтримка"></button>
-    <section class="qfs-pop" id="qfs-pop" role="dialog" aria-label="Підтримка" hidden>
+    <div class="qfs-bd" aria-hidden="true"></div>
+    <section class="qfs-pop" id="qfs-pop" role="dialog" aria-label="Підтримка" tabindex="-1" hidden>
+      <div class="qfs-grab" aria-hidden="true"></div>
       <div class="qfs-h"><b>Підтримка</b><button type="button" class="qfs-ib" data-x aria-label="Закрити">${svg("x", 17)}</button></div>
       <div class="qfs-tabs" role="tablist">
         <button type="button" role="tab" data-tab="new" class="on" aria-selected="true">Нове</button>
@@ -204,21 +227,99 @@ export function initSupport(o){
 
   // ─── Відкрити / закрити ───────────────────────────────────────────
   let _back = null;
+  const phone = () => matchMedia("(max-width: 640px)").matches;
+  const coarse = () => matchMedia("(pointer: coarse)").matches;
+  const H = document.documentElement;
+
+  // ─── Телефон: шторка ──────────────────────────────────────────────
+  // Блокуємо прокрутку сторінки, тримаємо шторку над клавіатурою (visualViewport),
+  // «Назад» на Android закриває шторку, а не сторінку; шторку можна стягнути вниз за верх.
+  let sheet = false, savedY = 0;
+  function sheetOn(){
+    if (sheet) return; sheet = true;
+    savedY = scrollY;
+    H.classList.add("qfs-open", "qfs-lock");
+    fitVV();
+    try { if (!history.state?.qfs) history.pushState({ ...(history.state || {}), qfs: 1 }, ""); } catch {}
+  }
+  function sheetOff(fromHistory){
+    if (!sheet) return false; sheet = false;
+    H.classList.remove("qfs-open", "qfs-lock");
+    if (Math.abs(scrollY - savedY) > 1) scrollTo(0, savedY);   // iOS міг зсунути сторінку, поки була клавіатура
+    if (!fromHistory) { try { if (history.state?.qfs) history.back(); } catch {} }
+    return true;
+  }
+  addEventListener("popstate", () => { if (sheet && !pop.hidden) close(true); });
+
+  // Висота видимої області й клавіатура
+  const vv = window.visualViewport;
+  function fitVV(){
+    if (!vv) return;
+    const kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
+    H.style.setProperty("--qfs-kb", kb + "px");
+    H.style.setProperty("--qfs-vh", Math.round(vv.height) + "px");
+    H.style.setProperty("--qfs-safe", kb > 0 ? "0" : "1");   // над клавіатурою відступ під «чубчик» не потрібен
+  }
+  vv?.addEventListener("resize", () => { if (sheet) fitVV(); });
+  vv?.addEventListener("scroll", () => { if (sheet) fitVV(); });
+
+  // Дотики: усередині шторки гортається лише те, що справді може гортатись у цей бік; решта не доходить до сторінки
+  let tY = 0;
+  const scrollable = el => { const o = getComputedStyle(el).overflowY; return (o === "auto" || o === "scroll") && el.scrollHeight > el.clientHeight + 1; };
+  document.addEventListener("touchstart", e => { if (sheet) tY = e.touches[0].clientY; }, { passive: true, capture: true });
+  document.addEventListener("touchmove", e => {
+    if (!sheet || e.touches.length > 1) return;
+    const dy = e.touches[0].clientY - tY;
+    for (let el = e.target; el && el !== pop.parentNode && pop.contains(el); el = el.parentElement){
+      if (!scrollable(el)) continue;
+      if (dy > 0 && el.scrollTop > 0) return;
+      if (dy < 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 1) return;
+      if (dy === 0) return;
+    }
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false, capture: true });
+
+  // Стягнути вниз за верх шторки
+  let dragY = null, dragD = 0, dragT = 0;
+  const dragZone = t => t.closest(".qfs-grab") || (t.closest(".qfs-h") && !t.closest("button"));
+  pop.addEventListener("touchstart", e => {
+    if (!sheet || e.touches.length > 1 || !dragZone(e.target)) return;
+    dragY = e.touches[0].clientY; dragD = 0; dragT = Date.now(); pop.classList.add("drag");
+  }, { passive: true });
+  pop.addEventListener("touchmove", e => {
+    if (dragY == null) return;
+    dragD = Math.max(0, e.touches[0].clientY - dragY);
+    pop.style.transform = dragD ? `translateY(${dragD}px)` : "";
+  }, { passive: true });
+  const dragEnd = () => {
+    if (dragY == null) return;
+    const fast = dragD > 40 && Date.now() - dragT < 250;
+    dragY = null; pop.classList.remove("drag");
+    if (dragD > Math.min(140, pop.offsetHeight * .3) || fast){ pop.style.transform = "translateY(100%)"; setTimeout(close, 180); }
+    else pop.style.transform = "";
+  };
+  pop.addEventListener("touchend", dragEnd); pop.addEventListener("touchcancel", dragEnd);
+
   function open(tab){
     if (tab) S.tab = tab;
     if (S.sent && S.tab === "new") S.sent = false;
     _back = document.activeElement;
     document.documentElement.classList.remove("qfs-hide"); sessionStorage.removeItem("qf_sup_hide");
     pop.hidden = false; fab.classList.add("on"); fab.setAttribute("aria-expanded", "true");
+    pop.style.transform = "";
     render();
     if (S.tab === "mine") setTimeout(markSeen, 1200);
-    setTimeout(() => (S.tab === "new" ? $(".qfs-ta") : $(".qfs-tabs .on"))?.focus(), 30);
+    if (phone()) sheetOn();
+    // На телефоні клавіатуру не відкриваємо самі: вона зсуває екран ще до того, як людина щось вирішила
+    setTimeout(() => (phone() || coarse() ? pop : (S.tab === "new" ? $(".qfs-ta") : $(".qfs-tabs .on")))?.focus({ preventScroll: true }), 30);
   }
-  function close(){
+  function close(fromHistory){
     if (pop.hidden) return;
     if (S.tab === "mine") markSeen();
     pop.hidden = true; fab.classList.remove("on"); fab.setAttribute("aria-expanded", "false");
+    const wasSheet = sheetOff(fromHistory);
     paintDot();
+    if (wasSheet) { document.activeElement?.blur?.(); return; }   // на телефоні фокус не повертаємо — інакше відкриється клавіатура або екран стрибне
     if (_back?.isConnected && _back !== document.body) _back.focus?.(); else fab.focus();
   }
   const toggle = () => pop.hidden ? open() : close();
@@ -279,6 +380,7 @@ export function initSupport(o){
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && e.target.matches(".qfs-ta")){ e.preventDefault(); send(); }
   });
   document.addEventListener("pointerdown", e => { if (!pop.hidden && !root.contains(e.target)) close(); }, true);
+  $(".qfs-bd").addEventListener("click", () => close());
   if (sessionStorage.getItem("qf_sup_hide")) document.documentElement.classList.add("qfs-hide");
 
   // Кульку ховаємо, поки відкрите інше вікно, і на телефоні — поки людина друкує в полі сторінки
@@ -293,7 +395,7 @@ export function initSupport(o){
   };
   let _q = 0; const later = () => { if (!_q) _q = requestAnimationFrame(() => { _q = 0; sync(); }); };
   new MutationObserver(later).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class", "style"], childList: true });
-  addEventListener("resize", later); document.addEventListener("focusin", later); document.addEventListener("focusout", () => setTimeout(later, 50));
+  addEventListener("resize", () => { later(); if (!pop.hidden && sheet !== phone()) { if (sheet) { sheetOff(); pop.style.transform = ""; } else sheetOn(); } }); document.addEventListener("focusin", later); document.addEventListener("focusout", () => setTimeout(later, 50));
   sync();
 
   // На телефоні під час гортання вниз кулька ховається за край і не закриває вміст; повертається, коли гортання зупинилось або пішло вгору
