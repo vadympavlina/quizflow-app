@@ -115,11 +115,15 @@ test.describe("телефон: шторка підтримки", () => {
     d.bugStatus = { t1: Object.fromEntries(Array.from({ length: 12 }, (_, i) => ["b" + i, { t: "Звернення номер " + (i + 1) + " — довгий опис проблеми, щоб список був вищим за екран", k: "bug", p: "Тести", at: Date.now() - i * 864e5, s: "new" }])) };
     await seed(page, d, "t1");
     await page.goto("/"); await page.waitForTimeout(1200);
-    await page.evaluate(() => scrollTo(0, 300)); await page.waitForTimeout(400);
-    const y0 = await page.evaluate(() => scrollY);
+    // сторінка має «осісти» (дані домальовуються), інакше браузер сам зсуває прокрутку під новий вміст
+    await expect.poll(async () => { const h1 = await page.evaluate(() => document.documentElement.scrollHeight); await page.waitForTimeout(300); return h1 === await page.evaluate(() => document.documentElement.scrollHeight); }).toBe(true);
+    await page.evaluate(() => scrollTo(0, 300));
     await page.locator(".qfs-fab").tap();
     const pop = page.locator(".qfs-pop");
     await expect(pop).toBeVisible();
+    await page.waitForTimeout(350);
+    const y0 = await page.evaluate(() => scrollY);
+    expect(y0).toBe(300);
     await expect(page.locator("html")).toHaveClass(/qfs-lock/);
     // шторка — на всю ширину і притиснута до низу
     const b = await pop.boundingBox();

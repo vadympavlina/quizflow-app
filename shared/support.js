@@ -101,6 +101,8 @@ const CSS = `
   .qfs-ib{width:36px;height:36px}
   .qfs-tabs button{height:36px;font-size:13.5px}
   .qfs-kind button{height:40px}
+  .qfs-pop{touch-action:none}
+  .qfs-b,.qfs-ta{touch-action:pan-y}
   .qfs-b{flex:1 1 auto;min-height:0;-webkit-overflow-scrolling:touch}
   .qfs-ta{font-size:16px;min-height:110px;max-height:38vh;resize:none}
   .qfs-send{height:46px;font-size:15px}
