@@ -4,12 +4,12 @@
    ═══════════════════════════════════════════════════════════════════════ */
 body.lg{
   display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);min-height:100dvh;
-  padding:14px;background:#E9EEF8;color:var(--ink);
+  padding:0;background:#fff;color:var(--ink);
 }
 
 /* ── Ліва частина: текст над персонажем ── */
 .lg .hero{
-  position:relative;z-index:0;border-radius:34px;padding:34px 56px 0 40px;overflow:hidden;gap:0;
+  position:relative;z-index:0;border-radius:0;padding:34px 56px 0 40px;overflow:hidden;gap:0;
   background:
     radial-gradient(70% 46% at 50% 100%,rgba(91,140,255,.55) 0%,rgba(59,107,246,.18) 48%,transparent 74%),
     radial-gradient(60% 40% at 0% 0%,rgba(91,140,255,.18),transparent 70%),
@@ -20,12 +20,13 @@ body.lg{
 .lg .hero h1{margin-top:clamp(36px,9vh,96px);text-align:center;font-size:clamp(32px,3.6vw,52px);line-height:1.08;letter-spacing:-.04em;font-weight:800;color:#fff}
 .hero-p{margin:16px auto 0;max-width:380px;text-align:center;font-size:15px;line-height:1.55;color:rgba(226,232,255,.62)}
 .mascot{position:absolute;left:50%;bottom:-3%;height:clamp(300px,52%,600px);width:auto;transform:translateX(-50%);pointer-events:none;user-select:none;
-  filter:drop-shadow(0 30px 50px rgba(3,6,30,.55));animation:peek .8s var(--ease) both}
+  filter:drop-shadow(0 30px 50px rgba(3,6,30,.55));opacity:0}
+.mascot.in{animation:peek .7s var(--ease) both}
 @keyframes peek{from{opacity:0;transform:translate(-50%,28px)}to{opacity:1;transform:translateX(-50%)}}
 
 /* ── Правa частина: біла панель, що заходить на ліву заокругленим краєм ── */
 .lg .side{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0;
-  margin-left:-34px;border-radius:34px;background:#fff;box-shadow:0 30px 70px -40px rgba(10,20,70,.4)}
+  margin-left:-34px;border-radius:34px 0 0 34px;background:#fff;box-shadow:-24px 0 60px -34px rgba(3,6,30,.55)}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:34px 56px 0}
 .lg .logo{color:var(--ink)}.lg .logo-t em{color:var(--accent-2)}
 .top-link{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 2px;border-radius:8px;transition:color .15s}
@@ -67,4 +68,4 @@ body.lg{
   .panel h2{font-size:32px}
   .foot{padding:0 22px 26px;text-align:center}
 }
-@media (prefers-reduced-motion:reduce){.panel,.mascot{animation:none}}
+@media (prefers-reduced-motion:reduce){.panel,.mascot.in{animation:none}.mascot.in{opacity:1}}

@@ -19,6 +19,12 @@ async function fakeWorker(page, calls, reply) {
     route.fulfill({ status: reply.status || 200, contentType: "application/json", headers: cors, body: JSON.stringify(reply.body) });
   });
 }
+// Сторінка готова, коли підключено G і відновлено користувача (а не «через 800 мс»: на повільній машині цього мало)
+const ready = page => page.waitForFunction(async () => {
+  if (!window.G?.openTestInFolder || !document.getElementById("sb-new")) return false;
+  const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+  return !!m.getAuth().currentUser;
+}, null, { timeout: 30000 });
 const db = () => { const d = rich(Date.now()); d.settings = { mail: { workerUrl: WORKER }, ai: { enabled: true } }; return d; };
 
 test("Kahoot: посилання → перегляд питань → імпорт у тест; текст питань екранується", async ({ page, errors }) => {
@@ -66,7 +72,7 @@ test("Новий тест: посилання на Kahoot підставляє �
   const calls = [];
   await fakeWorker(page, calls, { body: OK });
   await seed(page, db(), "t1");
-  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.goto("/tests"); await ready(page);
   await page.locator("#sb-new").click();
   await expect(page.locator("#nt-kh")).toBeHidden();
   await page.locator("#nt-kh-t").click();                                      // маленька кнопка «Імпортувати з Kahoot»
@@ -97,7 +103,7 @@ test("Новий тест: помилка Kahoot не блокує звичай�
   const calls = [];
   await fakeWorker(page, calls, { status: 404, body: { ok: false, error: "Тест не знайдено або він приватний." } });
   await seed(page, db(), "t1");
-  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.goto("/tests"); await ready(page);
   await page.locator("#sb-new").click();
   await page.locator("#nt-kh-t").click();
   await page.fill("#nt-kh-url", KH);
@@ -115,7 +121,7 @@ test("Новий тест: «Змінити» повертає до поля п�
   const calls = [];
   await fakeWorker(page, calls, { body: OK });
   await seed(page, db(), "t1");
-  await page.goto("/tests"); await page.waitForTimeout(800);
+  await page.goto("/tests"); await ready(page);
   await page.locator("#sb-new").click();
   await page.locator("#nt-kh-t").click();
   await page.fill("#nt-kh-url", KH);
@@ -134,4 +140,24 @@ test("Новий тест: «Змінити» повертає до поля п�
   await expect(page.locator("#nt-kh-res")).toBeHidden();
   await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
   expect(errors).toEqual([]);
+});
+
+test("Новий тест: якщо сесія ще не відновилась, імпорт Kahoot чекає її, а не падає з помилкою про null", async ({ page, errors }) => {
+  const calls = [];
+  await fakeWorker(page, calls, { status: 404, body: { ok: false, error: "Тест не знайдено або він приватний." } });
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await ready(page);
+  await page.locator("#sb-new").click();
+  await page.locator("#nt-kh-t").click();
+  // імітуємо повільне завантаження: користувача поки немає, з'явиться за пів секунди
+  await page.evaluate(async () => {
+    const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const a = m.getAuth(), u = a.currentUser; a.currentUser = null;
+    setTimeout(() => { a.currentUser = u; }, 600);
+  });
+  await page.fill("#nt-kh-url", KH);
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-msg")).toContainText("приватний", { timeout: 20000 });   // дійшло до воркера
+  expect(calls[0].auth).toBe("Bearer mock-token-t1");
+  expect(errors.filter(e => !/404/.test(e))).toEqual([]);
 });
