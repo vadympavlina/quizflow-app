@@ -3,7 +3,7 @@
    Підключається після auth.css і перекриває лише те, що треба.
    ═══════════════════════════════════════════════════════════════════════ */
 body.lg{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:100dvh;
+  display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);min-height:100dvh;
   padding:14px;background:#E9EEF8;color:var(--ink);
 }
 
