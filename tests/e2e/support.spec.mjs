@@ -181,3 +181,37 @@ test.describe("телефон: шторка підтримки", () => {
     expect(errors).toEqual([]);
   });
 });
+
+// Вибір «Проблема / Ідея», вкладок і «Надіслати ще» не ставить курсор у поле — воно не смикається, на телефоні не вискакує клавіатура
+for (const [n, vp, touch] of [["комп'ютер", { width: 1280, height: 800 }, false], ["телефон", { width: 390, height: 844 }, true]]) {
+  test.describe(`фокус поля опису (${n})`, () => {
+    test.use({ viewport: vp, hasTouch: touch, isMobile: touch });
+    test("вибір типу, вкладки, «Надіслати ще» не ставлять курсор у поле", async ({ page, errors }) => {
+      await seed(page, rich(Date.now()), "t1");
+      await page.goto("/tests"); await page.waitForTimeout(1200);
+      const inTa = () => page.evaluate(() => document.activeElement?.classList.contains("qfs-ta"));
+      const tap = l => touch ? l.tap() : l.click();
+      await tap(page.locator(".qfs-fab"));
+      await expect(page.locator(".qfs-pop")).toBeVisible();
+      await page.waitForTimeout(150);
+      if (touch) expect(await inTa()).toBe(false);          // на телефоні поле не в фокусі й одразу після відкриття
+      await tap(page.locator('.qfs-kind [data-k="idea"]'));
+      expect(await inTa()).toBe(false);
+      await tap(page.locator('.qfs-kind [data-k="bug"]'));
+      expect(await inTa()).toBe(false);
+      await tap(page.locator('.qfs-tabs [data-tab="mine"]'));
+      await tap(page.locator('.qfs-tabs [data-tab="new"]'));
+      expect(await inTa()).toBe(false);
+      await page.locator(".qfs-ta").fill("Щось не так");
+      await tap(page.locator(".qfs-send"));
+      await expect(page.locator(".qfs-ok")).toBeVisible();
+      await tap(page.locator("[data-more]"));
+      expect(await inTa()).toBe(false);
+      await page.evaluate(() => { const t = document.querySelector(".qfs-ta"); t.blur(); });
+      await tap(page.locator(".qfs-send"));                 // порожнє поле: помилка видно
+      await expect(page.locator(".qfs-err")).toContainText("Опишіть");
+      if (touch) expect(await inTa()).toBe(false);
+      expect(errors).toEqual([]);
+    });
+  });
+}

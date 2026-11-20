@@ -327,7 +327,7 @@ export function initSupport(o){
   // ─── Надсилання ───────────────────────────────────────────────────
   async function send(){
     const ta = $(".qfs-ta"), text = (ta?.value || "").trim(), err = $(".qfs-err");
-    if (text.length < 3){ err.textContent = "Опишіть коротко, що сталося"; ta?.focus(); return; }
+    if (text.length < 3){ err.textContent = "Опишіть коротко, що сталося"; if (!phone() && !coarse()) ta?.focus(); return; }
     S.sending = true; draft = text; render();
     const c = ctx(), at = Date.now();
     let userName = "—"; try { userName = o.userName?.() || "—"; } catch {}
@@ -369,9 +369,9 @@ export function initSupport(o){
     const t = e.target;
     if (t.closest("[data-x]")) return close();
     const tb = t.closest("[data-tab]"); if (tb){ if (S.tab === "mine") markSeen(); S.tab = tb.dataset.tab; render(); if (S.tab === "mine") setTimeout(markSeen, 1200); return; }
-    const k = t.closest("[data-k]"); if (k){ draft = $(".qfs-ta")?.value || draft; S.kind = k.dataset.k; render(); $(".qfs-ta")?.focus(); return; }
+    const k = t.closest("[data-k]"); if (k){ draft = $(".qfs-ta")?.value || draft; S.kind = k.dataset.k; render(); body.querySelector(`[data-k="${S.kind}"]`)?.focus({ preventScroll: true }); return; }   // фокус лишаємо на кнопці, а не в полі: поле не смикається й клавіатура не вискакує
     if (t.closest("[data-send]")) return send();
-    if (t.closest("[data-more]")){ S.sent = false; render(); $(".qfs-ta")?.focus(); return; }
+    if (t.closest("[data-more]")){ S.sent = false; render(); return; }
     if (t.closest("[data-hide]")){ close(); sessionStorage.setItem("qf_sup_hide", "1"); document.documentElement.classList.add("qfs-hide"); }
   });
   pop.addEventListener("input", e => { if (e.target.matches(".qfs-ta")){ draft = e.target.value; write("draft", draft); const er = $(".qfs-err"); if (er) er.textContent = ""; } });
