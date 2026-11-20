@@ -26,14 +26,14 @@ body.lg{
 /* ── Правa частина: біла панель, що заходить на ліву заокругленим краєм ── */
 .lg .side{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0;
   margin-left:-34px;border-radius:34px;background:#fff;box-shadow:0 30px 70px -40px rgba(10,20,70,.4)}
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:34px 44px 0 76px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:34px 56px 0}
 .lg .logo{color:var(--ink)}.lg .logo-t em{color:var(--accent-2)}
 .top-link{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 2px;border-radius:8px;transition:color .15s}
 .top-link svg{transition:transform .2s var(--ease)}
 .top-link:hover{color:var(--ink)}.top-link:hover svg{transform:translateX(3px)}
-.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 44px 24px 76px}
-.panel{width:100%;max-width:400px;animation:rise .5s var(--ease) both}
-.panel h2{font-size:36px;line-height:1.08;font-weight:800;letter-spacing:-.04em;color:var(--ink)}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 56px}
+.panel{width:100%;max-width:440px;animation:rise .5s var(--ease) both}
+.panel h2{font-size:40px;line-height:1.08;font-weight:800;letter-spacing:-.04em;color:var(--ink)}
 .panel .sub{margin-top:10px;font-size:15px;color:var(--muted)}
 .panel .form{margin-top:34px;gap:18px}
 
@@ -54,7 +54,7 @@ body.lg{
 .big-ic{border-radius:16px}
 .resume-v{text-align:left;padding:0}.resume-v .big-ic{margin:0 0 18px}
 
-.foot{padding:0 44px 28px 76px;font-size:13px;line-height:1.5;color:var(--faint)}
+.foot{padding:0 56px 30px;font-size:13px;line-height:1.5;color:var(--faint)}
 
 /* ── Вузькі екрани: лише форма, без лівої панелі ── */
 @media (max-width:980px){
