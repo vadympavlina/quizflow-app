@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Сторінка входу (login.html): темна, строга, без карток і декору.
+   Підключається після auth.css і перекриває лише те, що треба.
+   ═══════════════════════════════════════════════════════════════════════ */
+body.lg{
+  --in-bg:rgba(255,255,255,.04); --in-line:rgba(255,255,255,.12); --in-hi:rgba(255,255,255,.07);
+  --t1:#fff; --t2:rgba(226,232,255,.68); --t3:rgba(226,232,255,.44);
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr auto;min-height:100dvh;
+  background:
+    radial-gradient(60% 46% at 50% -8%,rgba(91,140,255,.2) 0%,rgba(91,140,255,.06) 45%,transparent 72%),
+    #070A1C;
+  color:var(--t1);
+}
+
+/* ── Верх: логотип і вхід для учасників гри ── */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:26px clamp(20px,4vw,48px) 0}
+.top-link{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--t2);text-decoration:none;padding:8px 2px;border-radius:8px;transition:color .15s}
+.top-link svg{transition:transform .2s var(--ease)}
+.top-link:hover{color:#fff}.top-link:hover svg{transform:translateX(3px)}
+
+/* ── Форма по центру, без рамки ── */
+.stage{display:flex;align-items:center;justify-content:center;padding:32px 20px}
+.panel{width:100%;max-width:372px;animation:rise .5s var(--ease) both}
+.panel h2{font-size:32px;line-height:1.1;font-weight:800;letter-spacing:-.04em;color:var(--t1)}
+.panel .sub{margin-top:8px;font-size:15px;color:var(--t2)}
+.panel .form{margin-top:32px;gap:18px}
+
+.fld label{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px}
+.inp>svg{display:none}
+.inp input{height:48px;padding:0 44px 0 14px;border-radius:10px;border:1px solid var(--in-line);background:var(--in-bg);color:#fff;font-size:15px}
+.inp input::placeholder{color:rgba(226,232,255,.28)}
+.inp input:hover{border-color:rgba(255,255,255,.2)}
+.inp input:focus{border-color:rgba(138,170,255,.75);background:var(--in-hi);box-shadow:0 0 0 4px rgba(91,140,255,.16)}
+.inp input.bad{border-color:#F87171;box-shadow:0 0 0 4px rgba(248,113,113,.14)}
+/* автозаповнення браузера лишається темним */
+.inp input:-webkit-autofill,.inp input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;caret-color:#fff;box-shadow:0 0 0 1000px #121936 inset;border-color:var(--in-line);transition:background-color 9999s}
+.eye{right:6px;color:var(--t3);border-radius:8px}
+.eye:hover{background:rgba(255,255,255,.08);color:#fff}
+.link{color:#A5C1FF;font-size:13px}
+.caps{color:#FBBF24}
+
+.sw{color:var(--t2);font-size:13.5px}
+.sw b{background:rgba(255,255,255,.18)}
+.sw input:checked+b{background:#5B8CFF}
+.sw input:focus-visible+b{outline-color:#A5C1FF}
+
+/* ── Кнопки: біла основна, прозора допоміжна ── */
+.btn{height:48px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:-.005em}
+.btn.pri{background:#fff;color:#0A1030;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 30px -14px rgba(91,140,255,.55)}
+.btn.pri:hover:not(:disabled){background:#E9EFFF;transform:none;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 14px 34px -14px rgba(91,140,255,.7)}
+.btn.pri:active:not(:disabled){transform:scale(.99)}
+.btn.pri .spin{border-color:rgba(10,16,48,.2);border-top-color:#0A1030}
+.btn.pri svg{transition:transform .2s var(--ease)}.btn.pri:hover:not(:disabled) svg{transform:translateX(3px)}
+.btn.done{background:#22C55E;color:#fff;box-shadow:0 14px 30px -14px rgba(34,197,94,.7)}
+.btn.ghost{background:transparent;color:#fff;border:1px solid var(--in-line)}
+.btn.ghost:hover:not(:disabled){background:rgba(255,255,255,.06)}
+
+/* ── Повідомлення ── */
+.msg{border-radius:10px;font-size:13.5px}
+.msg.err{background:rgba(239,68,68,.12);border:1px solid rgba(248,113,113,.3);color:#FCA5A5}
+.msg.ok{background:rgba(34,197,94,.12);border:1px solid rgba(74,222,128,.3);color:#86EFAC}
+.msg.info{background:rgba(91,140,255,.12);border:1px solid rgba(138,170,255,.3);color:#BFD2FF}
+
+/* ── Відновлення пароля і «Входимо…» ── */
+.back{color:var(--t2);margin:0 0 26px;padding:6px 0}.back:hover{color:#fff}
+.big-ic{width:48px;height:48px;border-radius:12px;color:#A5C1FF;background:rgba(255,255,255,.05);border:1px solid var(--in-line);margin-bottom:20px}
+.big-ic[style]{background:rgba(34,197,94,.12)!important;border-color:rgba(74,222,128,.3);color:#86EFAC!important}
+.tips{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--t2);border-radius:10px}
+.panel .sub b{color:#fff;font-weight:700}
+.resume-v{text-align:left;padding:0}.resume-v .big-ic{margin:0 0 20px}
+
+/* ── Низ ── */
+.foot{padding:0 20px 28px;text-align:center;font-size:13px;line-height:1.5;color:var(--t3)}
+
+@media (max-width:480px){
+  .top{padding:18px 20px 0}
+  .stage{align-items:flex-start;padding:36px 20px 24px}
+  .panel h2{font-size:29px}
+  .panel .form{margin-top:28px}
+}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}}
