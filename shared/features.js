@@ -2629,7 +2629,12 @@ window.G = {
     try {
       const wurl = String((await get(ref(db, "settings/mail/workerUrl"))).val() || "").replace(/\/+$/, "");
       if (!wurl) throw new Error("Сервер імпорту не налаштовано. Зверніться до адміністратора.");
-      const tok = await _fbAuth(_fbApps()[0]).currentUser.getIdToken();
+      // Користувач може з'явитись із запізненням (сторінка щойно завантажилась) — чекаємо до 4 с, а не падаємо на null
+      const auth = _fbAuth(_fbApps()[0]);
+      let user = auth.currentUser;
+      for (let i = 0; !user && i < 40; i++){ await new Promise(r => setTimeout(r, 100)); user = auth.currentUser; }
+      if (!user) throw new Error("Сесію не відновлено. Оновіть сторінку й спробуйте ще раз.");
+      const tok = await user.getIdToken();
       let res;
       try { res = await fetch(wurl + "/import/kahoot", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ url }) }); }
       catch { throw new Error("Не вдалося з'єднатися із сервером. Перевірте інтернет."); }
