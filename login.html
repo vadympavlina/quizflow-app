@@ -37,7 +37,8 @@
   try { if (localStorage.getItem("qf_signed_in") === "1") document.documentElement.classList.add("resume"); } catch {}
 </script>
 <link rel="stylesheet" href="shared/auth.css?v=2">
-<link rel="stylesheet" href="shared/login.css?v=4">
+<link rel="preload" as="image" href="assets/icons/teacher/mascot-login.webp?v=1" type="image/webp" media="(min-width:981px)" fetchpriority="high">
+<link rel="stylesheet" href="shared/login.css?v=5">
 <style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
 </head>
 <body class="lg">
@@ -46,7 +47,8 @@
   <p class="hero-tag">Платформа для викладачів</p>
   <h1>Тести, ігри й журнал<br>в одному місці</h1>
   <p class="hero-p">Створюйте тести з AI, видавайте посилання групам і бачте результати наживо.</p>
-  <img class="mascot" src="assets/icons/teacher/mascot.webp?v=3" alt="" width="1254" height="1254" decoding="async" loading="lazy">
+  <img class="mascot" src="assets/icons/teacher/mascot-login.webp?v=1" alt="" width="800" height="800" decoding="async" fetchpriority="high" onload="this.classList.add('in')">
+  <script>(function(){var m=document.querySelector(".mascot");if(m&&m.complete&&m.naturalWidth)m.classList.add("in")})()</script>
 </aside>
 
 

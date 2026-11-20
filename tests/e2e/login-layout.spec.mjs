@@ -9,9 +9,18 @@ test("комп'ютер: зліва текст над персонажем, сп
   await page.goto("/login"); await page.waitForTimeout(900);
   const hero = await page.locator(".hero").boundingBox(), side = await page.locator(".side").boundingBox();
   expect(hero.x).toBeLessThan(side.x);                                             // панель зліва, форма справа
+  // обидві панелі на весь екран, без полів навколо; заокруглення лише там, де вони стикаються
+  expect(Math.round(hero.x)).toBe(0); expect(Math.round(hero.y)).toBe(0); expect(Math.round(hero.height)).toBe(800);
+  expect(Math.round(side.y)).toBe(0); expect(Math.round(side.height)).toBe(800); expect(Math.round(side.x + side.width)).toBe(1280);
+  const rad = await page.evaluate(() => { const c = getComputedStyle(document.querySelector(".side")), h = getComputedStyle(document.querySelector(".hero")); return [c.borderTopLeftRadius, c.borderBottomLeftRadius, c.borderTopRightRadius, c.borderBottomRightRadius, h.borderTopLeftRadius]; });
+  expect(rad.map(x => parseFloat(x))).toEqual([34, 34, 0, 0, 0]);
   const h1 = await page.locator(".hero h1").boundingBox(), m = await page.locator(".mascot").boundingBox();
   expect(h1.y + h1.height).toBeLessThan(m.y + 40);                                 // текст над персонажем, без перекриття
   expect(m.y + m.height).toBeGreaterThan(hero.y + hero.height - 40);               // персонаж стоїть унизу панелі
+  // персонаж — легкий файл (швидко вантажиться) і з'являється, коли завантажився
+  const sz = await page.evaluate(async () => (await fetch(document.querySelector(".mascot").src)).blob().then(b => b.size));
+  expect(sz).toBeLessThan(160000);
+  await expect(page.locator(".mascot.in")).toHaveCount(1);
   for (const sel of ["#email", "#pass", "#loginBtn", "#remember", ".top-link"]) await expect(page.locator(sel)).toBeVisible();
   expect(await page.locator(".top-link").getAttribute("href")).toContain("play.quizflow.space");
   expect(await noOverflow(page)).toBe(true);
