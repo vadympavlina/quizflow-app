@@ -2856,7 +2856,7 @@ async function preview(){
 // Старт
 document.execCommand("defaultParagraphSeparator", false, "div");
 // Кулька «Підтримка» справа знизу (shared/support.js): контекст — назва тесту й номер питання
-import("./shared/support.js?v=3").then(m => m.initSupport({
+import("./shared/support.js?v=4").then(m => m.initSupport({
   db, uid: UID,
   userName: () => user.displayName || user.email || "—",
   context: () => ({ page: "Конструктор", test: S.title?.trim() || null, q: S.qs.length ? S.cur + 1 : null }),
