@@ -30,7 +30,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=61">
 <link rel="modulepreload" href="shared/app.js?v=48">
-<link rel="modulepreload" href="shared/features.js?v=58">
+<link rel="modulepreload" href="shared/features.js?v=59">
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    СТОРІНКА «ТЕСТИ» — стилі під #sec-tests
@@ -252,6 +252,13 @@
 #sec-tests .t-rr-dot{width:12px;height:12px;border-radius:4px;flex:0 0 auto;margin:0 3px}
 #sec-tests .t-rr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sec-tests .t-rr-n{font:600 12px 'Geist Mono',monospace;color:var(--ink-400);flex:0 0 auto}
+#sec-tests .t-rail-q{position:relative;margin:0 4px 8px}
+#sec-tests .t-rail-q svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-400);pointer-events:none}
+#sec-tests .t-rail-q input{width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--qf-surface-2,#F6F8FC);padding:0 10px 0 33px;font:500 13.5px 'Manrope',sans-serif;color:var(--ink-900);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+#sec-tests .t-rail-q input:focus{background:#fff;border-color:#93B0F5;box-shadow:0 0 0 3px rgba(91,140,255,.14)}
+#sec-tests .t-rr-more{color:var(--nav-600);font-weight:700}
+#sec-tests .t-rr-more .t-rr-n{color:var(--nav-600)}
+#sec-tests .t-rr-empty{padding:10px;font-size:13px;color:var(--ink-400)}
 #sec-tests .t-rr.on .t-rr-n{color:var(--nav-600)}
 #sec-tests .t-scope{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:34px}
 #sec-tests .t-scope-t{display:flex;align-items:baseline;gap:10px;min-width:0}
@@ -275,6 +282,9 @@
   #sec-tests .t-split{grid-template-columns:minmax(0,1fr);gap:14px}
   #sec-tests .t-rail{position:static;max-height:none;overflow:visible;background:none;border:0;padding:0;margin:0 -2px}
   #sec-tests .t-rail-h{display:none}
+  #sec-tests .t-rail-q{margin:0 2px 8px}
+  #sec-tests .t-rail-q input{height:40px;border-radius:999px;background:#fff}
+  #sec-tests .t-rr-more{border-style:dashed}
   #sec-tests .t-rail-list{flex-direction:row;gap:8px;overflow-x:auto;padding:2px;scrollbar-width:none}
   #sec-tests .t-rail-list::-webkit-scrollbar{display:none}
   #sec-tests .t-rr{width:auto;flex:0 0 auto;min-height:40px;border-radius:999px;background:#fff;border:1px solid var(--line);padding:0 14px}
@@ -418,7 +428,7 @@
 <script type="module">
 // ─── Ініціалізація (паралельне завантаження — як в оригіналі) ───
 const { initApp } = await import("./shared/app.js?v=48");
-const featuresP = import("./shared/features.js?v=58");
+const featuresP = import("./shared/features.js?v=59");
 
 window.showSec = function(name){
   if (name === "tests"){

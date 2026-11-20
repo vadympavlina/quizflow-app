@@ -1059,17 +1059,66 @@ function _syncToolbar(ctx){
 // Ліворуч — список папок («Усі тести», папки, «Без папки»), праворуч — одразу тести
 // вибраної папки. Папок немає — рейки теж немає, лише список.
 const _ALL_ICO = _ICON('<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>');
-function _railHtml(scope, live, orphans){
+// Папки в рейці — за свіжістю: угорі та, куди останнім часом додавали тест або вносили зміни.
+// Багато папок (> _RAIL_TOP): показуємо найсвіжіші, решта — за «Усі папки»; є й пошук за назвою.
+const _RAIL_TOP = 8;
+let _railAll = false, _railQ = "";
+function _folderActivity(){
+  const m = new Map();
+  for (const f of folders) m.set(f.id, Math.max(Number(f.updatedAt) || 0, Number(f.createdAt) || 0));
+  for (const t of tests){
+    if (t.status === "archived" || !m.has(t.folderId)) continue;
+    m.set(t.folderId, Math.max(m.get(t.folderId), Number(t.updatedAt) || 0, Number(t.createdAt) || 0));
+  }
+  return m;
+}
+function _railFolders(scope){
+  const act = _folderActivity();
+  const all = [...folders].sort((a, b) => (act.get(b.id) - act.get(a.id)) || String(a.name).localeCompare(String(b.name), "uk"));
+  const q = _railQ.trim().toLowerCase();
+  if (q) return { list: all.filter(f => String(f.name).toLowerCase().includes(q)), hidden: 0, total: all.length, searching: true };
+  if (all.length <= _RAIL_TOP || _railAll) return { list: all, hidden: 0, total: all.length, searching: false };
+  let list = all.slice(0, _RAIL_TOP);
+  const cur = all.find(f => f.id === scope);                 // відкрита папка завжди на видноті
+  if (cur && !list.includes(cur)) list = [...list.slice(0, _RAIL_TOP - 1), cur];
+  return { list, hidden: all.length - list.length, total: all.length, searching: false };
+}
+function _railListHtml(scope, live, orphans){
   const row = (id, ico, name, n) => `<button class="t-rr${scope === id ? " on" : ""}" data-act="open-folder" data-id="${esc(id)}" ${scope === id ? 'aria-current="true"' : ""}>
       ${ico}<span class="t-rr-name">${esc(name)}</span><span class="t-rr-n">${n}</span></button>`;
   const dot = col => `<i class="t-rr-dot" style="background:${col}"></i>`;
-  return `<div class="t-rail-h"><span>Папки</span><button class="t-rail-add" data-act="new-folder" data-needs="tests.edit" title="Нова папка" aria-label="Нова папка">${I.plus}</button></div>
-    <div class="t-rail-list">
-      ${row("all", `<span class="t-rr-ico">${_ALL_ICO}</span>`, "Усі тести", live.length)}
-      ${folders.map(f => row(f.id, dot(_folderColor(f)), f.name, live.filter(t => t.folderId === f.id).length)).join("")}
-      ${orphans.length ? row("none", dot("#B4BCD0"), "Без папки", orphans.length) : ""}
-    </div>`;
+  const r = _railFolders(scope);
+  const counts = new Map(); for (const t of live) counts.set(t.folderId, (counts.get(t.folderId) || 0) + 1);
+  const more = r.searching ? "" : r.hidden > 0
+    ? `<button class="t-rr t-rr-more" data-act="rail-all" aria-expanded="false"><span class="t-rr-name">Усі папки</span><span class="t-rr-n">ще ${r.hidden}</span></button>`
+    : (_railAll && r.total > _RAIL_TOP ? `<button class="t-rr t-rr-more" data-act="rail-all" aria-expanded="true"><span class="t-rr-name">Лише найсвіжіші</span></button>` : "");
+  return `${r.searching ? "" : row("all", `<span class="t-rr-ico">${_ALL_ICO}</span>`, "Усі тести", live.length)}
+      ${r.list.map(f => row(f.id, dot(_folderColor(f)), f.name, counts.get(f.id) || 0)).join("")}
+      ${r.searching && !r.list.length ? `<div class="t-rr-empty">Папки не знайдено</div>` : ""}
+      ${more}
+      ${!r.searching && orphans.length ? row("none", dot("#B4BCD0"), "Без папки", orphans.length) : ""}`;
 }
+function _railHtml(scope, live, orphans){
+  const many = folders.length > _RAIL_TOP;
+  return `<div class="t-rail-h"><span>Папки</span><button class="t-rail-add" data-act="new-folder" data-needs="tests.edit" title="Нова папка" aria-label="Нова папка">${I.plus}</button></div>
+    ${many ? `<div class="t-rail-q">${I.search}<input id="t-rail-q" type="search" placeholder="Знайти папку" aria-label="Знайти папку" autocomplete="off" spellcheck="false" value="${esc(_railQ)}"></div>` : ""}
+    <div class="t-rail-list" id="t-rail-list">${_railListHtml(scope, live, orphans)}</div>`;
+}
+// Пошук папки: оновлюємо лише список (поле вводу не перестворюється, фокус не губиться)
+function _railRefresh(){
+  const list = document.getElementById("t-rail-list"); if (!list) return;
+  const live = tests.filter(t => t.status !== "archived");
+  list.innerHTML = _railListHtml(_fFilter || "all", live, live.filter(t => !_folderOf(t)));
+}
+document.addEventListener("input", e => {
+  if (e.target?.id !== "t-rail-q") return;
+  _railQ = e.target.value; _railRefresh();
+});
+document.addEventListener("keydown", e => {
+  if (e.target?.id !== "t-rail-q") return;
+  if (e.key === "Escape"){ e.target.value = ""; _railQ = ""; _railRefresh(); e.stopPropagation(); }
+  if (e.key === "Enter"){ const b = document.querySelector("#t-rail-list .t-rr[data-act='open-folder']:not([data-id='all']):not([data-id='none'])"); if (b){ e.preventDefault(); _railQ = ""; G.setFF(b.dataset.id); } }
+});
 renderTests = function(q){
   if (typeof q === "string") TS.q = q;
   const c = $("tc");
@@ -1183,7 +1232,8 @@ function _testsAction(act, id, el){
     case "dup":           _closeTMenu(); G.duplicateTest(id); break;
     case "share":         _closeTMenu(); if (t) G.openShareModal(id, t.title); break;
     case "delete":        _closeTMenu(); G.confDelTest(id); break;
-    case "open-folder":   _closeTMenu(); G.setFF(id || "all"); break;
+    case "open-folder":   _closeTMenu(); _railQ = ""; G.setFF(id || "all"); break;
+    case "rail-all":      _railAll = !_railAll; renderTests(); break;
     case "add-test": {
       _closeTMenu();
       // Без явної папки — створюємо в тій, яку зараз відкрито
