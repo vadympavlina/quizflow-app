@@ -233,6 +233,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 .ql-empty{padding:40px 20px;text-align:center;color:var(--qf-ink-400);font-size:13px}
 
 /* ── Адаптивність ── */
+.gh-seg .ls{display:none}
 @media (max-width:1280px){
   .gh-body{grid-template-columns:repeat(3,auto) minmax(150px,1fr);gap:22px}
   .gh-lead{grid-column:1/-1}
@@ -248,7 +249,11 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
   .res-head,  .res-table th:first-child,.res-table td:first-child{padding-left:16px}.res-table th:last-child,.res-table td:last-child{padding-right:16px}
 }
 @media (max-width:1023px){
-  #sec-history .gh-toolbar .gh-seg{grid-column:1/-1}
+  #sec-history .gh-toolbar .gh-seg button{padding:9px 10px;font-size:13px}
+  #sec-history .gh-toolbar .gh-seg .lf{display:none}
+  #sec-history .gh-toolbar .ls{display:inline}
+  #sec-history .gh-toolbar #cd-ghtest{grid-column:1}
+  #sec-history .gh-toolbar #cd-ghsort{grid-column:2}
   #sec-history .gh-toolbar .cd-wrap{min-width:0}
   #sec-history .gh-toolbar .cd-btn{width:100%}
   .res-tools .gh-search{flex:1 1 100%;max-width:none}
@@ -316,9 +321,9 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
       <button data-period="30">30 днів</button>
     </div>
     <div class="gh-seg" id="mode" role="group" aria-label="Як рахували результат">
-      <button data-mode="all" class="on">Усі режими</button>
-      <button data-mode="speed" title="Бали за правильні відповіді й швидкість">За балами</button>
-      <button data-mode="acc" title="Лише правильні відповіді, без балів">За правильними</button>
+      <button data-mode="all" class="on"><span class="lf">Усі режими</span><span class="ls">Усі</span></button>
+      <button data-mode="speed" title="Бали за правильні відповіді й швидкість"><span class="lf">За балами</span><span class="ls">Бали</span></button>
+      <button data-mode="acc" title="Лише правильні відповіді, без балів"><span class="lf">За правильними</span><span class="ls">Правильні</span></button>
     </div>
     <span class="gh-spacer"></span>
     <div class="cd-wrap" id="cd-ghtest">
