@@ -69,3 +69,29 @@ body.lg{
   .foot{padding:0 22px 26px;text-align:center}
 }
 @media (prefers-reduced-motion:reduce){.panel,.mascot.in{animation:none}.mascot.in{opacity:1}}
+
+/* ── Реєстрація за запрошенням і знайомство (register.html, onboarding.html) ── */
+.inp.plain input{padding:0 18px 0 22px}
+.lg .state{text-align:left;padding:0}
+.lg .state .big-ic{margin:0 0 18px}
+.lg .state .stack{margin-top:24px}
+.inv-badge{border-radius:18px;margin-bottom:22px}
+.row2{gap:14px}
+.meter{padding:0 6px}.rules{padding:0 6px}.match{padding:0 6px}
+
+/* Знайомство: праворуч — кроки, ліворуч — перелік */
+.ob .hero{overflow-y:auto;scrollbar-width:none}
+.ob .hero::-webkit-scrollbar{display:none}
+.ob .hero h1{margin-top:clamp(28px,7vh,72px);text-align:left;font-size:clamp(30px,3.2vw,46px)}
+.ob .hero-p{margin-left:0;max-width:420px;text-align:left}
+.ob .feats.ob-list{margin-top:28px;max-width:440px}
+.ob-panel{max-width:560px}
+.ob .ob-bar{border-radius:999px;overflow:hidden;margin-bottom:6px}
+.ob .ob-body{padding:22px 0 8px;min-height:0}
+.ob .ob-foot{padding:18px 0 4px}
+.ob .ob-load{min-height:420px}
+.ob-pts li{border-radius:16px}
+@media (max-width:980px){
+  .ob .ob-body{padding:18px 0 4px}
+}
+@media (max-width:560px){.hide-sm{display:none}}
