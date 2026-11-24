@@ -61,7 +61,6 @@ test("результати за правильними: точність, пра
   await page.locator('.gh-game[data-code="222222"] .gh-name').click();
   await expect(page.locator("#m-res")).toHaveClass(/on/);
   await expect(page.locator("#res-sub .gh-mode")).toHaveText("За правильними");
-  await expect(page.locator("#res-sum .l").nth(1)).toHaveText(/сер\. правильних/i);
   const th = await page.locator("#res-body th").allTextContents();
   expect(th.join("|")).toMatch(/Точність/);
   expect(th.join("|")).toMatch(/Правильно/);
@@ -78,7 +77,6 @@ test("результати за балами: бали в останній ко�
   const th = (await page.locator("#res-body th").allTextContents()).join("|");
   expect(th).toMatch(/Бали/);
   expect(th).toMatch(/Правильно/);
-  await expect(page.locator("#res-sum .l").nth(1)).toHaveText(/середній бал/i);
   await expect(page.locator("#res-tabs")).toBeHidden();             // немає статистики по питаннях — вкладок немає
   expect(errors).toEqual([]);
 });
@@ -129,4 +127,15 @@ test.describe("телефон", () => {
     expect(over).toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
   });
+});
+
+test("оцінка за місцем: 12, 11, 10… без пропусків, однакове місце — однакова оцінка", async ({ page, errors }) => {
+  await seed(page, data(), "t1");
+  await page.goto("/game-history");
+  await ready(page);
+  await page.locator('.gh-game[data-code="222222"] .gh-name').click();   // 10,10,10,9,7,7,4,2,1 правильних
+  const grades = (await page.locator("#res-body .res-gr").allTextContents()).map(Number);
+  expect(grades).toEqual([12, 12, 12, 11, 10, 10, 9, 8, 7]);
+  await expect(page.locator("#gv, #gv-note, #res-sum, #res-spread")).toHaveCount(0);   // інших способів оцінки й підсумку немає
+  expect(errors).toEqual([]);
 });
