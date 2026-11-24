@@ -911,6 +911,16 @@ function togglePause() {
   });
 }
 
+// Скільки учасників відповіли правильно на кожне питання (для вкладки «Питання» в історії ігор)
+function questionStats(all, n) {
+  const plain = (h) => String(h ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim().slice(0, 90);
+  return questions.map((q, qi) => {
+    const a = all?.[qi] || {};
+    const c = Object.values(a).filter(x => x && x.isCorrect === true).length;
+    return { t: plain(q?.text), c, n };
+  });
+}
+
 async function saveHistory() {
   const snap = await get(ref(db, `rooms/${code}/answers`));
   const list = standings(players, snap.val() || {});
@@ -920,6 +930,7 @@ async function saveHistory() {
     playedAt, playerCount: list.length, questionCount: totalQ,
     scoring,
     results: list.map(p => ({ nickname: p.nickname, score: p.score, correct: p.correct })),
+    questionStats: questionStats(snap.val() || {}, list.length),
   });
   // Легкий запис для адмінки (без результатів гравців)
   set(ref(db, `gameLog/${uid}/${code}`), { p: playedAt, n: list.length, t: String(room.testTitle || "").slice(0, 120), q: totalQ || 0, id: room.testId || null }).catch(() => {});
