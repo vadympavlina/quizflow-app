@@ -164,44 +164,53 @@
 
 /* ── Модалка результатів ── */
 #m-res .mb{max-width:880px;padding:0;display:flex;flex-direction:column;max-height:92vh;overflow:hidden}
-.res-head{padding:20px 24px 16px;border-bottom:1px solid var(--qf-line);padding-right:64px;display:flex;align-items:center;gap:14px}
+.res-head{padding:22px 24px 18px;border-bottom:1px solid var(--qf-line);padding-right:64px;display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#F8FAFF,#fff)}
 .res-tt{min-width:0}
-.res-ico{flex:0 0 auto}
-.res-head h3{margin:0;font:800 19px 'Manrope',sans-serif;letter-spacing:-.015em;color:var(--qf-ink-900);overflow-wrap:anywhere}
-.res-head p{margin:5px 0 0;font-size:13px;color:var(--qf-ink-500);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.res-ico{flex:0 0 auto;width:48px;height:48px;border-radius:15px;display:grid;place-items:center}
+.res-ico.speed{background:#FEF3C7;color:#B45309}.res-ico.acc{background:#DCFCE7;color:#15803D}
+.res-head h3{margin:0;font:800 21px 'Manrope',sans-serif;letter-spacing:-.015em;color:var(--qf-ink-900);overflow-wrap:anywhere}
+.res-head p{margin:7px 0 0;font-size:13px;color:var(--qf-ink-500);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.res-head .chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--qf-line-soft);color:var(--qf-ink-700);font:600 12px 'Manrope',sans-serif}
+.res-head .chip.code{font-family:'Geist Mono',monospace}
 .res-head .mcl{position:absolute;top:18px;right:18px;float:none;margin:0}
-.res-tabs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 24px 0}
-.res-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 24px;border-bottom:1px solid var(--qf-line)}
+.res-tools .gh-search{flex:1 1 220px}
+.res-tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--qf-line);position:sticky;top:0;z-index:3;background:#fff}
+#rtab{display:flex;gap:26px;background:none;padding:0;border-radius:0}
+#rtab button{padding:14px 2px 13px;border-radius:0;font-size:13.5px;border-bottom:2px solid transparent;margin-bottom:-1px;background:none!important;box-shadow:none!important}
+#rtab button.on{color:var(--qf-primary);border-bottom-color:var(--qf-primary)}
+.res-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 24px;border-bottom:1px solid var(--qf-line)}
 .res-tools .gh-search{max-width:none}
 #res-csv{margin-left:auto}
-.res-count{font-size:12px;color:var(--qf-ink-400);white-space:nowrap}
+.res-count{font:600 12.5px 'Manrope',sans-serif;color:var(--qf-ink-500);white-space:nowrap}
 .res-scroll{overflow-y:auto;flex:1;min-height:0}
 .res-body{min-height:120px}
 .res-table{width:100%;border-collapse:separate;border-spacing:0;font-family:'Manrope',sans-serif}
 .res-table th{position:sticky;top:0;z-index:1;background:var(--qf-surface-3);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--qf-ink-400);text-align:left;padding:9px 12px;border-bottom:1px solid var(--qf-line)}
-.res-table td{padding:9px 12px;border-bottom:1px solid var(--qf-line-soft);font-size:14px;color:var(--qf-ink-700);vertical-align:middle}
+.res-table td{padding:11px 12px;border-bottom:1px solid var(--qf-line-soft);font-size:14px;color:var(--qf-ink-700);vertical-align:middle}
 .res-table tr:last-child td{border-bottom:0}
 .res-table tbody tr:hover td{background:#F7F9FC}
-.res-table.m-speed .r1 td{background:var(--qf-warn-bg)}.res-table.m-speed .r2 td{background:#F8FAFC}.res-table.m-speed .r3 td{background:#FFF7ED}
+.res-table .r1 td{background:#FFFBEB}.res-table .r2 td{background:#F8FAFC}.res-table .r3 td{background:#FFF7ED}
+.res-table .r1 td:first-child{box-shadow:inset 3px 0 0 #F59E0B}.res-table .r2 td:first-child{box-shadow:inset 3px 0 0 #9CA3AF}.res-table .r3 td:first-child{box-shadow:inset 3px 0 0 #EA580C}
+.res-table tbody tr:hover td{background:#F4F7FF}
 .res-table th:first-child,.res-table td:first-child{padding-left:24px;width:56px}
 .res-table th:last-child,.res-table td:last-child{padding-right:24px;text-align:right}
 .res-rank{font:700 13px 'Geist Mono',monospace;color:var(--qf-ink-400)}
-.res-rank .medal{width:24px;height:24px;font-size:12px}
+.res-rank .medal{width:26px;height:26px;font-size:12.5px}
 .res-who{display:flex;align-items:center;gap:10px;min-width:0}
-.res-av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font:700 11px 'Manrope',sans-serif;flex:0 0 auto}
-.res-nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.res-av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 11px 'Manrope',sans-serif;flex:0 0 auto}
+.res-nm{font-weight:700;color:var(--qf-ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
 .gv{display:inline-flex;gap:2px;padding:3px;background:var(--qf-line-soft);border-radius:10px}
 .gv button{border:0;background:transparent;font:700 12px 'Manrope',sans-serif;color:var(--qf-ink-500);padding:6px 11px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
 .gv button:hover{color:var(--qf-ink-700)}.gv button.on{background:#fff;color:var(--qf-primary);box-shadow:0 1px 3px rgba(20,30,70,.14)}
 .gv button:focus-visible{outline:2px solid var(--qf-primary);outline-offset:1px}
-.res-gr{display:inline-grid;place-items:center;min-width:34px;height:26px;padding:0 8px;border-radius:8px;font:800 13px 'Geist Mono',monospace}
+.res-gr{display:inline-grid;place-items:center;min-width:38px;height:30px;padding:0 9px;border-radius:10px;font:800 14px 'Geist Mono',monospace}
 .res-gr.t-hi{background:var(--qf-success-soft);color:#166534}.res-gr.t-mid{background:#DBEAFE;color:var(--qf-primary-hover)}.res-gr.t-lo{background:var(--qf-warn-soft);color:var(--qf-warn-dark)}.res-gr.t-no{background:var(--qf-danger-soft);color:#991B1B}
 .res-table th.c-gr,.res-table td.c-gr{text-align:center}
-.res-acc{display:flex;align-items:center;gap:8px;min-width:140px}
-.res-acc .bar{flex:1;height:6px;border-radius:3px;background:var(--qf-line-soft);overflow:hidden;max-width:110px}
+.res-acc{display:flex;align-items:center;gap:10px;min-width:150px}
+.res-acc .bar{flex:1;height:8px;border-radius:4px;background:var(--qf-line-soft);overflow:hidden;max-width:150px}
 .res-acc .bar i{display:block;height:100%;border-radius:3px}
 .res-acc .t{font:600 12px 'Geist Mono',monospace;color:var(--qf-ink-500);white-space:nowrap}
-.res-main{font:800 15px 'Geist Mono',monospace;letter-spacing:-.02em;white-space:nowrap}
+.res-main{font:800 16px 'Geist Mono',monospace;letter-spacing:-.02em;white-space:nowrap}
 .res-main.pts{color:var(--qf-blue-strong)}.res-main.ok{color:#15803D}
 .res-main small{font:600 12px 'Manrope',sans-serif;letter-spacing:0;color:var(--qf-ink-500);margin-left:3px}
 .res-more{display:block;margin:12px auto}
@@ -254,14 +263,14 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
   #sec-history .gh-toolbar .gh-seg{grid-column:1/-1}
   #sec-history .gh-toolbar .cd-wrap{min-width:0}
   #sec-history .gh-toolbar .cd-btn{width:100%}
-  .res-tools{flex-direction:column;align-items:stretch}
-  .res-tools .gh-search{flex:none;width:100%}
+  .res-tools .gh-search{flex:1 1 100%;max-width:none}
   .res-tools .gv{overflow-x:auto;scrollbar-width:none;max-width:100%}
-  .res-tools .gh-btn{align-self:flex-start}
   .res-count{white-space:normal}
 }
 @media (max-width:640px){
     .res-nm{max-width:34vw}
+  .res-ico{width:40px;height:40px;border-radius:12px}
+  .res-head{gap:12px}
   .res-table td,.res-table th{padding-left:8px;padding-right:8px}
   .res-table th:first-child,.res-table td:first-child{width:44px}
   .res-head p .dotsep{display:none}
@@ -360,7 +369,7 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
 <div class="mo" id="m-res" aria-labelledby="res-title"><div class="mb">
   <div class="res-head">
     <button class="mcl" onclick="closeM('m-res')" aria-label="Закрити">×</button>
-    <span class="mx-ico t-violet res-ico" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg></span>
+    <span class="res-ico" id="res-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg></span>
     <div class="res-tt"><h3 aria-level="2" id="res-title">Результати гри</h3>
     <p id="res-sub"></p></div>
   </div>
@@ -711,7 +720,8 @@ let resGame = null, resLimit = 200, resTab = "players", qOrder = "order";
 function openResults(g){
   resGame = g; resLimit = 200; resTab = "players"; qOrder = "order";
   $("res-title").textContent = g.title;
-  $("res-sub").innerHTML = `${modeBadge(g.mode)}<span>${esc(fmtDate(g.playedAt))}</span><span class="dotsep">·</span><span>код ${esc(g.code)}</span>${g.qc ? `<span class="dotsep">·</span><span>${g.qc} ${plural(g.qc, "питання", "питання", "питань")}</span>` : ""}`;
+  const ico = $("res-ico"); ico.className = "res-ico " + g.mode; ico.firstElementChild.innerHTML = g.mode === "acc" ? '<polyline points="20 6 9 17 4 12"/>' : '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>';
+  $("res-sub").innerHTML = `${modeBadge(g.mode)}<span class="chip">${esc(fmtDate(g.playedAt))}</span><span class="chip">${nPlayers(g.n)}</span>${g.qc ? `<span class="chip">${g.qc} ${plural(g.qc, "питання", "питання", "питань")}</span>` : ""}<span class="chip code">${esc(g.code)}</span>`;
   $("res-tabs").hidden = !g.qstats.length;
   $("res-search").value = "";
   syncTabs(); renderResults(); renderQs();
@@ -746,7 +756,7 @@ function renderResults(){
   const acc = g.mode === "acc";
   const q = $("res-search").value.trim().toLowerCase();
   const list = q ? g.results.filter(r => r.nickname.toLowerCase().includes(q)) : g.results;
-  $("res-count").textContent = q ? `${list.length} з ${g.results.length}` : "";
+  $("res-count").textContent = q ? `${list.length} з ${g.results.length}` : nPlayers(g.results.length);
   if (!list.length){ $("res-body").innerHTML = `<div class="res-none">${q ? "Нікого не знайдено" : "Немає результатів"}</div>`; return; }
   const shown = list.slice(0, resLimit);
   const hasC = g.results.some(r => r.correct != null);
@@ -757,7 +767,7 @@ function renderResults(){
   const rowHtml = r => {
     const pct = showBar && r.correct != null ? Math.round(r.correct / g.qc * 100) : null;
     const bar = pct == null ? `<span class="res-acc"><span class="t">—</span></span>`
-      : `<div class="res-acc"><span class="bar"><i style="width:${pct}%;background:${accCol(pct)}"></i></span><span class="t">${acc ? pct + "%" : r.correct + "/" + g.qc}</span></div>`;
+      : `<div class="res-acc"><span class="bar"><i style="width:${pct}%;background:${accCol(pct)}"></i></span><span class="t" style="color:${accCol(pct)}">${acc ? pct + "%" : r.correct + "/" + g.qc}</span></div>`;
     const main = acc ? `<span class="res-main ok">${r.correct ?? "—"}${g.qc ? `<small>/ ${g.qc}</small>` : ""}</span>` : `<span class="res-main pts">${fmt(r.score)}</span>`;
     return `<tr class="${r.rank <= 3 ? "r" + r.rank : ""}">
       <td>${r.rank <= 3 ? `<span class="res-rank">${medal(r.rank)}</span>` : `<span class="res-rank">${r.rank}</span>`}</td>
