@@ -256,7 +256,11 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
   #sec-history .gh-toolbar #cd-ghsort{grid-column:2}
   #sec-history .gh-toolbar .cd-wrap{min-width:0}
   #sec-history .gh-toolbar .cd-btn{width:100%}
-  .res-tools .gh-search{flex:1 1 100%;max-width:none}
+  .res-tools{flex-wrap:nowrap;gap:8px}
+  .res-tools .gh-search{flex:1 1 0;min-width:0;max-width:none}
+  #res-csv{margin-left:0;flex:0 0 auto;width:44px;height:44px;padding:0;justify-content:center}
+  #res-csv .lbl{display:none}
+  #res-count{display:none}
   .res-tools .gv{overflow-x:auto;scrollbar-width:none;max-width:100%}
   .res-count{white-space:normal}
 }
@@ -376,8 +380,8 @@ mark.hl{background:#FEF08A;color:inherit;border-radius:2px;padding:0 1px}
           <input id="res-search" type="search" placeholder="Знайти учасника…" autocomplete="off" aria-label="Знайти учасника">
         </label>
         <span class="res-count" id="res-count"></span>
-        <button class="gh-btn sm" id="res-csv" data-needs="export" type="button" title="Завантажити таблицю для Excel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
+        <button class="gh-btn sm" id="res-csv" data-needs="export" type="button" title="Завантажити таблицю для Excel" aria-label="Завантажити CSV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="lbl">CSV</span>
         </button>
       </div>
       <div class="res-body" id="res-body"></div>
