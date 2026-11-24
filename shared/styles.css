@@ -1504,3 +1504,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:not([
   body #sec-students .st-chips{ order:3; }
   body #sec-students .st-meta{ order:4; align-self:flex-end; }
 }
+
+/* ─── Лоадер на весь екран ───
+   Поки сторінка вантажиться, меню й верхня смуга не видно: лише фон і спінер, а потім усе з'являється разом.
+   Спінер виринає з невеликою затримкою, щоб швидкі переходи між сторінками не блимали. */
+html.has-sb #app-loader{ left:0 !important; top:0 !important; right:0 !important; bottom:0 !important; z-index:9999 !important; background:var(--frame) !important; }
+html.has-sb #app-loader::before{ display:none !important; }
+#app-loader > *{ opacity:0; animation:appLdrIn .3s ease .3s forwards !important; }
+#app-loader > :first-child{ animation:appSpin .8s linear infinite, appLdrIn .3s ease .3s forwards !important; }
+@keyframes appLdrIn{ to{ opacity:1; } }
+@media (prefers-reduced-motion:reduce){ #app-loader > *{ animation:none !important; opacity:1; } }
