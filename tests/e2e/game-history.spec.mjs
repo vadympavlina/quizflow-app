@@ -38,15 +38,13 @@ test("кожна гра показує свій режим і метрики в�
   expect(errors).toEqual([]);
 });
 
-test("показники над списком і фільтр за режимом", async ({ page, errors }) => {
+test("фільтр за режимом", async ({ page, errors }) => {
   await seed(page, data(), "t1");
   await page.goto("/game-history");
   await ready(page);
-  await expect(page.locator(".gh-kpi")).toHaveCount(4);
-  await expect(page.locator(".gh-kpi").nth(0).locator(".v")).toHaveText("3");
+  await expect(page.locator(".gh-kpi")).toHaveCount(0);   // великих карток зі статистикою немає
   await page.locator('#mode [data-mode="speed"]').click();
   await expect(page.locator(".gh-game")).toHaveCount(1);
-  await expect(page.locator(".gh-kpi").nth(0).locator(".v")).toHaveText("1");
   await page.locator('#mode [data-mode="acc"]').click();
   await expect(page.locator(".gh-game")).toHaveCount(2);
   await page.locator('#mode [data-mode="all"]').click();
