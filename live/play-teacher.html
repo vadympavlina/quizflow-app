@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=15">
+<link rel="modulepreload" href="live-core.js?v=16">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -105,6 +105,7 @@
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
   .tchip.truefalse{background:#CCFBF1;color:#115E59}
   .tchip.ordering{background:#E0E7FF;color:#3730A3}
+  .tchip.matching{background:#FCE7F3;color:#9D174D}
   .ans .letter svg{width:60%;height:60%}
   .kchip b svg{width:1em;height:1em;vertical-align:-.12em}
   .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:700;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
@@ -154,6 +155,41 @@
   @media (min-width:1600px){.answers.ord.list.many .ans .letter{width:46px !important;height:46px !important;font-size:20px !important;border-radius:12px !important}}
   .answers.ord.list.many .ans .count{display:flex;align-items:baseline;gap:6px;padding:2px 10px;font-size:clamp(16px,1.6vw,24px)}
   .answers.ord.list.many .ans .count small{display:inline;margin:0}
+  /* Зіставлення: під час питання — два стовпчики (пункти й відповіді), після розкриття — рядки «пункт → відповідь» з часткою класу */
+  .answers.mt2{grid-template-columns:1fr 1fr !important;column-gap:28px}
+  .answers.mt2 > .ans:last-child:nth-child(odd){grid-column:auto;width:auto;justify-self:stretch}
+  .answers.mt2 .ans{background:linear-gradient(180deg,#fff,#EEF1FB);color:#14195A}
+  .answers.mt2 .ans .letter{background:#E4E8FA;color:#3730A3;border-color:#C9D0F2}
+  .answers.mt2 .ans.r .letter{background:#FCE7F3;color:#9D174D;border-color:#F5C2DD}
+  .answers.mt3{grid-template-columns:1fr !important}
+  .answers.mt3 > .ans:last-child:nth-child(odd){grid-column:auto;width:auto;justify-self:stretch}
+  .ans.mrow{background:linear-gradient(180deg,#ECFDF5,#D1FAE5);color:#14195A;box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #10B981}
+  .ans.mrow.warn{background:linear-gradient(180deg,#FFFBEB,#FEF3C7);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #F59E0B}
+  .ans.mrow .letter{background:#10B981;color:#fff;border-color:#10B981}.ans.mrow.warn .letter{background:#F59E0B;border-color:#F59E0B}
+  .ans.mrow .arr{color:#047857;display:grid;place-items:center;flex:0 0 auto}.ans.mrow.warn .arr{color:#B45309}
+  .ans.mrow .txt.r{font-weight:900}
+  .ans.mrow .fill{background:rgba(16,185,129,.2)}.ans.mrow.warn .fill{background:rgba(245,158,11,.25)}
+  .ans.mrow .count{background:rgba(20,25,90,.08);border-color:rgba(20,25,90,.12);color:#14195A;text-align:right;line-height:1.1}
+  .ans.mrow .count small{display:block;margin:2px 0 0;font:700 11px Manrope,sans-serif;opacity:.7;letter-spacing:0}
+  .answers.mt3 .ans .txt{hyphens:manual}
+  @media (max-width:700px){
+    /* вузький екран: пункт над відповіддю, процент праворуч — слова не ламаються посеред */
+    .answers.mt3 .ans.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"l a c" "l b c";column-gap:12px;row-gap:0;align-items:center;padding:8px 12px}
+    .answers.mt3 .ans.mrow .letter{grid-area:l}
+    .answers.mt3 .ans.mrow .txt{grid-area:a;line-height:1.2}
+    .answers.mt3 .ans.mrow .txt.r{grid-area:b;color:#047857}
+    .answers.mt3 .ans.mrow.warn .txt.r{color:#B45309}
+    .answers.mt3 .ans.mrow .arr{display:none}
+    .answers.mt3 .ans.mrow .count{grid-area:c}
+    .answers.mt3 .ans.mrow .count small{display:none !important}
+  }
+  .answers.mt3.many{gap:8px}
+  .answers.mt3.many .ans{padding:4px 14px;gap:14px;border-radius:14px}
+  .answers.mt3.many .ans .letter{width:30px !important;height:30px !important;font-size:15px !important;border-radius:9px !important}
+  .answers.mt3.many .ans .arr svg{width:20px;height:20px}
+  .answers.mt3.many .ans .count{display:flex;align-items:baseline;gap:6px;padding:2px 10px;font-size:clamp(16px,1.6vw,24px)}
+  .answers.mt3.many .ans .count small{display:inline;margin:0}
+  @media (min-width:1600px){.answers.mt3.many .ans .letter{width:46px !important;height:46px !important;font-size:20px !important;border-radius:12px !important}}
   .ans.ord.good{background:linear-gradient(180deg,#ECFDF5,#D1FAE5);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #10B981}
   .ans.ord.warn{background:linear-gradient(180deg,#FFFBEB,#FEF3C7);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #F59E0B}
   .ans.ord.good .letter{background:#10B981;color:#fff;border-color:#10B981}
@@ -372,7 +408,7 @@ import {
   OPT_CLASSES, OPT_LETTERS, optMark, TYPE_LABELS, isFreeform, checkCorrect, orderList, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=15";
+} from "./live-core.js?v=16";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -595,7 +631,10 @@ function renderQuestion(qi) {
   $("text-wait-hint").hidden = !free;
   const grid = $("answers-grid");
   grid.hidden = free;
-  grid.innerHTML = free ? "" : (q.options || []).map((o, i) =>
+  const mt = q.type === "matching", mtL = mt ? (q.lefts || []) : [];
+  grid.innerHTML = free ? "" : mt ? mtL.map((l, i) => `<div class="ans"><span class="letter">${i + 1}</span><span class="txt">${esc(l)}</span></div>
+      <div class="ans r"><span class="letter">${OPT_LETTERS[i]}</span><span class="txt">${esc((q.options || [])[i] ?? "")}</span></div>`).join("")
+  : (q.options || []).map((o, i) =>
     `<div class="ans ${q.type === "ordering" ? "ord" : (q.type === "truefalse" ? ["d", "a"][i] : OPT_CLASSES[i]) || "a"}" data-i="${i}">
       <span class="fill"></span>
       <span class="letter">${optMark(q.type, i)}</span>
@@ -606,6 +645,7 @@ function renderQuestion(qi) {
   grid.style.gridTemplateColumns = "";   // завжди дві колонки — однаково для коротких і довгих варіантів
   grid.classList.toggle("many", (q.options || []).length >= 5);
   grid.classList.toggle("ord", q.type === "ordering");
+  grid.classList.toggle("mt2", mt); grid.classList.remove("mt3");
   grid.classList.remove("list");
   renderAnswered();
   refit();
@@ -674,6 +714,8 @@ function renderReveal() {
 
   if (q.type === "ordering") {
     renderOrderingReveal(q, qi, entries, n);
+  } else if (q.type === "matching") {
+    renderMatchingReveal(q, qi, entries, n);
   } else if (!isFreeform(q)) {
     const correct = asIndexList(keyFor(qi));
     const counts = (q.options || []).map(() => 0);
@@ -729,6 +771,38 @@ function renderOrderingReveal(q, qi, entries, n) {
   placed.forEach((c, k) => { if (n && c < n && (worst < 0 || c < placed[worst])) worst = k; });
   $("key-line").innerHTML = `<span class="kchip v"><span>Повністю правильно: <b>${allRight} з ${n}</b></span></span>`
     + (worst >= 0 ? `<span class="kchip v"><span>Найчастіша помилка: <b>${worst + 1}-те місце</b></span></span>` : "");
+  $("key-line").style.display = "";
+  $("reveal-grid").classList.add("no-grading");
+}
+
+// Зіставлення: рядки «пункт → правильна відповідь»; біля кожного — яка частка класу зіставила цю пару вірно
+const MT_ARROW = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
+function renderMatchingReveal(q, qi, entries, n) {
+  const want = orderList(keyFor(qi)), lefts = q.lefts || [], opts = q.options || [];
+  const placed = want.map(() => 0);
+  let allRight = 0;
+  entries.forEach(a => {
+    const got = orderList(a.value);
+    got.forEach((v, k) => { if (want[k] === v) placed[k]++; });
+    if (got.length === want.length && got.every((v, k) => v === want[k])) allRight++;
+  });
+  const grid = $("answers-grid");
+  grid.classList.remove("mt2"); grid.classList.add("mt3", "list");
+  grid.innerHTML = lefts.map((l, i) => {
+    const pct = n ? Math.round(placed[i] / n * 100) : 0;
+    return `<div class="ans mrow${pct >= 60 ? "" : " warn"}">
+      <span class="fill" style="width:${pct}%"></span>
+      <span class="letter">${i + 1}</span>
+      <span class="txt">${esc(l)}</span>
+      <span class="arr">${MT_ARROW}</span>
+      <span class="txt r">${esc(opts[want[i]] ?? "")}</span>
+      <span class="count">${pct}%<small>вірно зіставили</small></span>
+    </div>`;
+  }).join("");
+  let worst = -1;
+  placed.forEach((c, k) => { if (n && c < n && (worst < 0 || c < placed[worst])) worst = k; });
+  $("key-line").innerHTML = `<span class="kchip v"><span>Повністю правильно: <b>${allRight} з ${n}</b></span></span>`
+    + (worst >= 0 ? `<span class="kchip v"><span>Найчастіша помилка: <b>${esc(lefts[worst] ?? "")}</b></span></span>` : "");
   $("key-line").style.display = "";
   $("reveal-grid").classList.add("no-grading");
 }
