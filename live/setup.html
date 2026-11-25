@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=15">
+<link rel="modulepreload" href="live-core.js?v=16">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -245,8 +245,8 @@
 <script type="module">
 import { PLAY_HOME,
   db, ref, get, update, requireTeacher, requirePerm, readParams, fatal, toast, safeStore,
-  THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, ORDER_MAX, isLiveQuestion, shuffleOrdering, pageUrl, esc, plural, pickCount, confirmDlg,
-} from "./live-core.js?v=15";
+  THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, ORDER_MAX, isLiveQuestion, shuffleOrdering, shuffleMatching, pageUrl, esc, plural, pickCount, confirmDlg,
+} from "./live-core.js?v=16";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -318,13 +318,14 @@ const IN_GAME = ["question", "paused", "reveal"];
 const testData = testSnap.val();
 const allQ = Array.isArray(testData.questions) ? testData.questions : Object.values(testData.questions || {});
 // Впорядкування: у кімнату йдуть перемішані пункти (options), правильна послідовність (correct) — лише в ключ викладача
-const questions = allQ.filter(isLiveQuestion).map((q, i) => q.type === "ordering" ? { ...q, ...shuffleOrdering(q, `${testId}:${q.id || i}:${Date.now()}`) } : q);
+const questions = allQ.filter(isLiveQuestion).map((q, i) => q.type === "ordering" ? { ...q, ...shuffleOrdering(q, `${testId}:${q.id || i}:${Date.now()}`) }
+  : q.type === "matching" ? { ...q, ...shuffleMatching(q, `${testId}:${q.id || i}:${Date.now()}`) } : q);
 const excluded = allQ.length - questions.length;
 
 $("quiz-name").classList.remove("lv-skel");
 $("quiz-name").textContent = testData.title || "Без назви";
 document.title = `${testData.title || "Гра"} · Налаштування · QuizFlow Live`;
-const TYPE_SHORT = { single:"одна правильна", multi:"кілька правильних", truefalse:"правда / неправда", ordering:"порядок", text:"текст", number:"число" };
+const TYPE_SHORT = { single:"одна правильна", multi:"кілька правильних", truefalse:"правда / неправда", ordering:"порядок", matching:"зіставлення", text:"текст", number:"число" };
 const byType = {};
 questions.forEach(q => { const t = q.type || "single"; byType[t] = (byType[t] || 0) + 1; });
 $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(questions.length, "питання", "питання", "питань")}</span>` +
@@ -332,7 +333,7 @@ $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(
 const brokenMulti = questions.filter(q => q.type === "multi" && pickCount(q.correct) === 0).length;
 if (excluded) {
   $("excluded-note").hidden = false;
-  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру — типи «розгорнута відповідь» і «відповідність», а також впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів не підтримуються в live-режимі.`;
+  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру — не підтримуються в live-режимі: розгорнута відповідь; впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів; зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з різними варіантами відповідей.`;
 }
 if (brokenMulti) {
   const n = document.createElement("div"); n.className = "lv-notice";
@@ -483,7 +484,7 @@ async function createRoom() {
         options: { shuffle: !!state.shuffle, shuffleQ: !!state.shuffleQ, podium: !!state.podium },
         // У публічну кімнату — лише текст і варіанти. Ні відповідей, ні навіть
         // КІЛЬКОСТІ правильних (інакше її видно в DevTools).
-        questions: list.map(q => ({ id: q.id || "", type: q.type || "single", text: q.text || "", options: q.options || null })),
+        questions: list.map(q => ({ id: q.id || "", type: q.type || "single", text: q.text || "", options: q.options || null, lefts: q.type === "matching" ? q.lefts : null })),
         testTitle: testData.title || "",
         qCount: list.length,          // сторінці входу учня не треба тягнути всі питання
         createdAt: now,

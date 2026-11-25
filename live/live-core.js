@@ -226,7 +226,7 @@ export function applyTheme(theme, gradEl, patEl) {
 }
 
 // ─── Питання й оцінювання ──────────────────────────────────────────────
-export const LIVE_TYPES = ["single", "multi", "truefalse", "ordering", "text", "number"];
+export const LIVE_TYPES = ["single", "multi", "truefalse", "ordering", "matching", "text", "number"];
 // Скільки пунктів у впорядкуванні вміщується на телефоні й на проєкторі
 export const ORDER_MAX = 6;
 export const OPT_CLASSES = ["a","b","c","d","e","f"];
@@ -238,6 +238,7 @@ export const TYPE_LABELS = {
   multi:  { cls:"multi",  label:"Кілька правильних відповідей" },
   truefalse: { cls:"truefalse", label:"Правда чи неправда" },
   ordering: { cls:"ordering", label:"Розставте за порядком" },
+  matching: { cls:"matching", label:"Зіставте пари" },
   text:   { cls:"text",   label:"Впишіть відповідь" },
   number: { cls:"number", label:"Введіть число" },
 };
@@ -247,6 +248,7 @@ const TYPE_ICONS = {
   multi:  '<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><path d="M5.3 7.3l1.6 1.6 2.4-3"/><rect x="13" y="13" width="7.5" height="7.5" rx="2"/><path d="M14.8 16.8l1.6 1.6 2.4-3"/><path d="M14 6.5h6.5M3.5 17h6.5"/>',
   truefalse: '<path d="M3.5 8.5l3.2 3.2L11.5 5"/><path d="M14 14l6.5 6.5M20.5 14L14 20.5"/>',
   ordering: '<path d="M3 6h12M3 12h9M3 18h6M18 8V20M15 17l3 3 3-3"/>',
+  matching: '<circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7h10M7 17h10"/>',
   text:   '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
   number: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
 };
@@ -307,8 +309,36 @@ export function orderList(v) {
 }
 // Пункти впорядкування з питання: без порожніх, не більше ORDER_MAX і не менше двох
 export const orderItems = (q) => (Array.isArray(q?.items) ? q.items : Object.values(q?.items || {})).map(x => String(x ?? "").trim()).filter(Boolean);
+// Зіставлення в грі: від 2 до ORDER_MAX пар, у всіх пар один і той самий список відповідей, без зайвих і без повторів.
+// Повертає { lefts, rights, correct } або null (тоді питання в гру не входить).
+export function matchingSpec(q) {
+  const pairs = Array.isArray(q?.pairs) ? q.pairs : Object.values(q?.pairs || {});
+  if (pairs.length < 2 || pairs.length > ORDER_MAX) return null;
+  const lefts = pairs.map(p => String(p?.left ?? "").trim());
+  if (lefts.some(x => !x)) return null;
+  const opt = (p) => (Array.isArray(p?.options) ? p.options : Object.values(p?.options || {})).map(x => String(x ?? "").trim());
+  const rights = opt(pairs[0]);
+  if (rights.length !== pairs.length || rights.some(x => !x) || new Set(rights).size !== rights.length) return null;
+  if (!pairs.every(p => { const o = opt(p); return o.length === rights.length && o.every((v, i) => v === rights[i]); })) return null;
+  const correct = pairs.map(p => Number(p?.correct));
+  if (correct.some(c => !Number.isInteger(c) || c < 0 || c >= rights.length) || new Set(correct).size !== correct.length) return null;
+  return { lefts, rights, correct };
+}
 export const isLiveQuestion = (q) => !!q && LIVE_TYPES.includes(q.type || "single")
-  && (q.type !== "ordering" || (orderItems(q).length >= 2 && orderItems(q).length <= ORDER_MAX));
+  && (q.type !== "ordering" || (orderItems(q).length >= 2 && orderItems(q).length <= ORDER_MAX))
+  && (q.type !== "matching" || !!matchingSpec(q));
+// У кімнату йдуть пункти (lefts) і перемішані відповіді (options); correct[i] — номер відповіді з options для пункту i (лише в ключі викладача).
+// Перемішування ніколи не лишає пари «навпроти»: першому пункту не відповідає перша відповідь і т. д.
+export function shuffleMatching(q, seedStr) {
+  const { lefts, rights, correct } = matchingSpec(q), n = rights.length;
+  const build = (perm) => ({ lefts, options: perm.map(j => rights[j]), correct: correct.map(c => perm.indexOf(c)) });
+  const same = (r) => r.correct.every((v, i) => v === i);
+  let r = build(seededOrder(n, seedStr));
+  for (let t = 1; t < 24 && same(r); t++) r = build(seededOrder(n, `${seedStr}#${t}`));
+  if (same(r)) { const perm = Array.from({ length: n }, (_, i) => (i + 1) % n); r = build(perm); }
+  return r;
+}
+
 // У публічну кімнату йдуть пункти в перемішаному порядку (options), а правильна послідовність — лише в ключі викладача:
 // correct[k] = номер пункту з options, який має стояти на місці k. Перемішане ніколи не збігається з правильним.
 export function shuffleOrdering(q, seedStr) {
@@ -331,6 +361,7 @@ export function checkCorrect(q, correct, value) {
       const want = asIndexList(correct), got = asIndexList(value);
       return want.length > 0 && got.length === want.length && got.every((v, i) => v === want[i]);
     }
+    case "matching":
     case "ordering": {
       const want = orderList(correct), got = orderList(value);
       return want.length >= 2 && got.length === want.length && got.every((v, i) => v === want[i]);
