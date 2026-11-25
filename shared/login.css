@@ -55,7 +55,11 @@ body.lg{
 .big-ic{border-radius:16px}
 .resume-v{text-align:left;padding:0}.resume-v .big-ic{margin:0 0 18px}
 
-.foot{padding:0 56px 30px;font-size:13px;line-height:1.5;color:var(--faint)}
+.foot{padding:0 56px 12px;font-size:13px;line-height:1.5;color:var(--faint)}
+.legal{display:flex;flex-wrap:wrap;gap:4px 18px;padding:0 56px 30px;font-size:13px;line-height:1.5}
+.legal a{color:var(--faint);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(138,148,176,.5)}
+.legal a:hover{color:var(--ink,#0D1340)}
+.legal a:focus-visible{outline:2px solid #2D5BE3;outline-offset:3px;border-radius:3px}
 
 /* ── Вузькі екрани: лише форма, без лівої панелі ── */
 @media (max-width:980px){
@@ -66,7 +70,8 @@ body.lg{
   .stage{align-items:flex-start;padding:44px 22px 24px}
   .panel{max-width:440px;margin:0 auto}
   .panel h2{font-size:32px}
-  .foot{padding:0 22px 26px;text-align:center}
+  .foot{padding:0 22px 10px;text-align:center}
+  .legal{padding:0 22px 26px;justify-content:center}
 }
 @media (prefers-reduced-motion:reduce){.panel,.mascot.in{animation:none}.mascot.in{opacity:1}}
 
