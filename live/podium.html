@@ -146,6 +146,7 @@
   /* На великому екрані (проєктор) кнопки лягають на плакат, тому коли ними не користуються — тануть і не заважають */
   @media (min-width:801px){.acts{transition:opacity .45s ease}.acts.idle{opacity:0;pointer-events:none}}
   @media (prefers-reduced-motion:reduce){.acts{transition:none}}
+  .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   .gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:#0F1844;color:#fff}
   .gate button{font:inherit;color:inherit;display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 46px;border:0;border-radius:26px;background:rgba(255,255,255,.1);cursor:pointer;max-width:100%}
   .gate button:hover{background:rgba(255,255,255,.16)}.gate button:focus-visible{outline:3px solid #fff;outline-offset:4px}
@@ -219,7 +220,7 @@ const PAL = {
 };
 // тип, x, y, розмір, колір, глибина (паралакс), обертання, {w}
 const SHAPES = {
-  3: [["c", -120, 560, 520, "a", .5, 0], ["r", 1250, -160, 380, "b", .8, .02, { w: 16 }], ["p", 1640, 640, 90, "b", 1.1, .05], ["t", 860, 600, 120, "c", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1760, 330, 60, "b", 1.6, 0], ["p", 60, 70, 64, "c", 1.2, -.04], ["r", 1000, 690, 110, "a", 1.5, -.03, { w: 10 }]],
+  3: [["c", -120, 560, 520, "a", .5, 0], ["r", 1250, -260, 380, "b", .8, .02, { w: 16 }], ["p", 1640, 640, 90, "b", 1.1, .05], ["t", 860, 600, 120, "c", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1760, 330, 60, "b", 1.6, 0], ["p", 60, 70, 64, "c", 1.2, -.04], ["r", 1000, 690, 110, "a", 1.5, -.03, { w: 10 }]],
   2: [["c", 1450, -100, 460, "a", .5, 0], ["r", -140, 520, 420, "b", .8, -.02, { w: 16 }], ["p", 1100, 70, 80, "b", 1.1, .05], ["t", 1780, 620, 130, "c", 1.3, -.04], ["d", 620, 660, 240, "a", .4, 0], ["c", 860, 700, 70, "b", 1.6, 0], ["p", 1690, 380, 60, "c", 1.2, .04], ["r", 600, -40, 120, "c", 1.4, .03, { w: 10 }]],
   1: [["c", 1380, -90, 520, "b", .5, 0], ["r", -150, 540, 430, "a", .8, .02, { w: 16 }], ["p", 1690, 610, 100, "c", 1.1, .05], ["t", 900, 640, 120, "a", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1790, 300, 64, "a", 1.6, 0], ["p", 70, 80, 70, "c", 1.2, -.04], ["r", 1060, 70, 120, "c", 1.5, -.03, { w: 10 }]],
 };
@@ -278,6 +279,7 @@ TL = timeline();
 $("app").innerHTML = `<div class="T land" id="T" data-phase="init">
   <div class="bgs" id="bgs"></div>
   <div class="stage" id="stage"></div>
+  <h1 class="sr">${esc(title)}: підсумки гри. ${list.length ? esc(`${groups[1].length > 1 ? "Переможці" : "Переможець"}: ${alpha(groups[1]).map(p => p.nickname).join(", ")}.`) : "У грі не було учасників."}</h1>
   <section class="credits" id="credits" tabindex="-1" aria-label="Підсумки гри"></section>
   <div id="flash"></div><div class="vig"></div><div class="grain" id="grain"></div>
   <div class="acts">
@@ -419,6 +421,7 @@ function render(t) {
     const op = vis ? fin : 0;
     o.el.style.visibility = vis ? "visible" : "hidden"; o.el.style.opacity = op; o.bg.style.opacity = op;
     if (!vis) return;
+    o.ci.style.opacity = o.win ? 1 - P(t, TL.cred - 400, TL.cred) : 1;     // перед титрами текст переможця гасне, а не просвічує крізь них
     o.el.style.transform = out > 0 ? `scale(${1 + out * .04})` : "none"; o.el.style.filter = out > 0 ? `blur(${out * 8}px)` : "none";
     o.shapes.forEach((e2, k) => { const [, , , , , dp, sp] = o.spec[k]; e2.style.transform = `translate(${-mx * 30 * dp + Math.sin(t / (2200 + k * 300) + k) * 10 * dp}px,${-my * 16 * dp + Math.cos(t / (2600 + k * 250) + k) * 8 * dp}px) rotate(${t * sp * .05 + k * 20}deg) scale(${.7 + .3 * eO(P(rel, k * 50, k * 50 + 900))})`; e2.style.opacity = eO(P(rel, k * 50, k * 50 + 800)); });
     o.ghost.style.opacity = eO(P(rel, 0, 900)); o.ghost.style.transform = `translate(${-mx * 14 + (1 - eO(P(rel, 0, 1400))) * -60}px,${-my * 8}px)`;
@@ -462,7 +465,7 @@ function render(t) {
   }
   $("grain").style.transform = `translate(${(t / 42 | 0) % 7 * -11}px,${(t / 42 | 0) % 5 * -8}px)`;
   stage.style.opacity = eO(P(t, 0, 350));
-  $("skip-btn").hidden = !(playing && t < TL.cred - 300);
+  const skipOn = playing && t < TL.cred - 300; if ($("skip-btn").hidden === skipOn) $("skip-btn").hidden = !skipOn;
 }
 function loop() {
   if (!playing) return;
@@ -516,14 +519,16 @@ function schedule() {
     crRows.slice(0, 8).forEach((_, k) => SND.ping(base + 250 + k * 90, F[k % F.length], .028));
   }
 }
-const silence = () => { try { if (SND.ctx && SND.bus) { SND.bus.gain.cancelScheduledValues(SND.ctx.currentTime); SND.bus.gain.setTargetAtTime(0, SND.ctx.currentTime, .04); } } catch {} };
-const unsilence = () => { try { if (SND.ctx && SND.bus) { SND.bus.gain.cancelScheduledValues(SND.ctx.currentTime); SND.bus.gain.setValueAtTime(0, SND.ctx.currentTime); SND.bus.gain.setTargetAtTime(.8, SND.ctx.currentTime + .05, .02); } } catch {} };
+// Кожен показ звучить через власну шину: «Пропустити» чи повтор гасять її разом з усіма вже запланованими нотами
+let baseBus = null, runBus = null;
+const silence = () => { try { if (runBus && SND.ctx) { const g = runBus; g.gain.cancelScheduledValues(SND.ctx.currentTime); g.gain.setTargetAtTime(0, SND.ctx.currentTime, .03); setTimeout(() => { try { g.disconnect(); } catch {} }, 400); runBus = null; if (baseBus) SND.bus = baseBus; } } catch {} };
+const freshBus = () => { try { if (!SND.ctx || !SND.bus) return; baseBus ||= SND.bus; runBus = SND.ctx.createGain(); runBus.gain.value = 1; runBus.connect(baseBus); SND.bus = runBus; } catch {} };
 
 // ── Запуск ──
 function run() {
   silence();
   if (reduced() || !list.length) { staticEnd(); return; }
-  unsilence();
+  freshBus();
   t0 = now(); playing = true;
   schedule();
   requestAnimationFrame(loop);

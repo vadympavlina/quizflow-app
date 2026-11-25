@@ -139,6 +139,31 @@ test("фінал: довгі імена вміщаються, великий к�
   expect(errors).toEqual([]);
 });
 
+test("фінал: один і двоє гравців, без аватара — ініціали; вертикальна й горизонтальна розкладки перемикаються на ходу", async ({ page, errors }) => {
+  const mk = (names, pts) => {
+    const players = Object.fromEntries(names.map((n, i) => ["p" + i, { nickname: n }]));
+    const answers = { 0: Object.fromEntries(names.map((n, i) => ["p" + i, { value: 0, isCorrect: true, points: pts[i] }])) };
+    return dbWith({ status: "finished", scoring: "speed", testTitle: "Тест", hostUid: "t1", questions: Q, players, answers, options: { podium: true } });
+  };
+  await seed(page, mk(["Єдиний"], [500]), "t1");
+  await page.goto("/live/podium?code=12345678");
+  await expect(page.locator(".card")).toHaveCount(1);
+  await expect(page.locator(".card.win .lab")).toHaveText("Переможець");
+  await expect(page.locator(".card.win .disc .ini")).toHaveText("ЄД");            // без аватара — ініціали на кольоровому тлі
+  await seed(page, mk(["Аня", "Ігор"], [800, 400]), "t1");
+  await page.goto("/live/podium?code=12345678");
+  await expect(page.locator(".card")).toHaveCount(2);
+  await expect(page.locator('.card[data-rank="2"] .lab')).toHaveText("Друге місце");
+  // зміна розміру вікна посеред показу не ламає сторінку
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.locator("#T")).toHaveClass(/land/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator("#T")).toHaveClass(/port/);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.locator("#T")).toHaveClass(/land/);
+  expect(errors).toEqual([]);
+});
+
 test("фінал: церемонія йде сама, клік по екрану її не переривав, «Пропустити» і «Показати ще раз» працюють", async ({ page, errors }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await seed(page, dbWith(room("speed")), "t1");
