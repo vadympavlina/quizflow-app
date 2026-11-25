@@ -14,7 +14,7 @@ const dbOk = () => {
     rooms: { "12345678": { status: "finished", scoring: "speed", testTitle: "Географія", hostUid: "t1", questions: Q, players, answers, options: { podium: true } } } };
 };
 const countOsc = () => { window.__osc = 0; const P = (window.BaseAudioContext || window.AudioContext).prototype, o = P.createOscillator; P.createOscillator = function () { window.__osc++; return o.apply(this, arguments); }; };
-const running = page => page.evaluate(() => document.getAnimations().filter(a => a.playState === "running").length);
+const phase = page => page.evaluate(() => document.getElementById("T")?.dataset.phase);
 const open = async page => { await page.addInitScript(countOsc); await seed(page, dbOk(), "t1"); };
 const URL = "/live/podium?code=12345678";
 
@@ -25,11 +25,11 @@ test("звук заблоковано: замість мовчазної цер�
   await expect(gate).toBeVisible();
   await expect(gate).toBeFocused();
   await page.waitForTimeout(1500);
-  expect(await running(page), "церемонія ще не стартувала").toBe(0);
+  expect(await phase(page), "церемонія ще не стартувала").toBe("init");
   expect(await page.evaluate(() => window.__osc), "звуку ще немає").toBe(0);
   await gate.click();
   await expect(page.locator(".gate")).toHaveCount(0);
-  await expect.poll(() => running(page), { timeout: 4000 }).toBeGreaterThan(0);
+  await expect.poll(() => phase(page), { timeout: 4000 }).toBe("cards");
   await page.waitForTimeout(1500);
   expect(await page.evaluate(() => window.__osc), "після дотику звук пішов").toBeGreaterThan(0);
   expect(errors).toEqual([]);
@@ -50,7 +50,7 @@ test("звук заблоковано, але вимкнений самим ко
   await open(page);
   await page.evaluate(() => localStorage.setItem("qf_snd", "0"));
   await page.goto(URL);
-  await expect.poll(() => running(page), { timeout: 4000 }).toBeGreaterThan(0);
+  await expect.poll(() => phase(page), { timeout: 4000 }).toBe("cards");
   await expect(page.locator(".gate")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
@@ -61,6 +61,8 @@ test("звук заблоковано, але в системі «зменшит
   await page.goto(URL);
   await page.waitForTimeout(1500);
   await expect(page.locator(".gate")).toHaveCount(0);
-  await expect(page.locator(".p.w .nm")).toBeVisible();
+  await expect(page.locator("#credits")).toBeVisible();
+  await expect(page.locator("#cr-top li").first()).toContainText("Марія");
+  expect(await phase(page), "без руху одразу підсумок").toBe("credits");
   expect(errors).toEqual([]);
 });

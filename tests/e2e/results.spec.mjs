@@ -12,15 +12,17 @@ const room = (scoring, tie) => {
 };
 const dbWith = r => ({ users: { t1: { role: "teacher" } }, teachers: { t1: { liveRooms: { "12345678": { key: {} } } } }, rooms: { "12345678": r } });
 
-test("фінал: переможець, пʼєдестал і список; імена екрануються", async ({ page, errors }) => {
+test("фінал: картки місць, переможець і список; імена екрануються", async ({ page, errors }) => {
   await seed(page, dbWith(room("speed")), "t1");
   await page.goto("/live/podium?code=12345678");
   await page.waitForTimeout(500);
-  await expect(page.locator(".p.w .nm")).toContainText("Марія");
-  await expect(page.locator(".p.w .nm b")).toHaveCount(0);        // розмітка в імені не виконується
-  await expect(page.locator(".p.s2")).toContainText("Катя");
-  await expect(page.locator(".p.s3")).toContainText("Олег");
-  await expect(page.locator("#rows .row")).toHaveCount(2);
+  await expect(page.locator(".card.win .name")).toContainText("Марія");
+  await expect(page.locator(".card.win .lab")).toHaveText("Переможець");
+  await expect(page.locator(".card.win b")).toHaveCount(0);                 // розмітка в імені не виконується
+  await expect(page.locator('.card[data-rank="2"] .name')).toContainText("Катя");
+  await expect(page.locator('.card[data-rank="3"] .name')).toContainText("Олег");
+  await expect(page.locator("#cr-rest li")).toHaveCount(2);                // решта списку: 4-те й 5-те місця
+  await expect(page.locator("#cr-top li")).toHaveCount(3);
   await expect(page.locator("#end-btn")).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -29,9 +31,10 @@ test("фінал: нічия показується разом, «Точніст
   await seed(page, dbWith(room("correct", true)), "t1");
   await page.goto("/live/podium?code=12345678");
   await page.waitForTimeout(500);
-  await expect(page.locator(".p.w .tie")).toContainText("Ділять 1-е місце · 2 гравці");
-  await expect(page.locator(".p.w .nm")).toHaveCount(2);
-  await expect(page.locator(".p.w")).not.toContainText("балів");
+  await expect(page.locator(".card.win .lab")).toContainText("Ділять 1-е місце · 2 гравці");
+  await expect(page.locator(".card.win .name .ln")).toHaveCount(2);
+  await expect(page.locator(".card.win .score")).not.toContainText("балів");
+  await expect(page.locator(".card.win .score")).toContainText("правильних у кожного");
   expect(errors).toEqual([]);
 });
 
@@ -40,8 +43,10 @@ test("фінал: без пʼєдесталу — заголовок і всі �
   await seed(page, dbWith(r), "t1");
   await page.goto("/live/podium?code=12345678");
   await page.waitForTimeout(400);
-  await expect(page.locator(".p.w .nm")).toContainText("Географія");
-  await expect(page.locator("#rows .row")).toHaveCount(5);
+  await expect(page.locator(".card")).toHaveCount(0);
+  await expect(page.locator("#credits")).toBeVisible();
+  await expect(page.locator(".cr-title")).toContainText("Географія");
+  await expect(page.locator("#cr-rest li")).toHaveCount(5);
   const e = { ...room("speed"), players: {}, answers: {} };
   await seed(page, dbWith(e), "t1");
   await page.goto("/live/podium?code=12345678");
@@ -79,55 +84,87 @@ test("фінал: кнопки зверху справа ховаються, к�
 });
 
 
-test("фінал: усі, хто ділить місце, видно по імені (без «+N»), мітка з номером місця, імена екрануються", async ({ page, errors }) => {
+test("фінал: усі, хто ділить місце, видно по імені (без «+N»), мітка з номером місця, імена екрануються й не вилазять", async ({ page, errors }) => {
   const names = Array.from({ length: 12 }, (_, i) => i === 0 ? "Хакер <img src=x onerror=alert(1)>" : "Учень " + String(i).padStart(2, "0"));
   const players = Object.fromEntries(names.map((n, i) => ["p" + i, { nickname: n }]));
   // місця щільні: 3 гравці на 1-му (900), 7 на 2-му (500), 2 на 3-му (300)
   const pts = [900, 900, 900, 500, 500, 500, 500, 500, 500, 500, 300, 300];
   const answers = { 0: Object.fromEntries(names.map((n, i) => ["p" + i, { value: 0, isCorrect: true, points: pts[i] }])) };
   const r = { status: "finished", scoring: "speed", testTitle: "Тест", hostUid: "t1", questions: Q, players, answers, options: { podium: true } };
+  // кадр церемонії можна зафіксувати параметром t (мс): без руху й звуку
+  const frame = async (t) => { await page.goto("/live/podium?code=12345678&t=" + t); await page.waitForSelector("#T[data-frozen]"); };
+  // межі тексту: імена не вилазять за свою половину картки і не налазять на рахунок
+  const fits = (sel) => page.evaluate((sel) => { const c = document.querySelector(sel), n = c.querySelector(".name").getBoundingClientRect(), ru = c.querySelector(".rule").getBoundingClientRect(), m = c.querySelector(".medgrp, .med")?.getBoundingClientRect(); return { bottom: n.bottom <= ru.top + 2, side: !m || n.right <= m.left + 2 }; }, sel);
   await seed(page, dbWith(r), "t1");
   await page.goto("/live/podium?code=12345678");
-  await page.waitForTimeout(500);
-  await expect(page.locator(".p.w .tie")).toContainText("Ділять 1-е місце · 3 гравці");
-  await expect(page.locator(".p.w .nm")).toHaveCount(3);
-  await expect(page.locator(".p.w")).toContainText("по");
+  await page.waitForTimeout(400);
+  await expect(page.locator(".card.win .lab")).toContainText("Переможці · Ділять 1-е місце · 3 гравці");
+  await expect(page.locator(".card.win .name .ln")).toHaveCount(3);
+  await expect(page.locator(".card.win .score")).toContainText("у кожного");
   expect(await page.locator("img[src='x']").count()).toBe(0);               // розмітка в імені не виконується
-  // другу й третю панелі теж ділять: усі 7 і 2 гравці видно, мітка з правильним числівником
-  await expect(page.locator(".p.s2 .tie")).toContainText("Ділять 2-е місце · 7 гравців");
-  await expect(page.locator(".p.s2 .nm")).toHaveCount(7);
-  await expect(page.locator(".p.s3 .tie")).toContainText("Ділять 3-є місце · 2 гравці");
-  await expect(page.locator(".p.s3 .nm")).toHaveCount(2);
-  // усі однакові: 12 на першому місці — видно кожного, без підсумку «+N»
+  await expect(page.locator('.card[data-rank="2"] .lab')).toContainText("Ділять 2-е місце · 7 гравців");
+  await expect(page.locator('.card[data-rank="2"] .name .ln')).toHaveCount(7);
+  await expect(page.locator('.card[data-rank="3"] .lab')).toContainText("Ділять 3-є місце · 2 гравці");
+  await expect(page.locator('.card[data-rank="3"] .name .ln')).toHaveCount(2);
+  await frame(5800); expect(await fits('.card[data-rank="2"]')).toEqual({ bottom: true, side: true });
+  await frame(10500); expect(await fits(".card.win")).toEqual({ bottom: true, side: true });
+  // усі однакові: 12 на першому місці — видно кожного, без підсумку «+N» у іменах
   const all = { ...r, answers: { 0: Object.fromEntries(names.map((n, i) => ["p" + i, { value: 0, isCorrect: true, points: 500 }])) } };
   await seed(page, dbWith(all), "t1");
   await page.goto("/live/podium?code=12345678");
-  await page.waitForTimeout(500);
-  await expect(page.locator(".p.w .nm")).toHaveCount(12);
-  await expect(page.locator(".p.w")).not.toContainText("+");
-  expect(await page.evaluate(() => { const t = document.querySelector(".p.w .tied"); return t.scrollWidth <= t.clientWidth + 2; }), "імена не вилазять вбік").toBe(true);
+  await page.waitForTimeout(400);
+  await expect(page.locator(".card.win .name .ln")).toHaveCount(12);
+  await expect(page.locator(".card.win .name")).not.toContainText("+");
+  await expect(page.locator(".card")).toHaveCount(1);                       // усі на першому місці — лише одна картка
+  await frame(4500); expect(await fits(".card.win")).toEqual({ bottom: true, side: true });
   expect(errors).toEqual([]);
 });
 
-test("фінал: клік мишкою не переривав анімацію (її не можна скасувати випадково), «Показати ще раз» запускає знову", async ({ page, errors }) => {
+test("фінал: довгі імена вміщаються, великий клас не ламає розкладку; на телефоні немає горизонтального скролу", async ({ page, errors }) => {
+  const names = ["Олександра-Вікторія Святославівна Мельниченко-Коваленко", "Ян", "Богдан Хмельницький Молодший"];
+  const players = Object.fromEntries(names.map((n, i) => ["p" + i, { nickname: n, avatar: i ? "fox" : "lion" }]));
+  const pts = [900, 700, 500];
+  const answers = { 0: Object.fromEntries(names.map((n, i) => ["p" + i, { value: 0, isCorrect: true, points: pts[i] }])) };
+  const r = { status: "finished", scoring: "speed", testTitle: "Тест", hostUid: "t1", questions: Q, players, answers, options: { podium: true } };
+  await seed(page, dbWith(r), "t1");
+  for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 820, height: 1180 }]) {
+    await page.setViewportSize(vp);
+    for (const t of [2500, 5500, 9500, 15000]) {
+      await page.goto("/live/podium?code=12345678&t=" + t); await page.waitForSelector("#T[data-frozen]");
+      const inside = await page.evaluate(() => { const W = innerWidth; return [...document.querySelectorAll(".card:not([style*='hidden']) .name, .credits.on .cr-top .n")].every(e => { const b = e.getBoundingClientRect(); return b.left >= -2 && b.right <= W + 2; }); });
+      expect(inside, `${vp.width}×${vp.height} t=${t}: текст у межах екрана`).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${vp.width}: без горизонтального скролу`).toBe(true);
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
+test("фінал: церемонія йде сама, клік по екрану її не переривав, «Пропустити» і «Показати ще раз» працюють", async ({ page, errors }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await seed(page, dbWith(room("speed")), "t1");
   await page.goto("/live/podium?code=12345678");
-  const running = () => page.evaluate(() => document.getAnimations().filter(a => a.playState === "running").length);
-  await expect.poll(running, { message: "анімація стартує", timeout: 4000 }).toBeGreaterThan(0);
-  // кліки по різних місцях екрана, у тому числі по самому плакату
+  const phase = () => page.evaluate(() => document.getElementById("T")?.dataset.phase);
+  await expect.poll(phase, { message: "церемонія стартує з карток", timeout: 4000 }).toBe("cards");
+  await expect(page.locator("#skip-btn")).toBeVisible();
+  // кліки по різних місцях екрана, у тому числі по самій картці
   for (const [x, y] of [[300, 300], [900, 200], [640, 700], [1100, 500]]) { await page.mouse.click(x, y); await page.waitForTimeout(60); }
-  expect(await running(), "після кліків анімація досі йде").toBeGreaterThan(0);
-  // сама доходить до кінця
-  await page.waitForTimeout(9000);
-  expect(await running()).toBe(0);
-  await expect(page.locator(".p.w .nm")).toBeVisible();
+  expect(await phase(), "після кліків церемонія досі йде").toBe("cards");
+  // проходить пауза «І переможець…», потім сам переможець, потім титри
+  await expect.poll(phase, { timeout: 9000 }).toBe("tension");
+  await expect.poll(phase, { timeout: 4000 }).toBe("win");
+  await expect.poll(phase, { timeout: 8000 }).toBe("credits");
+  await expect(page.locator("#credits")).toBeVisible();
+  await expect(page.locator("#skip-btn")).toBeHidden();
   // повторний показ запускається кнопкою
   await page.mouse.move(700, 300); await page.mouse.move(720, 310);   // кнопки ховаються, коли ними не користуються; рух миші повертає
   await page.waitForTimeout(600);
   await page.locator("#replay-btn").click();
-  await page.waitForTimeout(300);
-  expect(await running()).toBeGreaterThan(0);
+  await expect.poll(phase, { timeout: 2000 }).toBe("cards");
+  // «Пропустити» одразу веде до титрів
+  await page.mouse.move(710, 310);
+  await page.locator("#skip-btn").click();
+  await expect.poll(phase, { timeout: 2000 }).toBe("credits");
+  await expect(page.locator("#cr-top li").first()).toContainText("Марія");
   expect(errors).toEqual([]);
 });
 
