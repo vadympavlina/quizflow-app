@@ -345,6 +345,24 @@
     .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .reveal-grid .panel:not(.grading){flex:0 1 auto;min-height:0}
     .stage.revealed:not(:has(.reveal-grid:not(.no-grading))) .reveal-grid .leaders{flex:0 1 auto}
   }
+  /* Впорядкування й зіставлення: рядки ніколи не стискаються до смужок. Не вмістилось — екран прокручується (а не обрізає пункти) */
+  .answers.mt2,.answers.mt3,.answers.ord.list{flex:0 0 auto !important;height:auto !important;grid-auto-rows:minmax(44px,auto) !important;align-content:start !important}
+  .answers.mt3.many,.answers.ord.list.many{grid-auto-rows:minmax(34px,auto) !important}
+  .answers.mt2.many{grid-auto-rows:minmax(40px,auto) !important}
+  .answers.mt2.many .ans{padding:4px 16px;gap:14px;border-radius:14px}
+  .answers.mt2.many .ans .letter{width:32px !important;height:32px !important;font-size:15px !important;border-radius:9px !important}
+  @media (max-height:760px){
+    .answers.mt2 .ans{padding:4px 16px;gap:14px;border-radius:14px}
+    .answers.mt2 .ans .letter{width:34px !important;height:34px !important;font-size:16px !important;border-radius:10px !important}
+    .answers.mt2{row-gap:10px}
+  }
+  @media (min-width:1600px) and (min-height:900px){
+    .answers.mt2.many .ans .letter{width:46px !important;height:46px !important;font-size:20px !important;border-radius:12px !important}
+  }
+  @media (min-width: 1101px){
+    .stage.revealed:has(.answers.list){overflow-y:auto}
+    .stage.revealed:has(.answers.list):not(:has(.reveal-grid:not(.no-grading))){grid-template-rows:minmax(0,1fr) auto auto auto auto auto minmax(0,1fr)}
+  }
 </style>
 <style id="no-zoom">/* iOS збільшує сторінку, якщо в полі вводу шрифт менше 16px; тут цього не буває */@media (pointer:coarse){input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}html{touch-action:manipulation;-webkit-text-size-adjust:100%}}</style>
 </head>
