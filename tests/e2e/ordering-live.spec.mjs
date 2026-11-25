@@ -79,3 +79,17 @@ test("підготовка гри: впорядкування з понад 6 п
   await expect(page.locator("#excluded-note")).toContainText("понад 6 пунктів");
   expect(errors).toEqual([]);
 });
+
+test("екран викладача, розкриття 6 пунктів на 1024×640: рядки не стискаються до смужок", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1024, height: 640 });
+  const d = db("reveal");
+  d.rooms["12345678"].questions = [{ type: "ordering", text: "Розташуйте події в хронологічному порядку", options: ["Підписання Переяславської ради між Військом Запорозьким і Московським царством", "Хрещення Русі", "Битва під Крутами", "Проголошення незалежності України 24 серпня", "Чорнобильська катастрофа", "Помаранчева революція"] }];
+  d.rooms["12345678"].answers = { 0: { p1: { value: [1, 2, 0, 3, 5, 4], answeredAt: now() - 1000, isCorrect: true, points: 900 } } };
+  d.teachers.t1.liveRooms["12345678"].key = { 0: [1, 2, 0, 3, 5, 4] };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  await expect(page.locator("#answers-grid .ans")).toHaveCount(6);
+  const h = await page.evaluate(() => [...document.querySelectorAll("#answers-grid .ans")].map(x => x.getBoundingClientRect().height));
+  expect(Math.min(...h)).toBeGreaterThanOrEqual(34);
+  expect(errors).toEqual([]);
+});

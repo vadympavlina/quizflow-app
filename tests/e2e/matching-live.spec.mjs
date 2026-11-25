@@ -81,3 +81,36 @@ test("підготовка гри: зіставлення з 7 парами, з 
   await expect(page.locator("#excluded-note")).toContainText("різними варіантами відповідей");
   expect(errors).toEqual([]);
 });
+
+test("екран викладача, 6 довгих пар на 1280×720: усі рядки видно повністю, рядки не стискаються до смужок", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const lefts = ["Переяславська рада", "Хрещення Русі", "Битва під Крутами", "Незалежність України", "Чорнобильська катастрофа", "Помаранчева революція"];
+  const options = ["1654 рік, союз із Московським царством", "988 рік", "1918 рік", "1991 рік, референдум 1 грудня", "1986 рік", "2004 рік"];
+  const d = db("question");
+  d.rooms["12345678"].questions = [{ type: "matching", text: "Зіставте історичні події з їхніми датами та коротким описом наслідків", lefts, options }];
+  d.rooms["12345678"].answers = {};
+  d.teachers.t1.liveRooms["12345678"].key = { 0: [0, 1, 2, 3, 4, 5] };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  const tiles = page.locator("#answers-grid .ans");
+  await expect(tiles).toHaveCount(12);
+  const g = await page.evaluate(() => { const t = [...document.querySelectorAll("#answers-grid .ans")], st = document.querySelector("#stage").getBoundingClientRect(), last = t[t.length - 1].getBoundingClientRect();
+    return { minH: Math.min(...t.map(x => x.getBoundingClientRect().height)), lastBottom: last.bottom, stageBottom: st.bottom }; });
+  expect(g.minH).toBeGreaterThanOrEqual(34);
+  expect(g.lastBottom).toBeLessThanOrEqual(g.stageBottom + 1);
+  expect(errors).toEqual([]);
+});
+
+test("екран викладача, розкриття 6 пар на 1024×640: рядки не обрізаються, екран прокручується", async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1024, height: 640 });
+  const d = db("reveal");
+  d.rooms["12345678"].questions = [{ type: "matching", text: "Зіставте історичні події з їхніми датами", lefts: ["А", "Б", "В", "Г", "Ґ", "Д"], options: ["1", "2", "3", "4", "5", "6"] }];
+  d.rooms["12345678"].answers = { 0: { p1: { value: [0, 1, 2, 3, 4, 5], answeredAt: now() - 1000, isCorrect: true, points: 900 } } };
+  d.teachers.t1.liveRooms["12345678"].key = { 0: [0, 1, 2, 3, 4, 5] };
+  await seed(page, d, "t1");
+  await page.goto("/live/play-teacher?code=12345678");
+  await expect(page.locator("#answers-grid .ans")).toHaveCount(6);
+  const h = await page.evaluate(() => [...document.querySelectorAll("#answers-grid .ans")].map(x => x.getBoundingClientRect().height));
+  expect(Math.min(...h)).toBeGreaterThanOrEqual(34);
+  expect(errors).toEqual([]);
+});
