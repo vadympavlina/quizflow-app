@@ -226,7 +226,7 @@ export function applyTheme(theme, gradEl, patEl) {
 }
 
 // ─── Питання й оцінювання ──────────────────────────────────────────────
-export const LIVE_TYPES = ["single", "multi", "text", "number"];
+export const LIVE_TYPES = ["single", "multi", "truefalse", "text", "number"];
 export const OPT_CLASSES = ["a","b","c","d","e","f"];
 export const OPT_LETTERS = ["A","B","C","D","E","F"];
 export const isFreeform = (q) => q?.type === "text" || q?.type === "number";
@@ -234,6 +234,7 @@ export const isFreeform = (q) => q?.type === "text" || q?.type === "number";
 export const TYPE_LABELS = {
   single: { cls:"single", label:"Одна правильна відповідь" },
   multi:  { cls:"multi",  label:"Кілька правильних відповідей" },
+  truefalse: { cls:"truefalse", label:"Правда чи неправда" },
   text:   { cls:"text",   label:"Впишіть відповідь" },
   number: { cls:"number", label:"Введіть число" },
 };
@@ -241,9 +242,14 @@ export const TYPE_LABELS = {
 const TYPE_ICONS = {
   single: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none"/>',
   multi:  '<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><path d="M5.3 7.3l1.6 1.6 2.4-3"/><rect x="13" y="13" width="7.5" height="7.5" rx="2"/><path d="M14.8 16.8l1.6 1.6 2.4-3"/><path d="M14 6.5h6.5M3.5 17h6.5"/>',
+  truefalse: '<path d="M3.5 8.5l3.2 3.2L11.5 5"/><path d="M14 14l6.5 6.5M20.5 14L14 20.5"/>',
   text:   '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
   number: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
 };
+// Позначка варіанта: буква, а в «Правда / Неправда» — значок ✓ чи ✕ (не лише колір)
+export const optMark = (type, i) => type === "truefalse"
+  ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${i === 0 ? '<path d="M20 6L9 17l-5-5"/>' : '<path d="M18 6L6 18M6 6l12 12"/>'}</svg>`
+  : OPT_LETTERS[i];
 // Виразний ярлик типу питання: значок + підпис. Стилі .tchip — у сторінках гри.
 export const typeChip = (type, extraCls = "") => {
   const t = TYPE_LABELS[type] || TYPE_LABELS.single;

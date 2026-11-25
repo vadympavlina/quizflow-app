@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=13">
+<link rel="modulepreload" href="live-core.js?v=14">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -103,6 +103,9 @@
   .tchip.multi{background:#D1FAE5;color:#065F46}
   .tchip.text{background:#FEF3C7;color:#78350F}
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
+  .tchip.truefalse{background:#CCFBF1;color:#115E59}
+  .ans .letter svg{width:60%;height:60%}
+  .kchip b svg{width:1em;height:1em;vertical-align:-.12em}
   .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:700;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
   .question-text b,.question-text strong{font-weight:900}
   .question-text.small{font-weight:600;line-height:1.28;letter-spacing:-.015em}
@@ -344,10 +347,10 @@ const VOL_IC = {vol0:"<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill
 import {
   db, ref, get, set, update, onValue, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, applyTheme, serverNow, watchFields, safeStore, HOME_URL,
-  OPT_CLASSES, OPT_LETTERS, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
+  OPT_CLASSES, OPT_LETTERS, optMark, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=13";
+} from "./live-core.js?v=14";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -571,9 +574,9 @@ function renderQuestion(qi) {
   const grid = $("answers-grid");
   grid.hidden = free;
   grid.innerHTML = free ? "" : (q.options || []).map((o, i) =>
-    `<div class="ans ${OPT_CLASSES[i] || "a"}" data-i="${i}">
+    `<div class="ans ${(q.type === "truefalse" ? ["d", "a"][i] : OPT_CLASSES[i]) || "a"}" data-i="${i}">
       <span class="fill"></span>
-      <span class="letter">${OPT_LETTERS[i]}</span>
+      <span class="letter">${optMark(q.type, i)}</span>
       <span class="txt">${esc(o)}</span>
       <span class="count">0</span>
     </div>`).join("");
@@ -660,7 +663,7 @@ function renderReveal() {
     // Правильні відповіді одним рядком: «Правильна відповідь» або «Правильні відповіді»
     $("key-line").innerHTML = correct.length
       ? `<span class="kl">${correct.length === 1 ? "Правильна відповідь" : "Правильні відповіді"}</span>` + correct.map(i =>
-          `<span class="kchip"><b>${OPT_LETTERS[i]}</b><span>${esc(q.options?.[i] ?? "")}</span></span>`).join("")
+          `<span class="kchip"><b>${optMark(q.type, i)}</b><span>${esc(q.options?.[i] ?? "")}</span></span>`).join("")
       : "";
     // Довгу правильну відповідь повторювати рядком під варіантами не треба: вона вже підсвічена, а місце потрібне варіантам
     $("key-line").style.display = correct.some(i => String(q.options?.[i] ?? "").length > 60) ? "none" : "";
