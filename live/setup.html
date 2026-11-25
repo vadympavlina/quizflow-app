@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=16">
+<link rel="modulepreload" href="live-core.js?v=17">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -246,7 +246,7 @@
 import { PLAY_HOME,
   db, ref, get, update, requireTeacher, requirePerm, readParams, fatal, toast, safeStore,
   THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, ORDER_MAX, isLiveQuestion, shuffleOrdering, shuffleMatching, pageUrl, esc, plural, pickCount, confirmDlg,
-} from "./live-core.js?v=16";
+} from "./live-core.js?v=17";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -333,7 +333,7 @@ $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(
 const brokenMulti = questions.filter(q => q.type === "multi" && pickCount(q.correct) === 0).length;
 if (excluded) {
   $("excluded-note").hidden = false;
-  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру. У live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з різними варіантами відповідей.`;
+  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру. У live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`;
 }
 if (brokenMulti) {
   const n = document.createElement("div"); n.className = "lv-notice";

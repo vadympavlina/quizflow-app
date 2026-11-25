@@ -67,18 +67,40 @@ test("підготовка гри: відповіді перемішані бе�
   expect(errors).toEqual([]);
 });
 
-test("підготовка гри: зіставлення з 7 парами, з різними списками відповідей чи із зайвими відповідями не входить у гру", async ({ page, errors }) => {
-  const mk = (id, left, opts, n) => ({ id, type: "matching", text: id, pairs: Array.from({ length: n }, (_, i) => ({ left: left + i, options: opts, correct: i })) });
+test("підготовка гри: рукописне зіставлення з власними варіантами кожної пари входить у гру правильними відповідями", async ({ page, errors }) => {
+  // так створює конструктор: у кожної пари свій список варіантів і позначена правильна
+  const pairs = [
+    { left: "Франція", options: ["Рим", "Париж", "Берлін"], correct: 1 },
+    { left: "Італія", options: ["Рим", "Мадрид"], correct: 0 },
+    { left: "Польща", options: ["Варшава", "Прага", "Відень", "Київ"], correct: 0 },
+  ];
+  await seed(page, { users: { t1: { role: "teacher" } }, teachers: { t1: { tests: { T1: { title: "Столиці", questions: [{ id: "m1", type: "matching", text: "Зіставте", pairs }] } } } } }, "t1");
+  await page.goto("/live/setup?testId=T1");
+  await expect(page.locator("#type-chips")).toContainText("1 × зіставлення");
+  await expect(page.locator("#excluded-note")).toBeHidden();
+  await page.locator("#launch-btn").click();
+  await page.waitForURL(/lobby\?code=/);
+  const d = await readDb(page);
+  const code = Object.keys(d.rooms)[0], q = d.rooms[code].questions[0], key = d.teachers.t1.liveRooms[code].key[0];
+  expect(q.lefts).toEqual(["Франція", "Італія", "Польща"]);
+  expect([...q.options].sort()).toEqual(["Варшава", "Париж", "Рим"]);        // у банку лише правильні відповіді, без хибних варіантів
+  expect(key.map(i => q.options[i])).toEqual(["Париж", "Рим", "Варшава"]);
+  expect(key.every((v, i) => v === i)).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test("підготовка гри: 7 пар, однакова правильна відповідь у кількох пунктів чи неправильно позначена не входять у гру", async ({ page, errors }) => {
+  const mk = (id, n) => ({ id, type: "matching", text: id, pairs: Array.from({ length: n }, (_, i) => ({ left: "п" + i, options: ["a" + i, "b" + i], correct: 0 })) });
   await seed(page, { users: { t1: { role: "teacher" } }, teachers: { t1: { tests: { T1: { title: "Т", questions: [
-    mk("ok", "п", ["a", "b", "c"], 3),
-    mk("seven", "п", ["1", "2", "3", "4", "5", "6", "7"], 7),
-    mk("extra", "п", ["a", "b", "c", "d"], 3),
-    { id: "differ", type: "matching", text: "d", pairs: [{ left: "x", options: ["a", "b"], correct: 0 }, { left: "y", options: ["b", "a"], correct: 0 }] },
+    mk("ok", 3),
+    mk("seven", 7),
+    { id: "same", type: "matching", text: "same", pairs: [{ left: "x", options: ["k", "m"], correct: 0 }, { left: "y", options: ["n", "k"], correct: 1 }] },
+    { id: "bad", type: "matching", text: "bad", pairs: [{ left: "x", options: ["k", "m"], correct: 9 }, { left: "y", options: ["n", "p"], correct: 0 }] },
   ] } } } } }, "t1");
   await page.goto("/live/setup?testId=T1");
   await expect(page.locator("#type-chips")).toContainText("1 × зіставлення");
   await expect(page.locator("#excluded-note")).toContainText("3 питання не увійдуть");
-  await expect(page.locator("#excluded-note")).toContainText("різними варіантами відповідей");
+  await expect(page.locator("#excluded-note")).toContainText("однаковою правильною відповіддю");
   expect(errors).toEqual([]);
 });
 
