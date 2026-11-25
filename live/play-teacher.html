@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=14">
+<link rel="modulepreload" href="live-core.js?v=15">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -104,6 +104,7 @@
   .tchip.text{background:#FEF3C7;color:#78350F}
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
   .tchip.truefalse{background:#CCFBF1;color:#115E59}
+  .tchip.ordering{background:#E0E7FF;color:#3730A3}
   .ans .letter svg{width:60%;height:60%}
   .kchip b svg{width:1em;height:1em;vertical-align:-.12em}
   .question-text{text-align:center;font-size:clamp(30px,3.6vw,58px);font-weight:700;letter-spacing:-.025em;line-height:1.15;margin:0 auto 18px;max-width:1300px;flex:0 0 auto;text-shadow:0 4px 20px rgba(0,0,0,.35);overflow-wrap:anywhere}
@@ -141,6 +142,26 @@
   .ans.correct .letter{background:#fff;border-color:#fff;color:transparent;position:relative}
   .ans.correct .letter::after{content:"";position:absolute;inset:0;margin:auto;width:62%;height:62%;background:#059669;-webkit-mask:var(--chk) center/contain no-repeat;mask:var(--chk) center/contain no-repeat}
   .ans.dim{filter:saturate(.5) brightness(.72);transform:scale(.985)}
+  /* Впорядкування: світлі плитки; після розкриття — список у правильному порядку з часткою класу, що поставила пункт на своє місце */
+  .ans.ord{background:linear-gradient(180deg,#fff,#EEF1FB);color:#14195A;box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 1px 0 #fff}
+  .ans.ord .letter{background:#E4E8FA;color:#3730A3;border-color:#C9D0F2}
+  .answers.ord.list{grid-template-columns:1fr !important}
+  .answers.ord.list > .ans:last-child:nth-child(odd){width:auto;grid-column:auto;justify-self:stretch}
+  /* 5–6 пунктів: щільніші рядки, лічильник в один рядок, щоб усе вміщалося на невисокому екрані */
+  .answers.ord.list.many{gap:8px}
+  .answers.ord.list.many .ans{padding:4px 14px;gap:14px;border-radius:14px}
+  .answers.ord.list.many .ans .letter{width:30px !important;height:30px !important;font-size:15px !important;border-radius:9px !important}
+  @media (min-width:1600px){.answers.ord.list.many .ans .letter{width:46px !important;height:46px !important;font-size:20px !important;border-radius:12px !important}}
+  .answers.ord.list.many .ans .count{display:flex;align-items:baseline;gap:6px;padding:2px 10px;font-size:clamp(16px,1.6vw,24px)}
+  .answers.ord.list.many .ans .count small{display:inline;margin:0}
+  .ans.ord.good{background:linear-gradient(180deg,#ECFDF5,#D1FAE5);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #10B981}
+  .ans.ord.warn{background:linear-gradient(180deg,#FFFBEB,#FEF3C7);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 0 0 3px #F59E0B}
+  .ans.ord.good .letter{background:#10B981;color:#fff;border-color:#10B981}
+  .ans.ord.warn .letter{background:#F59E0B;color:#fff;border-color:#F59E0B}
+  .ans.ord .fill{background:rgba(16,185,129,.2)}
+  .ans.ord.warn .fill{background:rgba(245,158,11,.25)}
+  .ans.ord .count{background:rgba(20,25,90,.08);border-color:rgba(20,25,90,.12);color:#14195A;text-align:right;line-height:1.1}
+  .ans.ord .count small{display:block;margin:2px 0 0;font:700 11px Manrope,sans-serif;opacity:.7;letter-spacing:0}
   .ans.dim .count{opacity:1;background:rgba(0,0,0,.45)}
   .key-line{display:none;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 12px;margin:24px auto 0;max-width:1400px}
   .revealed .key-line{display:flex}
@@ -149,6 +170,7 @@
   .kchip b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#34D399;color:#064E3B;font:800 13px "Geist Mono",monospace;flex:0 0 auto}
   .kchip span{overflow-wrap:anywhere;line-height:1.25}
   .kchip.v{padding:6px 16px}
+  .kchip.v b{display:inline;width:auto;height:auto;border-radius:0;background:none;color:#A7F3D0;font:800 .92em "Geist Mono",monospace}
 
   .text-wait-hint{max-width:640px;margin:0 auto;text-align:center;padding:34px 32px;background:rgba(8,12,46,.84);border:2px solid rgba(255,255,255,.32);border-radius:22px;color:#E3E8FF;font-size:18px;font-weight:600;line-height:1.6;box-shadow:0 18px 40px -20px rgba(0,0,0,.65)}
   .text-wait-hint b{color:#fff}
@@ -347,10 +369,10 @@ const VOL_IC = {vol0:"<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill
 import {
   db, ref, get, set, update, onValue, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, applyTheme, serverNow, watchFields, safeStore, HOME_URL,
-  OPT_CLASSES, OPT_LETTERS, optMark, TYPE_LABELS, isFreeform, checkCorrect, calcPoints, LATE_GRACE_MS,
+  OPT_CLASSES, OPT_LETTERS, optMark, TYPE_LABELS, isFreeform, checkCorrect, orderList, calcPoints, LATE_GRACE_MS,
   standings, fmtNum, isActive, isOnline, asIndexList, fitText, fitGroup, onRefit,
   richHtml, confirmDlg, rankMap, typeChip, textAnswers,
-} from "./live-core.js?v=14";
+} from "./live-core.js?v=15";
 
 const $ = (id) => document.getElementById(id);
 const ICO_OK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`, ICO_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -574,7 +596,7 @@ function renderQuestion(qi) {
   const grid = $("answers-grid");
   grid.hidden = free;
   grid.innerHTML = free ? "" : (q.options || []).map((o, i) =>
-    `<div class="ans ${(q.type === "truefalse" ? ["d", "a"][i] : OPT_CLASSES[i]) || "a"}" data-i="${i}">
+    `<div class="ans ${q.type === "ordering" ? "ord" : (q.type === "truefalse" ? ["d", "a"][i] : OPT_CLASSES[i]) || "a"}" data-i="${i}">
       <span class="fill"></span>
       <span class="letter">${optMark(q.type, i)}</span>
       <span class="txt">${esc(o)}</span>
@@ -583,6 +605,8 @@ function renderQuestion(qi) {
   $("key-line").innerHTML = "";
   grid.style.gridTemplateColumns = "";   // завжди дві колонки — однаково для коротких і довгих варіантів
   grid.classList.toggle("many", (q.options || []).length >= 5);
+  grid.classList.toggle("ord", q.type === "ordering");
+  grid.classList.remove("list");
   renderAnswered();
   refit();
 }
@@ -648,7 +672,9 @@ function renderReveal() {
   const entries = Object.values(ans);
   const n = entries.length;
 
-  if (!isFreeform(q)) {
+  if (q.type === "ordering") {
+    renderOrderingReveal(q, qi, entries, n);
+  } else if (!isFreeform(q)) {
     const correct = asIndexList(keyFor(qi));
     const counts = (q.options || []).map(() => 0);
     entries.forEach(a => asIndexList(a.value).forEach(v => { if (counts[v] !== undefined) counts[v]++; }));
@@ -676,6 +702,35 @@ function renderReveal() {
   $("footer-acc").textContent = graded.length ? Math.round(graded.filter(a => a.isCorrect).length / graded.length * 100) + "%" : "—";
   renderLeaders();
   if (firstReveal) { refit(); trimLeaders(); }   // з'явились лічильники — місця для тексту менше
+}
+
+// Впорядкування: список у правильному порядку; біля кожного пункту — яка частка класу поставила його саме сюди
+function renderOrderingReveal(q, qi, entries, n) {
+  const want = orderList(keyFor(qi)), opts = q.options || [];
+  const placed = want.map(() => 0);
+  let allRight = 0;
+  entries.forEach(a => {
+    const got = orderList(a.value);
+    got.forEach((v, k) => { if (want[k] === v) placed[k]++; });
+    if (got.length === want.length && got.every((v, k) => v === want[k])) allRight++;
+  });
+  const grid = $("answers-grid");
+  grid.classList.add("list");
+  grid.innerHTML = want.map((idx, k) => {
+    const pct = n ? Math.round(placed[k] / n * 100) : 0;
+    return `<div class="ans ord ${pct >= 60 ? "good" : "warn"}" data-i="${idx}">
+      <span class="fill" style="width:${pct}%"></span>
+      <span class="letter">${k + 1}</span>
+      <span class="txt">${esc(opts[idx] ?? "")}</span>
+      <span class="count">${pct}%<small>на своєму місці</small></span>
+    </div>`;
+  }).join("");
+  let worst = -1;
+  placed.forEach((c, k) => { if (n && c < n && (worst < 0 || c < placed[worst])) worst = k; });
+  $("key-line").innerHTML = `<span class="kchip v"><span>Повністю правильно: <b>${allRight} з ${n}</b></span></span>`
+    + (worst >= 0 ? `<span class="kchip v"><span>Найчастіша помилка: <b>${worst + 1}-те місце</b></span></span>` : "");
+  $("key-line").style.display = "";
+  $("reveal-grid").classList.add("no-grading");
 }
 
 // Ручна перевірка текстових / числових відповідей. Групуємо за нормалізованим

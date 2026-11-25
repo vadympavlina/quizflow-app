@@ -226,7 +226,9 @@ export function applyTheme(theme, gradEl, patEl) {
 }
 
 // ─── Питання й оцінювання ──────────────────────────────────────────────
-export const LIVE_TYPES = ["single", "multi", "truefalse", "text", "number"];
+export const LIVE_TYPES = ["single", "multi", "truefalse", "ordering", "text", "number"];
+// Скільки пунктів у впорядкуванні вміщується на телефоні й на проєкторі
+export const ORDER_MAX = 6;
 export const OPT_CLASSES = ["a","b","c","d","e","f"];
 export const OPT_LETTERS = ["A","B","C","D","E","F"];
 export const isFreeform = (q) => q?.type === "text" || q?.type === "number";
@@ -235,6 +237,7 @@ export const TYPE_LABELS = {
   single: { cls:"single", label:"Одна правильна відповідь" },
   multi:  { cls:"multi",  label:"Кілька правильних відповідей" },
   truefalse: { cls:"truefalse", label:"Правда чи неправда" },
+  ordering: { cls:"ordering", label:"Розставте за порядком" },
   text:   { cls:"text",   label:"Впишіть відповідь" },
   number: { cls:"number", label:"Введіть число" },
 };
@@ -243,6 +246,7 @@ const TYPE_ICONS = {
   single: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none"/>',
   multi:  '<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><path d="M5.3 7.3l1.6 1.6 2.4-3"/><rect x="13" y="13" width="7.5" height="7.5" rx="2"/><path d="M14.8 16.8l1.6 1.6 2.4-3"/><path d="M14 6.5h6.5M3.5 17h6.5"/>',
   truefalse: '<path d="M3.5 8.5l3.2 3.2L11.5 5"/><path d="M14 14l6.5 6.5M20.5 14L14 20.5"/>',
+  ordering: '<path d="M3 6h12M3 12h9M3 18h6M18 8V20M15 17l3 3 3-3"/>',
   text:   '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
   number: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
 };
@@ -296,6 +300,24 @@ export function asIndexList(v) {
     .map(Number).filter(n => Number.isInteger(n) && n >= 0);
   return [...new Set(nums)].sort((a, b) => a - b);
 }
+// Порядок індексів зберігається як є (на відміну від asIndexList, що сортує): [2,0,1] ≠ [0,1,2]
+export function orderList(v) {
+  const raw = Array.isArray(v) ? v : v && typeof v === "object" ? Object.values(v) : [];
+  return raw.filter(x => typeof x !== "boolean" && x !== null && x !== "").map(Number).filter(n => Number.isInteger(n) && n >= 0);
+}
+// Пункти впорядкування з питання: без порожніх, не більше ORDER_MAX і не менше двох
+export const orderItems = (q) => (Array.isArray(q?.items) ? q.items : Object.values(q?.items || {})).map(x => String(x ?? "").trim()).filter(Boolean);
+export const isLiveQuestion = (q) => !!q && LIVE_TYPES.includes(q.type || "single")
+  && (q.type !== "ordering" || (orderItems(q).length >= 2 && orderItems(q).length <= ORDER_MAX));
+// У публічну кімнату йдуть пункти в перемішаному порядку (options), а правильна послідовність — лише в ключі викладача:
+// correct[k] = номер пункту з options, який має стояти на місці k. Перемішане ніколи не збігається з правильним.
+export function shuffleOrdering(q, seedStr) {
+  const items = orderItems(q), n = items.length;
+  let perm = seededOrder(n, seedStr);
+  for (let t = 1; t < 24 && perm.every((v, i) => v === i); t++) perm = seededOrder(n, `${seedStr}#${t}`);
+  if (perm.every((v, i) => v === i)) perm = perm.slice(1).concat(perm[0]);
+  return { options: perm.map(j => items[j]), correct: items.map((_, j) => perm.indexOf(j)) };
+}
 // Скільки варіантів має обрати учень (для підказки «Оберіть 2»)
 export const pickCount = (correct) => asIndexList(correct).length;
 
@@ -308,6 +330,10 @@ export function checkCorrect(q, correct, value) {
     case "multi": {
       const want = asIndexList(correct), got = asIndexList(value);
       return want.length > 0 && got.length === want.length && got.every((v, i) => v === want[i]);
+    }
+    case "ordering": {
+      const want = orderList(correct), got = orderList(value);
+      return want.length >= 2 && got.length === want.length && got.every((v, i) => v === want[i]);
     }
     case "number": { const c = toNum(correct), u = toNum(value); return !isNaN(c) && !isNaN(u) && Math.abs(c - u) < 1e-9; }
     case "text": {
