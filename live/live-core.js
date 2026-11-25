@@ -309,20 +309,22 @@ export function orderList(v) {
 }
 // Пункти впорядкування з питання: без порожніх, не більше ORDER_MAX і не менше двох
 export const orderItems = (q) => (Array.isArray(q?.items) ? q.items : Object.values(q?.items || {})).map(x => String(x ?? "").trim()).filter(Boolean);
-// Зіставлення в грі: від 2 до ORDER_MAX пар, у всіх пар один і той самий список відповідей, без зайвих і без повторів.
+// Зіставлення в грі: від 2 до ORDER_MAX пар. Кожна пара в конструкторі має власні варіанти й позначену правильну; у гру йдуть саме
+// правильні відповіді всіх пар (вони й стають «банком» відповідей), хибні варіанти окремих пар не потрібні.
+// Не підходить, якщо в двох пунктів однакова правильна відповідь (тоді в банку було б не відрізнити, кому яка).
 // Повертає { lefts, rights, correct } або null (тоді питання в гру не входить).
 export function matchingSpec(q) {
   const pairs = Array.isArray(q?.pairs) ? q.pairs : Object.values(q?.pairs || {});
   if (pairs.length < 2 || pairs.length > ORDER_MAX) return null;
   const lefts = pairs.map(p => String(p?.left ?? "").trim());
   if (lefts.some(x => !x)) return null;
-  const opt = (p) => (Array.isArray(p?.options) ? p.options : Object.values(p?.options || {})).map(x => String(x ?? "").trim());
-  const rights = opt(pairs[0]);
-  if (rights.length !== pairs.length || rights.some(x => !x) || new Set(rights).size !== rights.length) return null;
-  if (!pairs.every(p => { const o = opt(p); return o.length === rights.length && o.every((v, i) => v === rights[i]); })) return null;
-  const correct = pairs.map(p => Number(p?.correct));
-  if (correct.some(c => !Number.isInteger(c) || c < 0 || c >= rights.length) || new Set(correct).size !== correct.length) return null;
-  return { lefts, rights, correct };
+  const rights = pairs.map(p => {
+    const opts = Array.isArray(p?.options) ? p.options : Object.values(p?.options || {});
+    const c = Number(p?.correct);
+    return Number.isInteger(c) && c >= 0 && c < opts.length ? String(opts[c] ?? "").trim() : "";
+  });
+  if (rights.some(x => !x) || new Set(rights.map(x => x.toLowerCase())).size !== rights.length) return null;
+  return { lefts, rights, correct: rights.map((_, i) => i) };
 }
 export const isLiveQuestion = (q) => !!q && LIVE_TYPES.includes(q.type || "single")
   && (q.type !== "ordering" || (orderItems(q).length >= 2 && orderItems(q).length <= ORDER_MAX))
