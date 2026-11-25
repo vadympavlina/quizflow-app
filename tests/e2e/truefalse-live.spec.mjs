@@ -28,12 +28,12 @@ test("підготовка гри: питання «Правда / Неправ�
   const d = { users: { t1: { role: "teacher" } }, teachers: { t1: { tests: { T1: { title: "Тест", questions: [
     { id: "a", type: "truefalse", text: "Вода мокра", options: ["Правда", "Неправда"], correct: [0] },
     { id: "b", type: "single", text: "Столиця?", options: ["Київ", "Рим"], correct: [0] },
-    { id: "c", type: "ordering", text: "Порядок", items: ["1", "2", "3"] },
+    { id: "c", type: "matching", text: "Пари", pairs: [{ left: "а", options: ["б"], correct: 0 }] },
   ] } } } } };
   await seed(page, d, "t1");
   await page.goto("/live/setup?testId=T1");
   await expect(page.locator("#type-chips")).toContainText("правда / неправда");
-  await expect(page.locator("#type-chips")).toContainText("2 питання");        // одна відповідь і правда/неправда; впорядкування пропущено
+  await expect(page.locator("#type-chips")).toContainText("2 питання");        // одна відповідь і правда/неправда; відповідність пропущена
   await expect(page.locator("#excluded-note")).toContainText("1 питання не увійде");
   expect(errors).toEqual([]);
 });
