@@ -333,7 +333,7 @@ $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(
 const brokenMulti = questions.filter(q => q.type === "multi" && pickCount(q.correct) === 0).length;
 if (excluded) {
   $("excluded-note").hidden = false;
-  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру — не підтримуються в live-режимі: розгорнута відповідь; впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів; зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з різними варіантами відповідей.`;
+  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру. У live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з різними варіантами відповідей.`;
 }
 if (brokenMulti) {
   const n = document.createElement("div"); n.className = "lv-notice";
