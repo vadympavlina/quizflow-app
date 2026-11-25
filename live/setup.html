@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=13">
+<link rel="modulepreload" href="live-core.js?v=14">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -246,7 +246,7 @@
 import { PLAY_HOME,
   db, ref, get, update, requireTeacher, requirePerm, readParams, fatal, toast, safeStore,
   THEMES, PATTERNS, DEFAULT_THEME, applyTheme, LIVE_TYPES, pageUrl, esc, plural, pickCount, confirmDlg,
-} from "./live-core.js?v=13";
+} from "./live-core.js?v=14";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -323,7 +323,7 @@ const excluded = allQ.length - questions.length;
 $("quiz-name").classList.remove("lv-skel");
 $("quiz-name").textContent = testData.title || "Без назви";
 document.title = `${testData.title || "Гра"} · Налаштування · QuizFlow Live`;
-const TYPE_SHORT = { single:"одна правильна", multi:"кілька правильних", text:"текст", number:"число" };
+const TYPE_SHORT = { single:"одна правильна", multi:"кілька правильних", truefalse:"правда / неправда", text:"текст", number:"число" };
 const byType = {};
 questions.forEach(q => { const t = q.type || "single"; byType[t] = (byType[t] || 0) + 1; });
 $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(questions.length, "питання", "питання", "питань")}</span>` +
