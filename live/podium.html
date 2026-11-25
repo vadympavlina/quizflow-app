@@ -38,7 +38,7 @@
   [hidden]{display:none !important}
   *,*::before,*::after{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#1d36d6;overflow:hidden;height:100%}
-  body{font-family:Manrope,system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+  body{font-family:Manrope,system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased;font-kerning:normal;text-rendering:optimizeLegibility}
   .T{position:fixed;inset:0;overflow:hidden}
   /* ── Фони карток: на весь екран (поза масштабованою сценою), плавно змінюють один одного ── */
   .bgs,.bgc{position:absolute;inset:0}
@@ -67,9 +67,9 @@
   .ghost{position:absolute;font-weight:800;line-height:1;letter-spacing:-.07em;color:var(--ghost);white-space:nowrap;pointer-events:none}
   .land .ghost{left:-60px;top:-250px;font-size:1180px}
   .port .ghost{left:-120px;top:-120px;font-size:1100px}
-  .lab{position:absolute;font:500 30px/1.25 "Geist Mono",monospace;letter-spacing:.02em;opacity:.85}
+  .lab{position:absolute;font:600 32px/1.25 Manrope,system-ui,sans-serif;letter-spacing:.005em;opacity:.85}
   .land .lab{left:140px;top:150px;max-width:1000px}
-  .port .lab{left:60px;right:60px;top:110px;text-align:center;font-size:42px}
+  .port .lab{left:60px;right:60px;top:110px;text-align:center;font-size:44px}
   .name{position:absolute;line-height:1;font-weight:800;letter-spacing:-.045em}
   .land .name{left:140px;top:215px}
   .port .name{left:80px;right:80px;top:1060px;text-align:center}
@@ -84,10 +84,11 @@
   .score small{font:500 34px Manrope,system-ui,sans-serif;letter-spacing:0;opacity:.75;margin-left:16px}
   .land .score{left:140px;top:600px}
   .port .score{left:0;right:0;top:1510px;text-align:center;font-size:128px}
-  .port .score small{font-size:44px}
+  .port .score small{font-size:48px}
   .gap{position:absolute;font:600 30px/1.2 Manrope,system-ui,sans-serif;opacity:0}
   .land .gap{left:140px;top:722px}
-  .port .gap{left:60px;right:60px;top:1650px;text-align:center;font-size:36px}
+  .port .gap{left:60px;right:60px;top:1645px;text-align:center;font-size:42px}
+  .ts{display:inline-block;width:.2em}
   .halo{position:absolute;border-radius:50%;background:var(--halo)}
   .med{position:absolute;width:var(--d);height:var(--d)}
   .land .med{right:210px;top:50%;margin-top:calc(var(--d)/-2)}
@@ -113,11 +114,12 @@
   /* ── Титри: усі результати, адаптивні ── */
   .credits{position:absolute;inset:0;z-index:20;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;color:#fff;background:linear-gradient(135deg,#1e3be0,#4a2fe0);--u:min(calc(100vw / 1920),calc(100vh / 1080));scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.35) transparent}
   .credits.on{visibility:visible}
-  .credits .dec{position:fixed;pointer-events:none}
+  .credits .dec{position:absolute;pointer-events:none;display:block;z-index:0}
+  .cr-head,.cr-cols{position:relative;z-index:1}
   .cr-in{position:relative;min-height:100%;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:calc(30*var(--u));padding:calc(60*var(--u)) calc(130*var(--u)) calc(80*var(--u))}
   .cr-head{display:flex;flex-direction:column;gap:calc(8*var(--u))}
   .cr-title{font-weight:800;font-size:calc(48*var(--u));letter-spacing:-.035em;line-height:1.05;overflow-wrap:anywhere}
-  .cr-meta{font:500 calc(26*var(--u))/1.2 "Geist Mono",monospace;opacity:.75}
+  .cr-meta{font:600 calc(28*var(--u))/1.2 Manrope,system-ui,sans-serif;opacity:.78}
   .cr-cols{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);column-gap:calc(110*var(--u));align-items:start}
   .cr-cols.solo{grid-template-columns:minmax(0,1fr)}
   .cr-cols>*{min-width:0}
@@ -134,7 +136,7 @@
   .cr-top li.g1 .s{color:#ffd54a}
   .cr-rest{border-left:calc(3*var(--u)) solid rgba(255,255,255,.28);padding-left:calc(80*var(--u))}
   .cr-cols.solo .cr-rest{border:0;padding-left:0}
-  .cr-h{font:500 calc(28*var(--u))/1 "Geist Mono",monospace;opacity:.75;padding-bottom:calc(18*var(--u))}
+  .cr-h{font:700 calc(30*var(--u))/1 Manrope,system-ui,sans-serif;opacity:.78;padding-bottom:calc(18*var(--u))}
   .cr-rest li{display:flex;align-items:center;gap:calc(20*var(--u));padding:calc(var(--rp)*var(--u)) 0;min-width:0}
   .cr-rest.cols2 ol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:calc(60*var(--u))}
   .empty{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:22px;color:#fff;padding:60px 20px;text-align:center}
@@ -160,8 +162,8 @@
     .cr-in{justify-content:flex-start;padding:calc(110*var(--u)) calc(60*var(--u)) calc(60*var(--u));gap:calc(40*var(--u))}
     .cr-cols{grid-template-columns:minmax(0,1fr);row-gap:calc(50*var(--u))}
     .cr-rest{border-left:0;padding-left:0}
-    .cr-title{font-size:calc(70*var(--u))}.cr-meta{font-size:calc(34*var(--u))}
-    .cr-h{font-size:calc(34*var(--u))}
+    .cr-title{font-size:calc(72*var(--u))}.cr-meta{font-size:calc(40*var(--u))}
+    .cr-h{font-size:calc(42*var(--u))}
     .acts{position:fixed;left:0;right:0;top:auto;bottom:0;max-width:none;justify-content:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(11,16,51,.88)}
   }
 </style>
@@ -204,6 +206,7 @@ const groups = {};
 list.forEach(p => { (groups[p.rank] ||= []).push(p); });
 const ranks = showPodium ? Object.keys(groups).map(Number).filter(r => r <= 3).sort((a, b) => a - b) : [];
 const top = list[0];
+const th = str => esc(str).replace(/[\u00a0\u202f ]/g, '<span class="ts"></span>');
 const alpha = g => [...g].sort((x, y) => String(x.nickname).localeCompare(String(y.nickname), "uk"));
 const placeOf = r => r === 3 ? "3-є" : r + "-е";
 const diffText = (p) => {
@@ -221,11 +224,16 @@ const PAL = {
 // тип, x, y, розмір, колір, глибина (паралакс), обертання, {w}
 const SHAPES = {
   3: [["c", -120, 560, 520, "a", .5, 0], ["r", 1250, -260, 380, "b", .8, .02, { w: 16 }], ["p", 1640, 640, 90, "b", 1.1, .05], ["t", 860, 600, 120, "c", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1760, 330, 60, "b", 1.6, 0], ["p", 60, 70, 64, "c", 1.2, -.04], ["r", 1000, 690, 110, "a", 1.5, -.03, { w: 10 }]],
-  2: [["c", 1450, -100, 460, "a", .5, 0], ["r", -140, 520, 420, "b", .8, -.02, { w: 16 }], ["p", 1100, 70, 80, "b", 1.1, .05], ["t", 1780, 620, 130, "c", 1.3, -.04], ["d", 620, 660, 240, "a", .4, 0], ["c", 860, 700, 70, "b", 1.6, 0], ["p", 1690, 380, 60, "c", 1.2, .04], ["r", 600, -40, 120, "c", 1.4, .03, { w: 10 }]],
-  1: [["c", 1380, -90, 520, "b", .5, 0], ["r", -150, 540, 430, "a", .8, .02, { w: 16 }], ["p", 1690, 610, 100, "c", 1.1, .05], ["t", 900, 640, 120, "a", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1790, 300, 64, "a", 1.6, 0], ["p", 70, 80, 70, "c", 1.2, -.04], ["r", 1060, 70, 120, "c", 1.5, -.03, { w: 10 }]],
+  2: [["c", 1450, -100, 460, "a", .5, 0], ["r", -330, 560, 420, "b", .8, -.02, { w: 16 }], ["p", 1100, 70, 80, "b", 1.1, .05], ["t", 1780, 620, 130, "c", 1.3, -.04], ["d", 620, 660, 240, "a", .4, 0], ["c", 860, 700, 70, "b", 1.6, 0], ["p", 1690, 380, 60, "c", 1.2, .04], ["r", 600, -40, 120, "c", 1.4, .03, { w: 10 }]],
+  1: [["c", 1380, -90, 520, "b", .5, 0], ["r", -340, 570, 430, "a", .8, .02, { w: 16 }], ["p", 1690, 610, 100, "c", 1.1, .05], ["t", 900, 640, 120, "a", 1.3, .04], ["d", 560, 670, 240, "c", .4, 0], ["c", 1790, 300, 64, "a", 1.6, 0], ["p", 70, 80, 70, "c", 1.2, -.04], ["r", 1060, 70, 120, "c", 1.5, -.03, { w: 10 }]],
 };
-// на вузькому екрані ті самі фігури, розкладені під вертикальну сцену
-const shapePos = (s, port) => port ? [s[0], Math.round(s[1] / 1920 * 1080), Math.round(s[2] / 817 * 1700), Math.round(s[3] * (s[3] >= 300 ? .6 : .9)), ...s.slice(4)] : s;
+// на вузькому екрані фігур менше й вони лише по краях: не налазять на ім'я, рахунок і медальйони
+const PORT_SHAPES = {
+  3: [["c", -190, 1360, 380, "a", .5, 0], ["r", 800, -130, 320, "b", .8, .02, { w: 14 }], ["p", 60, 250, 70, "c", 1.2, -.04], ["c", 975, 1110, 46, "b", 1.6, 0], ["p", 950, 1560, 70, "b", 1.1, .05]],
+  2: [["c", 780, -150, 380, "a", .5, 0], ["r", -170, 1330, 340, "b", .8, -.02, { w: 14 }], ["p", 940, 1090, 70, "b", 1.1, .05], ["c", 40, 250, 46, "c", 1.6, 0], ["p", 40, 1590, 70, "c", 1.2, .04]],
+  1: [["c", 790, -140, 380, "b", .5, 0], ["r", -180, 1340, 340, "a", .8, .02, { w: 14 }], ["p", 935, 1100, 70, "c", 1.1, .05], ["c", 40, 250, 46, "a", 1.6, 0], ["p", 945, 1580, 70, "c", 1.2, .04]],
+};
+const shapeSet = (r, port) => port ? PORT_SHAPES[r] : SHAPES[r];
 
 // ── Вимірювання тексту: імена підбираються по ширині ──
 const mc = document.createElement("canvas").getContext("2d");
@@ -307,7 +315,7 @@ function build() {
     const { fs, cols } = nameSpec(n, win, port, names);
     const bg = document.createElement("div"); bg.className = "bgc"; bg.dataset.rank = r; bgs.appendChild(bg);
     const lab = tie ? `${win ? "Переможці · " : ""}Ділять ${placeOf(r)} місце · ${n} ${plural(n, "гравець", "гравці", "гравців")}` : (win ? "Переможець" : r === 3 ? "Третє місце" : "Друге місце");
-    const shapes = SHAPES[r].map(s0 => { const [ty, x, y, sz, ck, , , ex] = shapePos(s0, port); return `<div class="sh ${ty}" style="left:${x}px;top:${y}px;width:${sz}px;height:${ty === "t" ? sz * .9 : sz}px;--col:${pal[ck]};${ex?.w ? `--w:${ex.w}px;` : ""}"></div>`; }).join("");
+    const shapes = shapeSet(r, port).map(s0 => { const [ty, x, y, sz, ck, , , ex] = s0; return `<div class="sh ${ty}" style="left:${x}px;top:${y}px;width:${sz}px;height:${ty === "t" ? sz * .9 : sz}px;--col:${pal[ck]};${ex?.w ? `--w:${ex.w}px;` : ""}"></div>`; }).join("");
     const lines = names.map(nm => `<div class="ln"><i>${esc(nm)}</i></div>`).join("");
     const nameStyle = cols > 1 ? `grid-template-columns:repeat(${cols},auto);` : "";
     // медальйони
@@ -338,10 +346,10 @@ function build() {
       <div class="lab">${esc(lab)}</div>
       <div class="name${cols > 1 ? " cols" : ""}" style="font-size:${fs}px;${nameStyle}">${lines}</div>
       <div class="rule"></div>
-      <div class="score"><span class="v">${esc(fmtVal(g0, 0))}</span><small>${esc(ptsWord)}${tie ? " у кожного" : ""}</small></div>
+      <div class="score"><span class="v">${th(fmtVal(g0, 0))}</span><small>${esc(ptsWord)}${tie ? " у кожного" : ""}</small></div>
       <div class="gap">${esc(gapTxt)}</div>${meds}</div></div>`;
     stage.appendChild(el);
-    CE.push({ m: meta, rank: r, win, n, g0, el, bg, ci: el.querySelector(".ci"), shapes: [...el.querySelectorAll(".sh")], spec: SHAPES[r], ghost: el.querySelector(".ghost"), lab: el.querySelector(".lab"), name: el.querySelector(".name"), lines: [...el.querySelectorAll(".name i")], rule: el.querySelector(".rule"), v: el.querySelector(".v"), score: el.querySelector(".score"), gap: el.querySelector(".gap"), solo: el.querySelector(".med.solo"), grp: el.querySelector(".medgrp"), mds: [...el.querySelectorAll(".md")], halos: [...el.querySelectorAll(".halo")], ring: el.querySelector("svg.ring circle") });
+    CE.push({ m: meta, rank: r, win, n, g0, el, bg, ci: el.querySelector(".ci"), shapes: [...el.querySelectorAll(".sh")], spec: shapeSet(r, port), ghost: el.querySelector(".ghost"), lab: el.querySelector(".lab"), name: el.querySelector(".name"), lines: [...el.querySelectorAll(".name i")], rule: el.querySelector(".rule"), v: el.querySelector(".v"), score: el.querySelector(".score"), gap: el.querySelector(".gap"), solo: el.querySelector(".med.solo"), grp: el.querySelector(".medgrp"), mds: [...el.querySelectorAll(".md")], halos: [...el.querySelectorAll(".halo")], ring: el.querySelector("svg.ring circle") });
   });
   if (TL.tens) {
     const bg = document.createElement("div"); bg.className = "bgc tens"; bgs.appendChild(bg);
@@ -359,20 +367,16 @@ function buildCredits(port) {
   const cols2 = !port && topList.length > 8;
   const perCol = cols2 ? Math.ceil(topList.length / 2) : topList.length;
   const rh = port ? 130 : Math.min(150, Math.floor(620 / Math.max(1, perCol)));
-  const fzOf = r => port ? (r === ranks[0] ? 62 : 54) : Math.round(Math.min(r === ranks[0] ? 92 : 76, rh * .62));
+  const fzOf = r => port ? (r === ranks[0] ? 68 : 60) : Math.round(Math.min(r === ranks[0] ? 92 : 76, rh * .62));
   const avOf = r => port ? (r === ranks[0] ? 96 : 82) : Math.round(Math.min(r === ranks[0] ? 104 : 86, rh * .74));
   const av = (p, a) => { const info = avatarInfo(p.avatar); return `<span class="av" style="--av:${a};--abg:${avatarFill(p.nickname, p.avatar)}">${info ? avatarInner(p.nickname, p.avatar, { hat: p.hat, glasses: p.glasses }) : esc(initialsOf(p.nickname))}</span>`; };
-  const topHtml = topList.map(({ p, r }) => `<li class="g${r}" style="--rh:${rh};--fz:${fzOf(r)};--av:${avOf(r)};--kz:${Math.max(24, Math.round(fzOf(r) * .5))};--sz:${Math.round(fzOf(r) * .62)}"><span class="k">${p.rank}</span>${av(p, avOf(r))}<span class="n">${esc(p.nickname)}</span><span class="s">${esc(fmtVal(p))}</span></li>`).join("");
+  const topHtml = topList.map(({ p, r }) => `<li class="g${r}" style="--rh:${rh};--fz:${fzOf(r)};--av:${avOf(r)};--kz:${Math.max(24, Math.round(fzOf(r) * .5))};--sz:${Math.round(fzOf(r) * .62)}"><span class="k">${p.rank}</span>${av(p, avOf(r))}<span class="n">${esc(p.nickname)}</span><span class="s">${th(fmtVal(p))}</span></li>`).join("");
   const many = restList.length > 5, rp = port ? 22 : many ? 16 : 28;
-  const restHtml = restList.map(p => `<li style="--rp:${rp};--fz:${port ? 46 : 46};--av:${port ? 64 : 56};--kz:${port ? 34 : 30};--sz:${port ? 38 : 36}"><span class="k">${p.rank}</span>${av(p, port ? 64 : 56)}<span class="n">${esc(p.nickname)}</span><span class="s">${esc(fmtVal(p))}</span></li>`).join("");
+  const restHtml = restList.map(p => `<li style="--rp:${rp};--fz:${port ? 52 : 46};--av:${port ? 68 : 56};--kz:${port ? 40 : 30};--sz:${port ? 44 : 36}"><span class="k">${p.rank}</span>${av(p, port ? 64 : 56)}<span class="n">${esc(p.nickname)}</span><span class="s">${th(fmtVal(p))}</span></li>`).join("");
   const flat = !topList.length;
-  credits.innerHTML = port
-    ? `<div class="dec" style="right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:#ffd54a;opacity:.3"></div>
-    <div class="dec" style="left:-120px;bottom:-130px;width:320px;height:320px;border-radius:50%;border:14px solid #ff7a59;opacity:.35"></div>`
-    : `<div class="dec" style="right:-100px;top:-100px;width:280px;height:280px;border-radius:50%;background:#ffd54a;opacity:.55"></div>
-    <div class="dec" style="left:-110px;bottom:-110px;width:360px;height:360px;border-radius:50%;border:14px solid #ff7a59;opacity:.6"></div>`;
+  credits.innerHTML = "";
   credits.insertAdjacentHTML("beforeend", `
-    <div class="cr-in"><div class="cr-head"><div class="cr-title">${esc(title)}</div><div class="cr-meta">${esc(meta)}</div></div>
+    <div class="cr-in">${port ? "" : `<i class="dec" style="right:calc(-90*var(--u));top:calc(-90*var(--u));width:calc(270*var(--u));height:calc(270*var(--u));border-radius:50%;background:#ffd54a"></i><i class="dec" style="left:calc(-170*var(--u));bottom:calc(-170*var(--u));width:calc(340*var(--u));height:calc(340*var(--u));border-radius:50%;border:calc(14*var(--u)) solid #ff7a59"></i>`}<div class="cr-head"><div class="cr-title">${esc(title)}</div><div class="cr-meta">${esc(meta)}</div></div>
     <div class="cr-cols${!restList.length || flat ? " solo" : ""}">
       ${topList.length ? `<ol class="cr-top${cols2 ? " two" : ""}" id="cr-top">${topHtml}</ol>` : ""}
       ${restList.length ? `<div class="cr-rest${flat && !port ? " cols2" : ""}"><div class="cr-h">${flat ? "Усі учасники" : "Усі результати"}</div><ol id="cr-rest">${restHtml}</ol></div>` : ""}
@@ -430,7 +434,7 @@ function render(t) {
     o.name.style.transform = `translate(${-mx * 8}px,${-my * 4}px)`;
     const rw = L === "port" ? 600 : (o.n > 1 ? 800 : 870);
     o.rule.style.width = eO(P(rel, 600, 1500)) * rw + "px";
-    o.v.textContent = fmtVal(o.g0, eO(P(rel, 700, o.win ? 2300 : 2100)));
+    { const str = fmtVal(o.g0, eO(P(rel, 700, o.win ? 2300 : 2100))); if (o.vs !== str) { o.vs = str; o.v.innerHTML = th(str); } }
     o.score.style.opacity = eO(P(rel, 600, 1100)); o.score.style.transform = `translate(${-mx * 8}px,0)`;
     o.gap.style.opacity = eO(P(rel, 1500, 2100)) * .85;
     if (o.solo) {
@@ -564,7 +568,17 @@ if (!list.length) {
   build();
   // ?t=мс — показати один кадр церемонії без звуку й руху (для перевірок і знімків)
   const freeze = new URLSearchParams(location.search).get("t");
-  Promise.all([document.fonts?.ready || Promise.resolve(), SND.ready(300)]).then(async ([, audioOk]) => {
+  const fontsReady = async () => {
+    // шрифти підключаються з відкладенням (media=print → all): чекаємо на справжні, щоб підібрати розміри імен за ними
+    const link = [...document.querySelectorAll('link[rel="stylesheet"]')].find(l => /fonts\.googleapis/.test(l.href));
+    if (link && link.media === "print") await new Promise(r => { link.addEventListener("load", r, { once: true }); link.addEventListener("error", r, { once: true }); setTimeout(r, 1500); });
+    const f = ["800 100px Manrope", "300 100px Manrope", "600 100px Manrope", "700 30px 'Geist Mono'"];
+    await Promise.race([Promise.all(f.map(x => document.fonts.load(x, "Аа1").catch(() => {}))), new Promise(r => setTimeout(r, 2000))]);
+  };
+  document.fonts?.addEventListener?.("loadingdone", () => { if (fontsSettled) { const t = playing ? now() - t0 : (freeze !== null ? Math.max(0, +freeze || 0) : TL.cred + 5000); build(); render(t); } });
+  let fontsSettled = false;
+  Promise.all([fontsReady(), SND.ready(300)]).then(async ([, audioOk]) => {
+    fontsSettled = true;
     build();                                                     // шрифти вже завантажені: імена підбираються за справжніми розмірами
     if (freeze !== null) { playing = false; render(Math.max(0, +freeze || 0)); Tel.dataset.frozen = "1"; return; }
     if (!audioOk && SND.on && !reduced() && cardRanks.length) await askToStart();
