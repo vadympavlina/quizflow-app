@@ -875,7 +875,7 @@ const _saveTS = () => { try { localStorage.setItem(_TSTORE, JSON.stringify({ sor
 // Сумісність зі старим кодом, що читає ці глобали
 window._testsView = TS.view;
 
-const TYPE_SHORT = { single: "одна відповідь", multi: "кілька", text: "коротка відповідь", ordering: "порядок" };
+const TYPE_SHORT = { single: "одна відповідь", multi: "кілька", truefalse: "правда / неправда", text: "коротка відповідь", ordering: "порядок" };
 const _plural = (n, one, few, many) => {
   const a = Math.abs(n) % 100, b = a % 10;
   if (a > 10 && a < 20) return many;

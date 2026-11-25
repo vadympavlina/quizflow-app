@@ -218,7 +218,7 @@ test("модалка: побажання сховані, «Автоматичн�
   await page.locator('[data-act="ai-inc"]').click();
   await expect(page.locator("#ai-go")).toContainText("Згенерувати 11 питань");
   await page.locator('#ai-mode [data-v="mix"]').click();
-  await expect(page.locator("#ai-mix .ai-mix-r")).toHaveCount(7);
+  await expect(page.locator("#ai-mix .ai-mix-r")).toHaveCount(8);
   await page.locator("#ai-go").click();
   await expect(page.getByText("Оберіть, скільки питань якого типу")).toBeVisible();
   await page.locator('#ai-mode [data-v="auto"]').click();
