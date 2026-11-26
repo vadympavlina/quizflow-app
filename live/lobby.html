@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=17">
+<link rel="modulepreload" href="live-core.js?v=18">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
@@ -161,7 +161,7 @@
 import {
   db, ref, get, update, onValue, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, initialsOf, avatarColor, avatarFill, avatarInner, joinUrl, HOME_URL, serverNow, isActive, isOnline, confirmDlg,
-} from "./live-core.js?v=17";
+} from "./live-core.js?v=18";
 
 const $ = (id) => document.getElementById(id);
 const user = await requireTeacher();
@@ -260,7 +260,7 @@ function render() {
   list.forEach(([pid, p]) => {
     const el = card(pid);
     const nick = p.nickname || "—";
-    const avKey = nick + "|" + (p.avatar || "") + "|" + (p.hat || "") + "|" + (p.glasses || "");
+    const avKey = nick + "|" + (p.avatar || "") + "|" + (p.hat || "") + "|" + (p.glasses || "") + "|" + (p.outfit || "");
     if (el.dataset.nick !== avKey) {
       el.dataset.nick = avKey;
       const av = el.querySelector(".av");

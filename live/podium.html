@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://quizflow-8a978-default-rtdb.europe-west1.firebasedatabase.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="modulepreload" href="live-core.js?v=17">
+<link rel="modulepreload" href="live-core.js?v=18">
 <link rel="modulepreload" href="results-fx.js?v=2">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js">
@@ -96,6 +96,7 @@
   .med .halo{left:50%;top:50%;width:150%;height:150%;margin:-75% 0 0 -75%}
   .disc{position:absolute;inset:0;border-radius:50%;background:var(--abg);overflow:hidden;box-shadow:0 0 0 12px var(--fg),0 30px 60px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:#fff}
   .disc img,.disc svg{position:absolute;left:7%;top:7%;width:86%;height:86%;object-fit:contain}
+  .disc svg.ob{left:0;top:0;width:100%;height:100%}                       /* герой в одязі заповнює все коло: одяг обрізається по колу, а не рівною лінією */
   .disc .ini{font-weight:800;letter-spacing:-.03em;line-height:1}
   .med svg.ring{position:absolute;left:-36px;top:-36px;width:calc(100% + 72px);height:calc(100% + 72px);overflow:visible;transform:rotate(-90deg)}
   .med svg.ring circle{fill:none;stroke:var(--fg);stroke-width:1.2;stroke-linecap:round;opacity:.9}
@@ -131,6 +132,7 @@
   .cr-top li.g1 .k{color:#ffd54a;opacity:1}
   .cr-top .av,.cr-rest .av{flex:none;width:calc(var(--av)*var(--u));height:calc(var(--av)*var(--u));border-radius:50%;overflow:hidden;position:relative;display:grid;place-items:center;background:var(--abg);box-shadow:0 0 0 calc(4*var(--u)) rgba(255,255,255,.9);color:#fff;font-weight:800;font-size:calc(var(--av)*.36*var(--u))}
   .cr-top .av img,.cr-top .av svg,.cr-rest .av img,.cr-rest .av svg{position:absolute;left:7%;top:7%;width:86%;height:86%}
+  .cr-top .av svg.ob,.cr-rest .av svg.ob{left:0;top:0;width:100%;height:100%}
   .cr-top .n,.cr-rest .n{flex:1;min-width:0;font-weight:800;font-size:calc(var(--fz)*var(--u));letter-spacing:-.035em;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .cr-top .s,.cr-rest .s{font:700 calc(var(--sz)*var(--u))/1 "Geist Mono",monospace;letter-spacing:-.03em;margin-left:auto;padding-left:calc(16*var(--u));white-space:nowrap}
   .cr-top li.g1 .s{color:#ffd54a}
@@ -176,7 +178,7 @@
 import {
   db, ref, get, update, requireTeacher, requirePerm, readParams, isValidCode, fatal, toast,
   esc, standings, plural, fmtNum, HOME_URL, serverNow, avatarInner, avatarInfo, avatarFill, initialsOf,
-} from "./live-core.js?v=17";
+} from "./live-core.js?v=18";
 import { SND, NOTE, reduced } from "./results-fx.js?v=2";
 
 const $ = (id) => document.getElementById(id);
@@ -263,7 +265,7 @@ const medRows = n => n === 2 ? [2] : n === 3 ? [1, 2] : n === 4 ? [2, 2] : n ===
 const discHtml = (p, d) => {
   const info = avatarInfo(p.avatar);
   const bg = avatarFill(p.nickname, p.avatar);
-  const inner = info ? avatarInner(p.nickname, p.avatar, { hat: p.hat, glasses: p.glasses }) : `<span class="ini" style="font-size:${Math.round(d * .36)}px">${esc(initialsOf(p.nickname))}</span>`;
+  const inner = info ? avatarInner(p.nickname, p.avatar, { hat: p.hat, glasses: p.glasses, outfit: p.outfit }) : `<span class="ini" style="font-size:${Math.round(d * .36)}px">${esc(initialsOf(p.nickname))}</span>`;
   return `<div class="disc" style="--abg:${bg}">${inner}</div>`;
 };
 
@@ -369,7 +371,7 @@ function buildCredits(port) {
   const rh = port ? 130 : Math.min(150, Math.floor(620 / Math.max(1, perCol)));
   const fzOf = r => port ? (r === ranks[0] ? 68 : 60) : Math.round(Math.min(r === ranks[0] ? 92 : 76, rh * .62));
   const avOf = r => port ? (r === ranks[0] ? 96 : 82) : Math.round(Math.min(r === ranks[0] ? 104 : 86, rh * .74));
-  const av = (p, a) => { const info = avatarInfo(p.avatar); return `<span class="av" style="--av:${a};--abg:${avatarFill(p.nickname, p.avatar)}">${info ? avatarInner(p.nickname, p.avatar, { hat: p.hat, glasses: p.glasses }) : esc(initialsOf(p.nickname))}</span>`; };
+  const av = (p, a) => { const info = avatarInfo(p.avatar); return `<span class="av" style="--av:${a};--abg:${avatarFill(p.nickname, p.avatar)}">${info ? avatarInner(p.nickname, p.avatar, { hat: p.hat, glasses: p.glasses, outfit: p.outfit }) : esc(initialsOf(p.nickname))}</span>`; };
   const topHtml = topList.map(({ p, r }) => `<li class="g${r}" style="--rh:${rh};--fz:${fzOf(r)};--av:${avOf(r)};--kz:${Math.max(24, Math.round(fzOf(r) * .5))};--sz:${Math.round(fzOf(r) * .62)}"><span class="k">${p.rank}</span>${av(p, avOf(r))}<span class="n">${esc(p.nickname)}</span><span class="s">${th(fmtVal(p))}</span></li>`).join("");
   const many = restList.length > 5, rp = port ? 22 : many ? 16 : 28;
   const restHtml = restList.map(p => `<li style="--rp:${rp};--fz:${port ? 52 : 46};--av:${port ? 68 : 56};--kz:${port ? 40 : 30};--sz:${port ? 44 : 36}"><span class="k">${p.rank}</span>${av(p, port ? 64 : 56)}<span class="n">${esc(p.nickname)}</span><span class="s">${th(fmtVal(p))}</span></li>`).join("");

@@ -113,7 +113,7 @@ export const AVATARS = [
   {
     "id": "ghost",
     "name": "Привид",
-    "bg": "#E9E6F8"
+    "bg": "#CBC5EE"
   },
   {
     "id": "hamster",
