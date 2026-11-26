@@ -103,6 +103,7 @@
   .tchip.multi{background:#D1FAE5;color:#065F46}
   .tchip.text{background:#FEF3C7;color:#78350F}
   .tchip.number{background:#DBEAFE;color:#1E3A8A}
+  .tchip.long{background:#FCE7F3;color:#831843}
   .tchip.truefalse{background:#CCFBF1;color:#115E59}
   .tchip.ordering{background:#E0E7FF;color:#3730A3}
   .tchip.matching{background:#FCE7F3;color:#9D174D}
@@ -842,7 +843,9 @@ function renderGrading(ans) {
   const total = Object.keys(ans).length;
   const html = `
     <h3>Відповіді учнів <small>можна зарахувати вручну</small></h3>
-    <div class="correct-line"><span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).length > 1 ? "Допустимі відповіді:" : "Еталон:"}</span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).map(v => `<span class="kchip v"><span>${esc(v)}</span></span>`).join("") || "—"}</div>
+    ${questions[state.currentQ]?.type === "long"
+      ? `<div class="correct-line"><span>Розгорнута відповідь:</span><span class="kchip v"><span>зарахуйте вручну ті, що вважаєте правильними</span></span></div>`
+      : `<div class="correct-line"><span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).length > 1 ? "Допустимі відповіді:" : "Еталон:"}</span>${textAnswers(keyFor(state.currentQ), questions[state.currentQ]?.type).map(v => `<span class="kchip v"><span>${esc(v)}</span></span>`).join("") || "—"}</div>`}
     <div class="groups">${groupsCache.length ? groupsCache.map((g, i) => {
       const ok = g.correct === g.pids.length;
       return `<div class="grp${ok ? " ok" : ""}">

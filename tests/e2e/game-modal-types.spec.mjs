@@ -17,22 +17,22 @@ const mixed = () => ({
   ] } } } },
 });
 
-test("швидка гра: у тесті з усіма типами не входять лише розгорнута відповідь і зламаний порядок", async ({ page, errors }) => {
+test("швидка гра: у тесті з усіма типами не входить лише зламаний порядок", async ({ page, errors }) => {
   await seed(page, mixed(), "t1");
   await page.goto("/tests"); await page.waitForTimeout(1500);
   await page.locator(".t-lb.live").first().click();
   await expect(page.locator("#m-game.on")).toBeVisible();
-  await expect(page.locator("#gm-sub")).toContainText("7 пит.");
-  await expect(page.locator("#gm-note")).toContainText("2 питань не увійдуть");
+  await expect(page.locator("#gm-sub")).toContainText("8 пит.");
+  await expect(page.locator("#gm-note")).toContainText("1 питання не увійде");
   await page.click("#gm-go");
   await page.waitForURL(/live\/lobby\?code=\d{8}/);
   const db = await readDb(page), room = Object.values(db.rooms)[0];
-  expect(room.questions.map(q => q.type)).toEqual(["single", "multi", "truefalse", "ordering", "matching", "text", "number"]);
-  expect(room.qCount).toBe(7);
+  expect(room.questions.map(q => q.type)).toEqual(["single", "multi", "truefalse", "ordering", "matching", "text", "number", "long"]);
+  expect(room.qCount).toBe(8);
   expect([...room.questions[3].options].sort()).toEqual(["Один", "Два", "Три", "Чотири"].sort());   // впорядкування: пункти в кімнаті перемішані
   expect(room.questions[4].lefts).toEqual(["Франція", "Італія", "Польща"]);
   expect(JSON.stringify(room.questions)).not.toContain("correct");
   const key = Object.values(db.teachers.t1.liveRooms)[0].key;
-  expect(Object.keys(key)).toHaveLength(7);
+  expect(Object.keys(key)).toHaveLength(7);   // у розгорнутої відповіді ключа немає (null у базі не зберігається)
   expect(errors.filter(e => !/lobby|bad params/.test(e))).toEqual([]);
 });

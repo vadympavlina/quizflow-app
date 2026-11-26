@@ -333,7 +333,7 @@ $("type-chips").innerHTML = `<span class="lv-chip">${questions.length} ${plural(
 const brokenMulti = questions.filter(q => q.type === "multi" && pickCount(q.correct) === 0).length;
 if (excluded) {
   $("excluded-note").hidden = false;
-  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру. У live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`;
+  $("excluded-note").textContent = `${excluded} ${plural(excluded, "питання не увійде", "питання не увійдуть", "питань не увійдуть")} у гру. У live-режимі не працюють впорядкування з менше ніж двома або понад ${ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`;
 }
 if (brokenMulti) {
   const n = document.createElement("div"); n.className = "lv-notice";
@@ -358,7 +358,7 @@ const state = {
   podium: saved.podium ?? true,
 };
 const persist = () => safeStore.set("qf-live-setup", state);
-const hasFreeform = questions.some(q => q.type === "text" || q.type === "number");
+const hasFreeform = questions.some(q => q.type === "text" || q.type === "number" || q.type === "long");
 
 // ─── Час ───────────────────────────────────────────────────────────────
 const inp = $("inp-time");
