@@ -2775,7 +2775,7 @@ window.G = {
     $("gm-time").innerHTML = times.map(v => `<button type="button" role="radio" data-t="${v}">${v} с</button>`).join("");
     $("gm-sa").checked = !!m.shuffle; $("gm-sq").checked = !!m.shuffleQ;
     const notes = [];
-    if (all.length > n) notes.push(`${all.length - n} ${all.length - n === 1 ? "питання не увійде" : "питань не увійдуть"} у гру: у live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${LC.ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${LC.ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`);
+    if (all.length > n) notes.push(`${all.length - n} ${all.length - n === 1 ? "питання не увійде" : "питань не увійдуть"} у гру: у live-режимі не працюють впорядкування з менше ніж двома або понад ${LC.ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${LC.ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`);
     const broken = qs.filter(q => q.type === "multi" && !_arr(q.correct).length && (q.correct == null || q.correct === "")).length;
     if (broken) notes.push(`${broken} ${broken === 1 ? "питання" : "питань"} з кількома відповідями не має позначених правильних.`);
     $("gm-note").hidden = !notes.length; $("gm-note").textContent = notes.join(" ");

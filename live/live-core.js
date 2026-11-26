@@ -245,12 +245,12 @@ export function applyTheme(theme, gradEl, patEl) {
 }
 
 // ─── Питання й оцінювання ──────────────────────────────────────────────
-export const LIVE_TYPES = ["single", "multi", "truefalse", "ordering", "matching", "text", "number"];
+export const LIVE_TYPES = ["single", "multi", "truefalse", "ordering", "matching", "text", "number", "long"];
 // Скільки пунктів у впорядкуванні вміщується на телефоні й на проєкторі
 export const ORDER_MAX = 6;
 export const OPT_CLASSES = ["a","b","c","d","e","f"];
 export const OPT_LETTERS = ["A","B","C","D","E","F"];
-export const isFreeform = (q) => q?.type === "text" || q?.type === "number";
+export const isFreeform = (q) => q?.type === "text" || q?.type === "number" || q?.type === "long";
 
 export const TYPE_LABELS = {
   single: { cls:"single", label:"Одна правильна відповідь" },
@@ -260,6 +260,7 @@ export const TYPE_LABELS = {
   matching: { cls:"matching", label:"Зіставте пари" },
   text:   { cls:"text",   label:"Впишіть відповідь" },
   number: { cls:"number", label:"Введіть число" },
+  long:   { cls:"long",   label:"Розгорнута відповідь" },
 };
 // Значок типу питання (контурний SVG, колір від тексту)
 const TYPE_ICONS = {
@@ -270,6 +271,7 @@ const TYPE_ICONS = {
   matching: '<circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7h10M7 17h10"/>',
   text:   '<path d="M4 7V5h16v2M12 5v14M9 19h6"/>',
   number: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
+  long:   '<path d="M4 6h16M4 11h16M4 16h10"/>',
 };
 // Позначка варіанта: буква, а в «Правда / Неправда» — значок ✓ чи ✕ (не лише колір)
 export const optMark = (type, i) => type === "truefalse"
@@ -281,7 +283,7 @@ export const typeChip = (type, extraCls = "") => {
   return `<span class="tchip ${t.cls} ${extraCls}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TYPE_ICONS[t.cls] || TYPE_ICONS.single}</svg><span>${t.label}</span></span>`;
 };
 // Усі допустимі текстові відповіді в тому вигляді, як їх написав викладач (для показу)
-export const textAnswers = (correct, type) => type === "number"
+export const textAnswers = (correct, type) => type === "long" ? [] : type === "number"
   ? (String(correct ?? "").trim() ? [String(correct).trim()] : [])
   : String(correct ?? "").split(/\s*(?:або|or|\||\/|,)\s*/i).map(x => x.trim()).filter(Boolean);
 
@@ -387,6 +389,7 @@ export function checkCorrect(q, correct, value) {
       const want = orderList(correct), got = orderList(value);
       return want.length >= 2 && got.length === want.length && got.every((v, i) => v === want[i]);
     }
+    case "long": return false;   // розгорнуту відповідь автоматично не перевіряємо: її зараховує викладач вручну
     case "number": { const c = toNum(correct), u = toNum(value); return !isNaN(c) && !isNaN(u) && Math.abs(c - u) < 1e-9; }
     case "text": {
       const v = normText(value);
