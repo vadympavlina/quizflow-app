@@ -117,9 +117,9 @@
   .credits.on{visibility:visible}
   .credits .dec{position:absolute;pointer-events:none;display:block;z-index:0}
   .cr-head,.cr-cols{position:relative;z-index:1}
-  .cr-in{position:relative;min-height:100%;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:calc(30*var(--u));padding:calc(60*var(--u)) calc(130*var(--u)) calc(80*var(--u))}
+  .cr-in{position:relative;min-height:100%;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:calc(30*var(--u));padding:max(calc(60*var(--u)),64px) calc(130*var(--u)) calc(80*var(--u))}
   .cr-head{display:flex;flex-direction:column;gap:calc(8*var(--u))}
-  .cr-title{font-weight:800;font-size:calc(48*var(--u));letter-spacing:-.035em;line-height:1.05;overflow-wrap:anywhere}
+  .cr-title{font-weight:800;font-size:calc(48*var(--u));letter-spacing:-.035em;line-height:1.15;overflow-wrap:anywhere}
   .cr-meta{font:600 calc(28*var(--u))/1.2 Manrope,system-ui,sans-serif;opacity:.78}
   .cr-cols{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);column-gap:calc(110*var(--u));align-items:start}
   .cr-cols.solo{grid-template-columns:minmax(0,1fr)}
@@ -128,13 +128,13 @@
   .cr-cols ol{list-style:none;margin:0;padding:0}
   .cr-top li{display:flex;align-items:center;gap:calc(28*var(--u));height:calc(var(--rh)*var(--u));min-width:0}
   .cr-top.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:calc(40*var(--u))}
-  .cr-top .k,.cr-rest .k{font:500 calc(var(--kz)*var(--u))/1 "Geist Mono",monospace;opacity:.7;min-width:1.2em;flex:none}
+  .cr-top .k,.cr-rest .k{font:500 max(11px,calc(var(--kz)*var(--u)))/1 "Geist Mono",monospace;opacity:.7;min-width:1.2em;flex:none}
   .cr-top li.g1 .k{color:#ffd54a;opacity:1}
   .cr-top .av,.cr-rest .av{flex:none;width:calc(var(--av)*var(--u));height:calc(var(--av)*var(--u));border-radius:50%;overflow:hidden;position:relative;display:grid;place-items:center;background:var(--abg);box-shadow:0 0 0 calc(4*var(--u)) rgba(255,255,255,.9);color:#fff;font-weight:800;font-size:calc(var(--av)*.36*var(--u))}
   .cr-top .av img,.cr-top .av svg,.cr-rest .av img,.cr-rest .av svg{position:absolute;left:7%;top:7%;width:86%;height:86%}
   .cr-top .av svg.ob,.cr-rest .av svg.ob{left:0;top:0;width:100%;height:100%}
-  .cr-top .n,.cr-rest .n{flex:1;min-width:0;font-weight:800;font-size:calc(var(--fz)*var(--u));letter-spacing:-.035em;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .cr-top .s,.cr-rest .s{font:700 calc(var(--sz)*var(--u))/1 "Geist Mono",monospace;letter-spacing:-.03em;margin-left:auto;padding-left:calc(16*var(--u));white-space:nowrap}
+  .cr-top .n,.cr-rest .n{flex:1;min-width:0;font-weight:800;font-size:max(12px,calc(var(--fz)*var(--u)));letter-spacing:-.035em;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cr-top .s,.cr-rest .s{font:700 max(11px,calc(var(--sz)*var(--u)))/1 "Geist Mono",monospace;letter-spacing:-.03em;margin-left:auto;padding-left:calc(16*var(--u));white-space:nowrap}
   .cr-top li.g1 .s{color:#ffd54a}
   .cr-rest{border-left:calc(3*var(--u)) solid rgba(255,255,255,.28);padding-left:calc(80*var(--u))}
   .cr-cols.solo .cr-rest{border:0;padding-left:0}
@@ -150,6 +150,11 @@
   /* На великому екрані (проєктор) кнопки лягають на плакат, тому коли ними не користуються — тануть і не заважають */
   @media (min-width:801px){.acts{transition:opacity .45s ease}.acts.idle{opacity:0;pointer-events:none}}
   @media (prefers-reduced-motion:reduce){.acts{transition:none}}
+  /* вузькі широкі екрани (ноутбук у вікні, телефон боком): кнопки не лізуть під заголовок, а стають смужкою внизу */
+  @media (min-aspect-ratio:9/10) and (max-width:1100px){
+    .acts{position:fixed;left:0;right:0;top:auto;bottom:0;max-width:none;flex-wrap:nowrap;justify-content:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(11,16,51,.88)}
+    .cr-in{padding-top:calc(60*var(--u));padding-bottom:max(calc(80*var(--u)),64px)}
+  }
   .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   .gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:#0F1844;color:#fff}
   .gate button{font:inherit;color:inherit;display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 46px;border:0;border-radius:26px;background:rgba(255,255,255,.1);cursor:pointer;max-width:100%}
@@ -161,7 +166,7 @@
   .grain{position:absolute;inset:-50%;pointer-events:none;opacity:.07;mix-blend-mode:overlay;z-index:41;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.2 -.1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
   @media (max-aspect-ratio:9/10){
     .credits{--u:calc(100vw / 1080)}
-    .cr-in{justify-content:flex-start;padding:calc(110*var(--u)) calc(60*var(--u)) calc(60*var(--u));gap:calc(40*var(--u))}
+    .cr-in{justify-content:flex-start;padding:calc(110*var(--u)) calc(60*var(--u)) max(calc(60*var(--u)),84px);gap:calc(40*var(--u))}
     .cr-cols{grid-template-columns:minmax(0,1fr);row-gap:calc(50*var(--u))}
     .cr-rest{border-left:0;padding-left:0}
     .cr-title{font-size:calc(72*var(--u))}.cr-meta{font-size:calc(40*var(--u))}
