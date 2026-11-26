@@ -2755,16 +2755,18 @@ window.G = {
   // Налаштування беруться з останньої гри (qf-live-setup) і зберігаються назад — як на сторінці налаштувань.
   _gm: null,
   // chips/segmented: делегований клік (прив'язується один раз)
-  gameModal(testId){
+  async gameModal(testId){
     if (window.qfCan && !window.qfCan("games.run")) return;
     const t = tests.find(x => x.id === testId); if (!t) return;
+    // Правила «що йде в гру» — ті самі, що на сторінці налаштувань гри (усі 7 типів, перевірка впорядкування й зіставлення)
+    const LC = await import("../live/live-core.js?v=18");
     const all = _arr(t.questions);
-    const qs = all.filter(q => q && ["single", "multi", "text", "number"].includes(q.type || "single"));
+    const qs = all.filter(q => LC.isLiveQuestion(q));
     if (!qs.length) { toast("У тесті немає питань, які підходять для гри", "err"); return; }
     let saved = {}; try { saved = JSON.parse(localStorage.getItem("qf-live-setup") || "{}") || {}; } catch {}
     const clamp = v => { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(300, Math.max(5, v)) : 20; };
     const idOk = v => typeof v === "string" && /^[a-z0-9-]{1,30}$/.test(v);
-    G._gm = { id: testId, saved, time: clamp(saved.time ?? 20), scoring: saved.scoring === "correct" ? "correct" : "speed",
+    G._gm = { id: testId, saved, LC, time: clamp(saved.time ?? 20), scoring: saved.scoring === "correct" ? "correct" : "speed",
       shuffle: saved.shuffle ?? true, shuffleQ: saved.shuffleQ ?? false, grad: idOk(saved.grad) ? saved.grad : "g-default",
       pat: saved.pat === "none" || idOk(saved.pat) ? saved.pat : "grid" };
     const m = G._gm, n = qs.length;
@@ -2773,7 +2775,7 @@ window.G = {
     $("gm-time").innerHTML = times.map(v => `<button type="button" role="radio" data-t="${v}">${v} с</button>`).join("");
     $("gm-sa").checked = !!m.shuffle; $("gm-sq").checked = !!m.shuffleQ;
     const notes = [];
-    if (all.length > n) notes.push(`${all.length - n} ${all.length - n === 1 ? "питання не увійде" : "питань не увійдуть"} у гру: такі типи в грі не підтримуються.`);
+    if (all.length > n) notes.push(`${all.length - n} ${all.length - n === 1 ? "питання не увійде" : "питань не увійдуть"} у гру: у live-режимі не працюють розгорнута відповідь, впорядкування з менше ніж двома або понад ${LC.ORDER_MAX} пунктів і зіставлення з менше ніж двома або понад ${LC.ORDER_MAX} парами чи з однаковою правильною відповіддю в кількох пунктів.`);
     const broken = qs.filter(q => q.type === "multi" && !_arr(q.correct).length && (q.correct == null || q.correct === "")).length;
     if (broken) notes.push(`${broken} ${broken === 1 ? "питання" : "питань"} з кількома відповідями не має позначених правильних.`);
     $("gm-note").hidden = !notes.length; $("gm-note").textContent = notes.join(" ");
@@ -2791,7 +2793,10 @@ window.G = {
     const btn = $("gm-go"); if (btn.disabled) return;
     const t = tests.find(x => x.id === m.id); if (!t) return;
     m.shuffle = $("gm-sa").checked; m.shuffleQ = $("gm-sq").checked;
-    const qs0 = _arr(t.questions).filter(q => q && ["single", "multi", "text", "number"].includes(q.type || "single"));
+    const LC = m.LC, tid = m.id;
+    // Впорядкування й зіставлення: у кімнату йдуть перемішані варіанти, правильний порядок лишається лише в ключі викладача
+    const qs0 = _arr(t.questions).filter(q => LC.isLiveQuestion(q)).map((q, i) => q.type === "ordering" ? { ...q, ...LC.shuffleOrdering(q, `${tid}:${q.id || i}:${Date.now()}`) }
+      : q.type === "matching" ? { ...q, ...LC.shuffleMatching(q, `${tid}:${q.id || i}:${Date.now()}`) } : q);
     btn.disabled = true; btn.textContent = "Створюємо гру…"; $("gm-err").textContent = "";
     try {
       let code = null;
@@ -2810,7 +2815,7 @@ window.G = {
           hostUid: _uid, testId: m.id, status: "lobby", currentQ: 0, timePerQ: m.time, scoring: m.scoring,
           theme: { grad: m.grad, pat: m.pat },
           options: { shuffle: !!m.shuffle, shuffleQ: !!m.shuffleQ, podium: m.saved.podium ?? true },
-          questions: list.map(q => ({ id: q.id || "", type: q.type || "single", text: q.text || "", options: q.options || null })),
+          questions: list.map(q => ({ id: q.id || "", type: q.type || "single", text: q.text || "", options: q.options || null, lefts: q.type === "matching" ? q.lefts : null })),
           testTitle: t.title || "", qCount: list.length, createdAt: now,
         },
         [`teachers/${_uid}/liveRooms/${code}`]: { createdAt: now, key },
