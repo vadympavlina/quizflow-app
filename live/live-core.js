@@ -127,33 +127,52 @@ export function richHtml(html) {
 
 // ─── Аватари гравців (герої): обирає учень при вході, діє лише в цій грі ───
 // Список генерується: cd tests && npm run avatars (quizflow-play). Картинки — assets/avatars/<id>.svg.
-import { AVATARS } from "./avatars.js?v=3";
-import { HATS, GLASSES, FIT, SC } from "./accessories.js?v=3";
-export { AVATARS, HATS, GLASSES };
-const AV_V = 3;                                           // піднімати, коли змінюються картинки
+import { AVATARS } from "./avatars.js?v=4";
+import { HATS, GLASSES, CLOTHES, HF, HAT_OV } from "./accessories.js?v=4";
+export { AVATARS, HATS, GLASSES, CLOTHES };
+const AV_V = 4;                                           // піднімати, коли змінюються картинки
 const AV_BY = new Map(AVATARS.map(a => [a.id, a]));
 export const avatarInfo = (id) => AV_BY.get(id) || null;
 export const avatarSrc = (id) => new URL(`../assets/avatars/${id}.svg?v=${AV_V}`, import.meta.url).href;
 export const AVATAR_ID_RE = /^[a-z0-9-]{1,24}$/;
 // Без аватара (старі гравці) лишаються ініціали на кольоровому тлі
 export const avatarFill = (nick, id) => avatarInfo(id)?.bg || avatarColor(nick);
-const HAT_BY = new Map(HATS.map(h => [h.id, h])), GL_BY = new Map(GLASSES.map(g => [g.id, g]));
+const HAT_BY = new Map(HATS.map(h => [h.id, h])), GL_BY = new Map(GLASSES.map(g => [g.id, g])), CL_BY = new Map(CLOTHES.map(c => [c.id, c]));
 export const hatInfo = (id) => HAT_BY.get(id) || null;
 export const glassesInfo = (id) => GL_BY.get(id) || null;
-// Розміщення убору/окулярів: спершу підгонка під героя, потім той самий масштаб, що й у самого героя
-const place = (charId, kind, dyExtra = 0) => {
-  const [k, sdy] = SC[charId] || [1, 0], [dx, dy, sc] = (FIT[charId] || {})[kind] || [0, 0, 1];
-  return `translate(100 ${106 + sdy}) scale(${k}) translate(-100 -106) translate(${100 + dx} ${100 + dy + dyExtra}) scale(${sc}) translate(-100 -100)`;
+export const outfitInfo = (id) => CL_BY.get(id) || null;
+// Усе розміщення рахується від даних героя (HF): де очі, де верх і краї голови, де підборіддя.
+const htAt = (H, dx) => { const i = Math.min(Math.abs(dx) / 5, H.ht.length - 1), a = Math.floor(i), b = Math.min(a + 1, H.ht.length - 1); return H.ht[a] + (H.ht[b] - H.ht[a]) * (i - a); };
+// Окуляри: центри лінз (72/128, ширина арту 56) стають на очі
+const glT = (H) => `translate(100 ${H.eyeY}) scale(${H.eyeSpan / 56}) translate(-100 -100)`;
+// Капелюх: низ іде по верху голови, розмір — від ширини голови, очі лишаються відкритими, верх не виходить за кадр
+const hatT = (id, H, h) => {
+  const half = H.w / 2, o = HAT_OV[id] || {};
+  if (h.id === "headphones") return `translate(100 ${H.top - 2}) scale(${Math.min((half + 8) / 80, 1)}) translate(-100 -36)`;
+  const s = (h.t * half / h.hw) * (o.sc ?? 1), cx = h.hw * s * .85;
+  let base = h.id === "halo" ? H.top : htAt(H, cx);
+  base = Math.min(base, H.eyeTop - 7) + h.sink * s;
+  const s2 = Math.min(s, (base + 18) / (h.y1 - h.top));
+  return `translate(100 ${base}) scale(${s2}) translate(-100 -${h.y1})`;
 };
-// Герой (+ убір, окуляри). Без аксесуарів — звичайна картинка; з ними — один inline-SVG (id всередині унікальні).
+// Одяг: герой стає так, щоб підборіддя лягло на лінію шиї (розмір і висота залежать від одягу), одяг малюється під головою й поверх неї
+const wearFit = (H, c) => {
+  const chin = Math.max(H.bottom, Math.min(H.full, H.bottom + 10)), ks = Math.min(c.fit.ks, (c.fit.chin - 8) / (chin - H.ovTop)), dy = c.fit.chin - chin * ks;
+  const half = H.w / 2 * ks, s = Math.max(.8, Math.min(1.14, half / 54));
+  return { HT: `translate(0 ${dy}) translate(100 0) scale(${ks}) translate(-100 0)`, T: `translate(100 ${c.fit.chin - 20}) scale(${s}) translate(-100 -100)`, half, chin: c.fit.chin };
+};
+const NECK = `<defs><radialGradient id="cl-neck"><stop offset="0" stop-color="#000" stop-opacity=".34"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>`;
+// Герой (+ окуляри, капелюх, одяг). Без аксесуарів — звичайна картинка; з ними — один inline-SVG (однакові id градієнтів скрізь однакові, тож на сторінці не конфліктують).
 export const avatarInner = (nick, id, opts = {}) => {
   if (!avatarInfo(id)) return esc(initialsOf(nick));
-  const hat = HAT_BY.get(opts?.hat), gl = GL_BY.get(opts?.glasses);
-  if (!hat && !gl) return `<img src="${esc(avatarSrc(id))}" alt="" draggable="false">`;
-  const vb = hat?.tall ? "0 -22 200 200" : "12 8 176 176";
-  return `<svg viewBox="${vb}" aria-hidden="true"><image href="${esc(avatarSrc(id))}" x="12" y="8" width="176" height="176"/>`
-    + (gl ? `<g transform="${place(id, "gl")}">${gl.svg}</g>` : "")
-    + (hat ? `<g transform="${place(id, "hat", hat.dy)}">${hat.svg}</g>` : "") + `</svg>`;
+  const hat = HAT_BY.get(opts?.hat), gl = GL_BY.get(opts?.glasses), cl = CL_BY.get(opts?.outfit), H = HF[id];
+  if ((!hat && !gl && !cl) || !H) return `<img src="${esc(avatarSrc(id))}" alt="" draggable="false">`;
+  const w = cl ? wearFit(H, cl) : null;
+  const hero = `<image href="${esc(avatarSrc(id))}" x="12" y="8" width="176" height="176"/>`
+    + (gl ? `<g transform="${glT(H)}">${gl.svg}</g>` : "") + (hat ? `<g transform="${hatT(id, H, hat)}">${hat.svg}</g>` : "");
+  const vb = hat ? "0 -22 200 200" : "12 8 176 176";
+  if (!w) return `<svg viewBox="${vb}" aria-hidden="true">${hero}</svg>`;
+  return `<svg class="ob" viewBox="${vb}" aria-hidden="true">${NECK}<g transform="${w.T}">${cl.back}</g><ellipse cx="100" cy="${w.chin - 3}" rx="${w.half * .9}" ry="7" fill="url(#cl-neck)"/><g transform="${w.HT}">${hero}</g><g transform="${w.T}">${cl.front}</g></svg>`;
 };
 export const randomAvatar = () => AVATARS[Math.floor(Math.random() * AVATARS.length)]?.id || "";
 
@@ -424,7 +443,7 @@ export function standings(players, allAnswers) {
   const tally = tallyAnswers(allAnswers);
   const list = Object.entries(players || {})
     .filter(([, p]) => p && p.active !== false)
-    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", hat: p.hat || "", glasses: p.glasses || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0, streak: 0 }) }))
+    .map(([pid, p]) => ({ pid, nickname: p.nickname || "—", avatar: p.avatar || "", hat: p.hat || "", glasses: p.glasses || "", outfit: p.outfit || "", ...(tally[pid] || { score: 0, correct: 0, answered: 0, streak: 0 }) }))
     .sort((a, b) => b.score - a.score || b.correct - a.correct || tieKey(a.pid) - tieKey(b.pid));
   return denseRank(list);
 }
