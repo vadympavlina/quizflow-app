@@ -128,7 +128,7 @@ export function richHtml(html) {
 // ─── Аватари гравців (герої): обирає учень при вході, діє лише в цій грі ───
 // Список генерується: cd tests && npm run avatars (quizflow-play). Картинки — assets/avatars/<id>.svg.
 import { AVATARS } from "./avatars.js?v=4";
-import { HATS, GLASSES, CLOTHES, HF, HAT_OV } from "./accessories.js?v=6";
+import { HATS, GLASSES, CLOTHES, HF, HAT_OV } from "./accessories.js?v=7";
 export { AVATARS, HATS, GLASSES, CLOTHES };
 const AV_V = 4;                                           // піднімати, коли змінюються картинки
 const AV_BY = new Map(AVATARS.map(a => [a.id, a]));
@@ -159,7 +159,7 @@ const hatT = (id, H, h) => {
 const wearFit = (H, c) => {
   const chin = Math.max(H.bottom, Math.min(H.full, H.bottom + 10)), ks = Math.min(c.fit.ks, (c.fit.chin - 8) / (chin - H.ovTop)), dy = c.fit.chin - chin * ks;
   const half = H.w / 2 * ks, s = Math.max(.8, Math.min(1.14, half / 54));
-  return { HT: `translate(0 ${dy}) translate(100 0) scale(${ks}) translate(-100 0)`, T: `translate(100 ${c.fit.chin - 20}) scale(${s}) translate(-100 -100)`, half, chin: c.fit.chin };
+  return { HT: `translate(0 ${dy}) translate(100 0) scale(${ks}) translate(-100 0)`, T: `translate(100 ${c.fit.chin}) scale(${s}) translate(-100 -120)`, half, chin: c.fit.chin };
 };
 const NECK = `<defs><radialGradient id="cl-neck"><stop offset="0" stop-color="#000" stop-opacity=".34"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>`;
 // Герой (+ окуляри, капелюх, одяг). Без аксесуарів — звичайна картинка; з ними — один inline-SVG (однакові id градієнтів скрізь однакові, тож на сторінці не конфліктують).
