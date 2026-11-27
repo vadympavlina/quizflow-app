@@ -128,7 +128,7 @@ export function richHtml(html) {
 // ─── Аватари гравців (герої): обирає учень при вході, діє лише в цій грі ───
 // Список генерується: cd tests && npm run avatars (quizflow-play). Картинки — assets/avatars/<id>.svg.
 import { AVATARS } from "./avatars.js?v=4";
-import { HATS, GLASSES, CLOTHES, HF, HAT_OV } from "./accessories.js?v=5";
+import { HATS, GLASSES, CLOTHES, HF, HAT_OV } from "./accessories.js?v=6";
 export { AVATARS, HATS, GLASSES, CLOTHES };
 const AV_V = 4;                                           // піднімати, коли змінюються картинки
 const AV_BY = new Map(AVATARS.map(a => [a.id, a]));
