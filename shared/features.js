@@ -2673,8 +2673,9 @@ window.G = {
   },
   async khLoad(){
     const url = ($("nt-kh-url")?.value || "").trim(), msg = $("nt-kh-msg"), btn = $("nt-kh-go");
-    if (!url || btn?.disabled) return;
     const say = (t, kind) => { msg.hidden = !t; msg.textContent = t || ""; msg.className = "nt-kh-msg" + (kind ? " " + kind : ""); };
+    if (btn?.disabled) return;
+    if (!url){ say("Вставте посилання на публічний тест Kahoot", "err"); $("nt-kh-url")?.focus(); return; }
     btn.disabled = true; btn.textContent = "Завантажую…"; say("Завантажуємо тест із Kahoot…");
     try {
       const wurl = String((await get(ref(db, "settings/mail/workerUrl"))).val() || "").replace(/\/+$/, "");
@@ -5349,6 +5350,8 @@ window.initFeatures = async function initFeatures(){
 
   // Онбординг
   setTimeout(()=>{ if(typeof checkOnboarding==="function") checkOnboarding(); }, 300);
+  // Сторінка повністю готова (дані, модалки, обробники): на це чекають тести, а не на окремі ознаки
+  document.documentElement.dataset.qfReady = "1";
 };
 // ─── Helpers для нового дизайну ────────────────────────────────────────
 
