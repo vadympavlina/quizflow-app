@@ -2759,7 +2759,7 @@ window.G = {
     if (window.qfCan && !window.qfCan("games.run")) return;
     const t = tests.find(x => x.id === testId); if (!t) return;
     // Правила «що йде в гру» — ті самі, що на сторінці налаштувань гри (усі 7 типів, перевірка впорядкування й зіставлення)
-    const LC = await import("../live/live-core.js?v=18");
+    const LC = await import("../live/live-core.js?v=19");
     const all = _arr(t.questions);
     const qs = all.filter(q => LC.isLiveQuestion(q));
     if (!qs.length) { toast("У тесті немає питань, які підходять для гри", "err"); return; }
