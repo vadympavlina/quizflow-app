@@ -20,8 +20,9 @@ async function fakeWorker(page, calls, reply) {
   });
 }
 // Сторінка готова, коли підключено G і відновлено користувача (а не «через 800 мс»: на повільній машині цього мало)
+// qfReady ставить initFeatures наприкінці: дані завантажені, модалки вставлені, обробники кліків підключені
 const ready = page => page.waitForFunction(async () => {
-  if (!window.G?.openTestInFolder || !document.getElementById("sb-new")) return false;
+  if (document.documentElement.dataset.qfReady !== "1" || !window.G?.openTestInFolder || !document.getElementById("m-test")) return false;
   const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
   return !!m.getAuth().currentUser;
 }, null, { timeout: 30000 });
@@ -78,6 +79,7 @@ test("Новий тест: посилання на Kahoot підставляє �
   await page.locator("#nt-kh-t").click();                                      // маленька кнопка «Імпортувати з Kahoot»
   await expect(page.locator("#nt-kh")).toBeVisible();
   await page.fill("#nt-kh-url", KH);
+  await expect(page.locator("#nt-kh-url")).toHaveValue(KH);
   await page.locator("#nt-kh-go").click();
   await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
   await expect(page.locator("#nt-kh-rtitle")).toHaveText("Minecraft AI: Розумні світи");
@@ -107,6 +109,7 @@ test("Новий тест: помилка Kahoot не блокує звичай�
   await page.locator("#sb-new").click();
   await page.locator("#nt-kh-t").click();
   await page.fill("#nt-kh-url", KH);
+  await expect(page.locator("#nt-kh-url")).toHaveValue(KH);
   await page.locator("#nt-kh-go").click();
   await expect(page.locator("#nt-kh-msg")).toContainText("приватний", { timeout: 20000 });
   await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
@@ -125,6 +128,7 @@ test("Новий тест: «Змінити» повертає до поля п�
   await page.locator("#sb-new").click();
   await page.locator("#nt-kh-t").click();
   await page.fill("#nt-kh-url", KH);
+  await expect(page.locator("#nt-kh-url")).toHaveValue(KH);
   await page.locator("#nt-kh-go").click();
   await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
   await page.locator("#nt-kh-res >> text=Змінити").click();
@@ -132,6 +136,7 @@ test("Новий тест: «Змінити» повертає до поля п�
   await expect(page.locator("#nt-kh-url")).toHaveValue("");
   await expect(page.locator("#nt-submit")).toHaveText("Створити тест →");
   await page.fill("#nt-kh-url", KH);
+  await expect(page.locator("#nt-kh-url")).toHaveValue(KH);
   await page.locator("#nt-kh-go").click();
   await expect(page.locator("#nt-kh-res")).toBeVisible({ timeout: 20000 });
   await page.keyboard.press("Escape");
@@ -156,8 +161,22 @@ test("Новий тест: якщо сесія ще не відновилась,
     setTimeout(() => { a.currentUser = u; }, 600);
   });
   await page.fill("#nt-kh-url", KH);
+  await expect(page.locator("#nt-kh-url")).toHaveValue(KH);
   await page.locator("#nt-kh-go").click();
   await expect(page.locator("#nt-kh-msg")).toContainText("приватний", { timeout: 20000 });   // дійшло до воркера
   expect(calls[0].auth).toBe("Bearer mock-token-t1");
   expect(errors.filter(e => !/404/.test(e))).toEqual([]);
+});
+
+test("Новий тест: «Завантажити» без посилання підказує вставити посилання, а не мовчить", async ({ page, errors }) => {
+  const calls = [];
+  await fakeWorker(page, calls, { body: OK });
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await ready(page);
+  await page.locator("#sb-new").click();
+  await page.locator("#nt-kh-t").click();
+  await page.locator("#nt-kh-go").click();
+  await expect(page.locator("#nt-kh-msg")).toContainText("Вставте посилання");
+  expect(calls).toHaveLength(0);
+  expect(errors).toEqual([]);
 });

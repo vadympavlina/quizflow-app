@@ -108,8 +108,8 @@ test.describe("телефон", () => {
     await openPhone(page);
     await page.locator('[data-act="type-menu"]').click();
     const sheet = page.locator(".pop.sheet");
-    await expect(sheet).toBeVisible();
-    await page.waitForTimeout(450);
+    await expect(sheet).toHaveClass(/is-in/);
+    await page.waitForTimeout(450);                                      // анімація виїзду .3с
     const box = await sheet.boundingBox();
     expect(Math.round(box.y + box.height)).toBe(844);
     expect(box.height).toBeGreaterThan(300);                             // шторка показує всі типи, а не тільки заголовок

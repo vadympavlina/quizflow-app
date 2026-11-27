@@ -2407,8 +2407,11 @@ function bindSheetSwipe(el, scrim){
   };
   el.addEventListener("pointerup", end(false)); el.addEventListener("pointercancel", end(true));
 }
-addEventListener("resize", closePop);
-$("ed").addEventListener("scroll", closePop, { passive: true });
+// Звичайний поповер прив'язаний до кнопки, тож при зміні розміру чи прокрутці закривається.
+// Шторка знизу ні до чого не прив'язана: на телефоні resize буває сам (ховається адресний рядок), її не чіпаємо.
+const closeAnchored = () => { if (_pop && !_pop.scrim) closePop(); };
+addEventListener("resize", closeAnchored);
+$("ed").addEventListener("scroll", closeAnchored, { passive: true });
 document.addEventListener("mousedown", e => { if (_pop && !_pop.el.contains(e.target) && !_pop.anchor.contains(e.target)) closePop(); });
 
 const typeMenu = cur => `<div class="pop-h">Тип питання</div>` + TYPE_ORDER.map(k => `<button class="pi${k === cur ? " on" : ""}" data-v="${k}"><span class="type-ic" style="--c:${TYPES[k].c}">${ic(k, 13, 2.2)}</span><div class="pi-txt"><div>${TYPES[k].label}</div><div class="d">${TYPES[k].d}</div></div>${k === cur ? `<span class="chk">${ic("check", 15, 2.6)}</span>` : ""}</button>`).join("");
