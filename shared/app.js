@@ -527,6 +527,8 @@ window.openM = function (id) {
   // Фокус: [autofocus] → перше порожнє поле → перша кнопка
   setTimeout(() => {
     if (!el.classList.contains("on") && el.style.display === "none") return;
+    // Фокус уже у модалці (клікнули чи почали вводити за ці 60 мс) — не перебиваємо: текст потрапив би в інше поле
+    if (el.contains(document.activeElement) && document.activeElement !== el) return;
     const f = el.querySelector("[autofocus]:not([disabled])")
       || [...el.querySelectorAll("input:not([type=hidden]):not([disabled]),textarea:not([disabled])")].find(x => x.offsetParent && !x.value)
       || el.querySelector(".mb button:not(.mcl):not([disabled])");
