@@ -82,6 +82,7 @@
     bell:       '<path d="M6 15V11a6 6 0 1112 0v4l1.5 3h-15z"/><path d="M10 20a2 2 0 004 0"/>',
     shield:     '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     live:       '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>',
+    updates:    '<path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
     news:       '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 9h6M7 13h6M7 17h4"/><path d="M17 8h3v9a2 2 0 01-2 2"/>',
     analytics:  '<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M3 20h18"/>',
     star:       '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
@@ -141,8 +142,26 @@
       { id: "suspicious", label: "Підозрілі", file: "suspicious", icon: "shield" },
       { id: "online", label: "Онлайн", file: "online", icon: "live" },
       { id: "news", label: "Новини", file: "news", icon: "news" },
+      { id: "updates", label: "Оновлення", file: "updates", icon: "updates" },
     ] },
   ];
+
+  // Меню з бази могло бути збережене до появи «Оновлень»: додаємо пункт після «Новин», якщо його ще немає
+  function withUpdates(nav) {
+    var has = nav.some(function (s) { return (s.items || []).some(function (it) { return it && it.id === "updates"; }); });
+    if (has) return nav;
+    var done = false;
+    var out = nav.map(function (s) {
+      if (done || !Array.isArray(s.items)) return s;
+      var i = s.items.findIndex(function (it) { return it && it.id === "news"; });
+      if (i < 0) return s;
+      done = true;
+      var items = s.items.slice();
+      items.splice(i + 1, 0, { id: "updates", label: "Оновлення", file: "updates", icon: "updates" });
+      return Object.assign({}, s, { items: items });
+    });
+    return out;
+  }
 
   var BADGE_IDS = {
     tests: "nb-t", attempts: "nb-a", links: "nb-l",
@@ -304,7 +323,7 @@
   // Малює (або перемальовує) меню. Лічильники й скрол переносяться зі старого.
   function render(nav, opts) {
     opts = opts || {};
-    nav = Array.isArray(nav) && nav.length ? nav : DEFAULT_NAV;
+    nav = Array.isArray(nav) && nav.length ? withUpdates(nav) : DEFAULT_NAV;
     state.nav = nav;
     var old = document.getElementById("sidebar");
     var badges = {}, scroll = 0;

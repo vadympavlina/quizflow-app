@@ -3,7 +3,7 @@ import { test, expect, seed } from "./fixtures.mjs";
 
 const db = { users: { t1: { role: "admin", name: "A" } }, teachers: { t1: { tests: { T1: { title: "x", questions: [] } } } } };
 const GROUPS = {
-  panel: ["/", "tests", "attempts", "links", "analytics", "notifications", "students", "gradebook", "suspicious", "online", "news", "live", "game-history", "constructor?id=T1", "onboarding", "profile"],
+  panel: ["/", "tests", "attempts", "links", "analytics", "notifications", "students", "gradebook", "suspicious", "online", "news", "updates", "live", "game-history", "constructor?id=T1", "onboarding", "profile"],
   public: ["login", "register"],
   // сторінки ведучого гри (запуск, лобі, екран, подіум) без параметрів гри
   host: ["live/setup"],
