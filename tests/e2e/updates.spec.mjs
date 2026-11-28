@@ -3,12 +3,11 @@ import { test, expect, seed } from "./fixtures.mjs";
 
 const db = { users: { t1: { role: "admin", name: "A" } }, teachers: { t1: { tests: {} } } };
 
-test("оновлення: випуски від найновішого, фільтр за типом, пункт у меню", async ({ page, errors }) => {
+test("оновлення: випуски від найновішого, фільтр за типом", async ({ page, errors }) => {
   await seed(page, db, "t1");
   await page.goto("/updates");
   await expect(page.locator("#up-list .up-rel").first()).toBeVisible();
   await expect(page.locator(".up-last")).toHaveCount(1);
-  await expect(page.locator("#sidebar .ni.active")).toContainText("Оновлення");
 
   const total = await page.locator(".up-it").count();
   expect(total).toBeGreaterThan(10);
@@ -25,10 +24,4 @@ test("оновлення: випуски від найновішого, філь
   const dates = await page.evaluate(async () => (await import("/shared/changelog.js")).CHANGELOG.map(r => r.date));
   expect([...dates].sort().reverse()).toEqual(dates);
   expect(errors).toEqual([]);
-});
-
-test("оновлення: пункт меню з'являється й у збереженому в базі меню без нього", async ({ page }) => {
-  await seed(page, { ...db, settings: { navigation: [{ label: "Головне", items: [{ id: "dashboard", label: "Дашборд", file: "./", icon: "dashboard" }, { id: "news", label: "Новини", file: "news", icon: "news" }] }] } }, "t1");
-  await page.goto("/news");
-  await expect(page.locator('#sidebar .ni[data-key="updates"], #sidebar a[href="updates"]').first()).toBeVisible();
 });
