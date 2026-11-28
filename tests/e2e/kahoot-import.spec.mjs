@@ -21,11 +21,16 @@ async function fakeWorker(page, calls, reply) {
 }
 // Сторінка готова, коли підключено G і відновлено користувача (а не «через 800 мс»: на повільній машині цього мало)
 // qfReady ставить initFeatures наприкінці: дані завантажені, модалки вставлені, обробники кліків підключені
-const ready = page => page.waitForFunction(async () => {
-  if (document.documentElement.dataset.qfReady !== "1" || !window.G?.openTestInFolder || !document.getElementById("m-test")) return false;
-  const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-  return !!m.getAuth().currentUser;
-}, null, { timeout: 30000 });
+// Увага: waitForFunction не чекає на проміс, який повертає async-функція (повернений Promise завжди «істинний»),
+// тому умова синхронна, а вхід користувача чекаємо окремим циклом
+const ready = async page => {
+  await page.waitForFunction(() => document.documentElement.dataset.qfReady === "1" && !!window.G?.openTestInFolder && !!document.getElementById("m-test"), null, { timeout: 30000 });
+  await page.evaluate(async () => {
+    const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const t0 = Date.now();
+    while (!m.getAuth().currentUser) { if (Date.now() - t0 > 30000) throw new Error("користувача не відновлено"); await new Promise(r => setTimeout(r, 50)); }
+  });
+};
 const db = () => { const d = rich(Date.now()); d.settings = { mail: { workerUrl: WORKER }, ai: { enabled: true } }; return d; };
 
 test("Kahoot: посилання → перегляд питань → імпорт у тест; текст питань екранується", async ({ page, errors }) => {
@@ -179,4 +184,18 @@ test("Новий тест: «Завантажити» без посилання 
   await expect(page.locator("#nt-kh-msg")).toContainText("Вставте посилання");
   expect(calls).toHaveLength(0);
   expect(errors).toEqual([]);
+});
+
+test("Новий тест: автофокус модалки не забирає фокус із поля, куди вже почали вводити", async ({ page }) => {
+  await seed(page, db(), "t1");
+  await page.goto("/tests"); await ready(page);
+  // Це справжня причина нестабільності тестів Kahoot: модалка через 60 мс після відкриття ставила фокус
+  // у перше порожнє поле (назва), і текст, який щойно почали вводити в поле посилання, потрапляв не туди
+  const active = await page.evaluate(async () => {
+    window.G.openTestInFolder(null); window.G.khToggle();
+    document.getElementById("nt-kh-url").focus();
+    await new Promise(r => setTimeout(r, 250));
+    return document.activeElement.id;
+  });
+  expect(active).toBe("nt-kh-url");
 });
