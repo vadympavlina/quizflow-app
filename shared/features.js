@@ -5070,11 +5070,17 @@ function renderNews(){
     return;
   }
 
+  const MON_NOM = ["січень","лютий","березень","квітень","травень","червень","липень","серпень","вересень","жовтень","листопад","грудень"];
+  let lastMonth = "";
   list.innerHTML = items.map(n => {
     const c = catOf(n), t = _nwWhen(n), d = t ? new Date(t) : null;
     const mon = d ? d.toLocaleDateString("uk-UA", { month: "short" }).replace(".", "") : "";
     const isNew = _nwFresh.has(n.id);
-    return `<div class="nwa-item">
+    // Заголовок місяця, коли новини переходять в інший місяць
+    const mKey = d ? `${d.getFullYear()}-${d.getMonth()}` : "";
+    const head = mKey && mKey !== lastMonth ? `<h2 class="nwa-month">${MON_NOM[d.getMonth()]} ${d.getFullYear()}</h2>` : "";
+    if (mKey) lastMonth = mKey;
+    return `${head}<div class="nwa-item">
       <div class="nwa-date">${d ? `<b>${d.getDate()}</b><span>${esc(mon)} ${d.getFullYear()}</span>` : ""}</div>
       <article class="nwa-card${_nwOpen.has(n.id) ? " open" : ""}${isNew ? " fresh" : ""}${n.id === _nwFocus ? " focus" : ""}" data-nid="${esc(n.id)}" style="${c ? `--c:${c.color};--cb:${c.bg}` : ""}">
         <div class="nwa-meta">

@@ -29,7 +29,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="shared/styles.css?v=63">
 <link rel="modulepreload" href="shared/app.js?v=49">
-<link rel="modulepreload" href="shared/features.js?v=61">
+<link rel="modulepreload" href="shared/features.js?v=62">
 
 <style>
 #sec-updates{
@@ -38,46 +38,32 @@
   --c-new:#2563EB; --c-better:#0F9D8A; --c-fix:#C27A0E;
   font-family:"Manrope",system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:var(--ink-900);
 }
-#sec-updates .up-wrap{max-width:900px;margin:0 auto}
-#sec-updates .up-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em}
-#sec-updates .up-head p{margin:4px 0 0;color:var(--ink-500);font-size:14px;line-height:1.5}
-#sec-updates .up-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 0 22px}
+#sec-updates .up-wrap{max-width:none}
+#sec-updates .up-head p{margin:0;color:var(--ink-500);font-size:14px;line-height:1.5}
+#sec-updates .up-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 8px}
 #sec-updates .up-chip{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--ink-700);cursor:pointer;transition:border-color .15s,background .15s,color .15s}
 #sec-updates .up-chip:hover{border-color:var(--line-strong);color:var(--ink-900)}
 #sec-updates .up-chip.on{background:var(--qf-primary-soft);border-color:#BFD3FF;color:var(--qf-primary-dark)}
 #sec-updates .up-chip i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--ink-400))}
 #sec-updates .up-chip em{font-style:normal;font-family:"Geist Mono",monospace;font-size:12px;color:var(--ink-400)}
 #sec-updates .up-chip:focus-visible{outline:3px solid rgba(37,99,235,.35);outline-offset:2px}
-#sec-updates .up-list{display:flex;flex-direction:column}
-#sec-updates .up-rel{display:grid;grid-template-columns:96px minmax(0,1fr);gap:26px;position:relative;padding-bottom:26px}
-#sec-updates .up-rel::before{content:"";position:absolute;left:108px;top:22px;bottom:-4px;width:2px;background:var(--line)}
-#sec-updates .up-rel:last-child::before{display:none}
-#sec-updates .up-date{text-align:right;padding-top:16px}
-#sec-updates .up-date b{display:block;font-size:24px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-#sec-updates .up-date span{display:block;margin-top:5px;font-size:12px;color:var(--ink-400);font-family:"Geist Mono",monospace}
-#sec-updates .up-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 24px 8px}
-#sec-updates .up-card::before{content:"";position:absolute;left:-23px;top:17px;width:10px;height:10px;border-radius:50%;background:#fff;border:3px solid var(--qf-primary)}
-#sec-updates .up-rel.latest .up-card{border-color:#BFD3FF;box-shadow:0 8px 30px rgba(45,91,227,.08)}
-#sec-updates .up-last{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12px;font-weight:800;color:var(--c-new)}
-#sec-updates .up-last::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c-new);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+#sec-updates .up-month{display:flex;align-items:center;gap:12px;margin:22px 0 6px;font-size:13px;font-weight:800;color:var(--ink-400);text-transform:capitalize}
+#sec-updates .up-month::after{content:"";flex:1;height:1px;background:var(--line)}
+#sec-updates .up-rel{padding:10px 0 20px}
+#sec-updates .up-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 #sec-updates .up-t{margin:0;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.3;text-wrap:balance}
-#sec-updates .up-lead{margin:6px 0 0;font-size:15px;line-height:1.6;color:var(--ink-500);max-width:62ch}
-#sec-updates .up-items{list-style:none;margin:16px 0 0;padding:0}
-#sec-updates .up-it{display:grid;grid-template-columns:104px minmax(0,1fr);gap:14px;padding:14px 0;border-top:1px solid var(--line)}
-#sec-updates .up-tag{display:inline-flex;align-items:center;gap:7px;height:24px;font-size:13px;font-weight:800;color:var(--c)}
-#sec-updates .up-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
-#sec-updates .up-it h3{margin:0;font-size:16px;font-weight:700;line-height:1.4;color:var(--ink-900)}
+#sec-updates .up-d{font-family:"Geist Mono",monospace;font-size:12px;color:var(--ink-400)}
+#sec-updates .up-last{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--c-new)}
+#sec-updates .up-last::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c-new);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+#sec-updates .up-lead{margin:4px 0 6px;font-size:15px;line-height:1.6;color:var(--ink-500);max-width:62ch}
+#sec-updates .up-it{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;padding:10px 0}
+#sec-updates .up-pill{height:26px;align-self:start;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-size:12.5px;font-weight:800;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c)}
+#sec-updates .up-it h4{margin:0;font-size:16px;font-weight:700;line-height:1.4;color:var(--ink-900)}
 #sec-updates .up-it p{margin:3px 0 0;font-size:15px;line-height:1.6;color:var(--ink-700);max-width:62ch}
-#sec-updates .up-empty{padding:48px 20px;text-align:center;color:var(--ink-500);font-size:14px;background:#fff;border:1px dashed var(--line-strong);border-radius:18px}
+#sec-updates .up-empty{padding:48px 20px;text-align:center;color:var(--ink-500);font-size:14px;background:#fff;border:1px dashed var(--line-strong);border-radius:18px;margin-top:16px}
 @media (max-width:640px){
-  #sec-updates .up-head h1{font-size:24px}
-  #sec-updates .up-rel{grid-template-columns:minmax(0,1fr);gap:8px;padding-bottom:18px}
-  #sec-updates .up-rel::before,#sec-updates .up-card::before{display:none}
-  #sec-updates .up-date{display:flex;align-items:baseline;gap:8px;text-align:left;padding:0 2px}
-  #sec-updates .up-date b{font-size:18px}
-  #sec-updates .up-date span{margin-top:0}
-  #sec-updates .up-card{padding:16px 16px 4px}
-  #sec-updates .up-it{grid-template-columns:minmax(0,1fr);gap:4px}
+  #sec-updates .up-it{grid-template-columns:minmax(0,1fr);gap:6px}
+  #sec-updates .up-pill{justify-self:start;padding:0 12px}
   #sec-updates .up-chip{height:44px}
 }
 @media (prefers-reduced-motion:reduce){#sec-updates *{transition:none!important}}
@@ -109,7 +95,7 @@
 
 <script type="module">
 const { initApp, esc } = await import("./shared/app.js?v=49");
-const featuresP = import("./shared/features.js?v=61");
+const featuresP = import("./shared/features.js?v=62");
 const { CHANGELOG } = await import("./shared/changelog.js?v=1");
 
 const TYPES = { new: ["Нове", "var(--c-new)"], better: ["Покращено", "var(--c-better)"], fix: ["Виправлено", "var(--c-fix)"] };
@@ -127,20 +113,21 @@ function renderBar(){
   document.getElementById("up-bar").innerHTML = chips.map(([k, l, col]) =>
     `<button type="button" class="up-chip${filter === k ? " on" : ""}" data-f="${k}" aria-pressed="${filter === k}">${col ? `<i style="--c:${col}"></i>` : ""}${esc(l)}<em>${c[k]}</em></button>`).join("");
 }
+const MON_NOM = ["січень","лютий","березень","квітень","травень","червень","липень","серпень","вересень","жовтень","листопад","грудень"];
 function renderList(){
   const rels = CHANGELOG.map(r => ({ ...r, items: r.items.filter(i => filter === "all" || i.t === filter) })).filter(r => r.items.length);
   const el = document.getElementById("up-list");
   if (!rels.length){ el.innerHTML = '<div class="up-empty">Нічого не знайдено</div>'; return; }
+  let cur = "";
   el.innerHTML = rels.map((r, n) => {
     const [y, m, d] = r.date.split("-").map(Number);
-    return `<article class="up-rel${n === 0 && filter === "all" ? " latest" : ""}">
-      <div class="up-date"><b>${d}</b><span>${MON[m - 1]} ${y}</span></div>
-      <div class="up-card">
-        ${n === 0 && filter === "all" ? '<div class="up-last">Останнє оновлення</div>' : ""}
-        <h2 class="up-t">${esc(r.title)}</h2>
-        ${r.lead ? `<p class="up-lead">${esc(r.lead)}</p>` : ""}
-        <ul class="up-items">${r.items.map(i => `<li class="up-it"><span class="up-tag" style="--c:${TYPES[i.t][1]}">${TYPES[i.t][0]}</span><div><h3>${esc(i.h)}</h3>${i.d ? `<p>${esc(i.d)}</p>` : ""}</div></li>`).join("")}</ul>
-      </div>
+    const key = r.date.slice(0, 7);
+    const head = key !== cur ? `<h2 class="up-month">${MON_NOM[m - 1]} ${y}</h2>` : "";
+    cur = key;
+    return `${head}<article class="up-rel">
+      <div class="up-h"><h3 class="up-t">${esc(r.title)}</h3><span class="up-d">${d} ${MON[m - 1]} ${y}</span>${n === 0 && filter === "all" ? '<span class="up-last">Останнє оновлення</span>' : ""}</div>
+      ${r.lead ? `<p class="up-lead">${esc(r.lead)}</p>` : ""}
+      ${r.items.map(i => `<div class="up-it" style="--c:${TYPES[i.t][1]}"><span class="up-pill">${TYPES[i.t][0]}</span><div><h4>${esc(i.h)}</h4>${i.d ? `<p>${esc(i.d)}</p>` : ""}</div></div>`).join("")}
     </article>`;
   }).join("");
 }

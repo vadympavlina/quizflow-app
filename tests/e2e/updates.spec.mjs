@@ -15,7 +15,7 @@ test("оновлення: випуски від найновішого, філь
   const fixes = await page.locator(".up-it").count();
   expect(fixes).toBeGreaterThan(0);
   expect(fixes).toBeLessThan(total);
-  await expect(page.locator(".up-it .up-tag:not(:has-text('Виправлено'))")).toHaveCount(0);
+  await expect(page.locator(".up-it .up-pill:not(:has-text('Виправлено'))")).toHaveCount(0);
   await expect(page.locator(".up-last")).toHaveCount(0);       // позначка «останнє» лише без фільтра
   await page.locator('.up-chip[data-f="all"]').click();
   expect(await page.locator(".up-it").count()).toBe(total);
