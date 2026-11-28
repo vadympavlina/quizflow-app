@@ -2,7 +2,7 @@
 import { test, expect, seed } from "./fixtures.mjs";
 import { rich } from "./seeds/rich.mjs";
 
-const PANEL = ["/", "tests", "attempts", "links", "analytics", "notifications", "students", "gradebook", "suspicious", "online", "news", "game-history", "profile"];
+const PANEL = ["/", "tests", "attempts", "links", "analytics", "notifications", "students", "gradebook", "suspicious", "online", "news", "updates", "game-history", "profile"];
 
 test("кожна сторінка показує шлях «Розділ / Сторінка», а видимий заголовок не повторює його", async ({ page, errors }) => {
   await seed(page, rich(Date.now()), "t1");

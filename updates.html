@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/assets/icons/teacher/favicon.ico?v=3" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/teacher/apple-touch-icon.png?v=3">
+<link rel="manifest" href="/assets/icons/teacher/site.webmanifest?v=3">
+<!-- Прев'ю посилання в месенджерах (картинки: cd tests && npm run og) -->
+<meta name="description" content="Платформа для викладачів: тести за посиланням з автоперевіркою, журнал оцінок 1–12, аналітика й вікторини наживо для всього класу.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="QuizFlow">
+<meta property="og:locale" content="uk_UA">
+<meta property="og:title" content="QuizFlow — тести, журнал і ігри наживо">
+<meta property="og:description" content="Платформа для викладачів: тести за посиланням з автоперевіркою, журнал оцінок 1–12, аналітика й вікторини наживо для всього класу.">
+<meta property="og:image" content="https://app.quizflow.space/assets/og/teacher.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="QuizFlow — тести, журнал і ігри наживо">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="QuizFlow — тести, журнал і ігри наживо">
+<meta name="twitter:description" content="Платформа для викладачів: тести за посиланням з автоперевіркою, журнал оцінок 1–12, аналітика й вікторини наживо для всього класу.">
+<meta name="twitter:image" content="https://app.quizflow.space/assets/og/teacher.jpg?v=2">
+<title>QuizFlow — Оновлення</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="shared/styles.css?v=63">
+<link rel="modulepreload" href="shared/app.js?v=48">
+<link rel="modulepreload" href="shared/features.js?v=61">
+
+<style>
+#sec-updates{
+  --ink-900:var(--qf-ink-900); --ink-700:var(--qf-ink-700); --ink-500:var(--qf-ink-500); --ink-400:var(--qf-ink-400);
+  --line:var(--qf-line); --line-strong:var(--qf-line-strong);
+  --c-new:#2563EB; --c-better:#0F9D8A; --c-fix:#C27A0E;
+  font-family:"Manrope",system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:var(--ink-900);
+}
+#sec-updates .up-wrap{max-width:860px}
+#sec-updates .up-head h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em}
+#sec-updates .up-head p{margin:4px 0 0;color:var(--ink-500);font-size:14px;line-height:1.5}
+#sec-updates .up-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 0 22px}
+#sec-updates .up-chip{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:700;color:var(--ink-700);cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+#sec-updates .up-chip:hover{border-color:var(--line-strong);color:var(--ink-900)}
+#sec-updates .up-chip.on{background:var(--qf-primary-soft);border-color:#BFD3FF;color:var(--qf-primary-dark)}
+#sec-updates .up-chip i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--ink-400))}
+#sec-updates .up-chip em{font-style:normal;font-family:"Geist Mono",monospace;font-size:12px;color:var(--ink-400)}
+#sec-updates .up-chip:focus-visible{outline:3px solid rgba(37,99,235,.35);outline-offset:2px}
+#sec-updates .up-list{display:flex;flex-direction:column}
+#sec-updates .up-rel{display:grid;grid-template-columns:96px minmax(0,1fr);gap:26px;position:relative;padding-bottom:26px}
+#sec-updates .up-rel::before{content:"";position:absolute;left:108px;top:22px;bottom:-4px;width:2px;background:var(--line)}
+#sec-updates .up-rel:last-child::before{display:none}
+#sec-updates .up-date{text-align:right;padding-top:16px}
+#sec-updates .up-date b{display:block;font-size:24px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#sec-updates .up-date span{display:block;margin-top:5px;font-size:12px;color:var(--ink-400);font-family:"Geist Mono",monospace}
+#sec-updates .up-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 24px 8px}
+#sec-updates .up-card::before{content:"";position:absolute;left:-23px;top:17px;width:10px;height:10px;border-radius:50%;background:#fff;border:3px solid var(--qf-primary)}
+#sec-updates .up-rel.latest .up-card{border-color:#BFD3FF;box-shadow:0 8px 30px rgba(45,91,227,.08)}
+#sec-updates .up-last{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12px;font-weight:800;color:var(--c-new)}
+#sec-updates .up-last::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c-new);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+#sec-updates .up-t{margin:0;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.3;text-wrap:balance}
+#sec-updates .up-lead{margin:6px 0 0;font-size:15px;line-height:1.6;color:var(--ink-500);max-width:62ch}
+#sec-updates .up-items{list-style:none;margin:16px 0 0;padding:0}
+#sec-updates .up-it{display:grid;grid-template-columns:104px minmax(0,1fr);gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+#sec-updates .up-tag{display:inline-flex;align-items:center;gap:7px;height:24px;font-size:13px;font-weight:800;color:var(--c)}
+#sec-updates .up-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+#sec-updates .up-it h3{margin:0;font-size:16px;font-weight:700;line-height:1.4;color:var(--ink-900)}
+#sec-updates .up-it p{margin:3px 0 0;font-size:15px;line-height:1.6;color:var(--ink-700);max-width:62ch}
+#sec-updates .up-empty{padding:48px 20px;text-align:center;color:var(--ink-500);font-size:14px;background:#fff;border:1px dashed var(--line-strong);border-radius:18px}
+@media (max-width:640px){
+  #sec-updates .up-head h1{font-size:24px}
+  #sec-updates .up-rel{grid-template-columns:minmax(0,1fr);gap:8px;padding-bottom:18px}
+  #sec-updates .up-rel::before,#sec-updates .up-card::before{display:none}
+  #sec-updates .up-date{display:flex;align-items:baseline;gap:8px;text-align:left;padding:0 2px}
+  #sec-updates .up-date b{font-size:18px}
+  #sec-updates .up-date span{margin-top:0}
+  #sec-updates .up-card{padding:16px 16px 4px}
+  #sec-updates .up-it{grid-template-columns:minmax(0,1fr);gap:4px}
+  #sec-updates .up-chip{height:44px}
+}
+@media (prefers-reduced-motion:reduce){#sec-updates *{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app-loader" style="position:fixed;inset:0;background:#f0f3fa;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .25s ease">
+  <div style="width:44px;height:44px;border:3.5px solid rgba(45,91,227,.15);border-top-color:#2d5be3;border-radius:50%;animation:appSpin .8s linear infinite"></div>
+  <div style="font-size:13px;color:#6b7280;margin-top:12px;font-family:'Manrope',sans-serif">Завантаження...</div>
+</div>
+<style>@keyframes appSpin{to{transform:rotate(360deg)}}</style>
+
+<script src="shared/nav.js?v=36"></script>
+<main class="main">
+  <div class="sec on" id="sec-updates">
+    <div class="up-wrap">
+      <div class="up-head">
+        <h1>Оновлення</h1>
+        <p>Що ми змінили в QuizFlow: нові можливості, покращення й виправлення.</p>
+      </div>
+      <div class="up-bar" id="up-bar" role="group" aria-label="Фільтр за типом"></div>
+      <div class="up-list" id="up-list" aria-live="polite"></div>
+    </div>
+  </div>
+</main>
+
+<div id="modals-root"></div>
+
+<script type="module">
+const { initApp, esc } = await import("./shared/app.js?v=48");
+const featuresP = import("./shared/features.js?v=61");
+const { CHANGELOG } = await import("./shared/changelog.js?v=1");
+
+const TYPES = { new: ["Нове", "var(--c-new)"], better: ["Покращено", "var(--c-better)"], fix: ["Виправлено", "var(--c-fix)"] };
+const MON = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
+let filter = "all";
+
+function counts(){
+  const c = { all: 0, new: 0, better: 0, fix: 0 };
+  for (const r of CHANGELOG) for (const i of r.items){ c.all++; c[i.t]++; }
+  return c;
+}
+function renderBar(){
+  const c = counts();
+  const chips = [["all", "Усе", ""], ...Object.entries(TYPES).map(([k, [l, col]]) => [k, l, col])];
+  document.getElementById("up-bar").innerHTML = chips.map(([k, l, col]) =>
+    `<button type="button" class="up-chip${filter === k ? " on" : ""}" data-f="${k}" aria-pressed="${filter === k}">${col ? `<i style="--c:${col}"></i>` : ""}${esc(l)}<em>${c[k]}</em></button>`).join("");
+}
+function renderList(){
+  const rels = CHANGELOG.map(r => ({ ...r, items: r.items.filter(i => filter === "all" || i.t === filter) })).filter(r => r.items.length);
+  const el = document.getElementById("up-list");
+  if (!rels.length){ el.innerHTML = '<div class="up-empty">Нічого не знайдено</div>'; return; }
+  el.innerHTML = rels.map((r, n) => {
+    const [y, m, d] = r.date.split("-").map(Number);
+    return `<article class="up-rel${n === 0 && filter === "all" ? " latest" : ""}">
+      <div class="up-date"><b>${d}</b><span>${MON[m - 1]} ${y}</span></div>
+      <div class="up-card">
+        ${n === 0 && filter === "all" ? '<div class="up-last">Останнє оновлення</div>' : ""}
+        <h2 class="up-t">${esc(r.title)}</h2>
+        ${r.lead ? `<p class="up-lead">${esc(r.lead)}</p>` : ""}
+        <ul class="up-items">${r.items.map(i => `<li class="up-it"><span class="up-tag" style="--c:${TYPES[i.t][1]}">${TYPES[i.t][0]}</span><div><h3>${esc(i.h)}</h3>${i.d ? `<p>${esc(i.d)}</p>` : ""}</div></li>`).join("")}</ul>
+      </div>
+    </article>`;
+  }).join("");
+}
+document.getElementById("up-bar").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]"); if (!b) return;
+  filter = b.dataset.f; renderBar(); renderList();
+});
+renderBar(); renderList();
+
+window.showSec = function(name){
+  const map = { dashboard:"./", tests:"tests", attempts:"attempts", links:"links", analytics:"analytics", gradebook:"gradebook", students:"students", notifications:"notifications", suspicious:"suspicious", online:"online", news:"news", updates:"updates" };
+  if (name !== "updates" && map[name]) location.href = map[name];
+};
+
+await initApp("updates");
+await featuresP;
+await window.initFeatures();
+requestAnimationFrame(() => requestAnimationFrame(() => { if (window.appReady) window.appReady(); }));
+</script>
+</body>
+</html>
