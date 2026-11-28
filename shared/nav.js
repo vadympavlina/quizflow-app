@@ -142,26 +142,9 @@
       { id: "suspicious", label: "Підозрілі", file: "suspicious", icon: "shield" },
       { id: "online", label: "Онлайн", file: "online", icon: "live" },
       { id: "news", label: "Новини", file: "news", icon: "news" },
-      { id: "updates", label: "Оновлення", file: "updates", icon: "updates" },
     ] },
   ];
 
-  // Меню з бази могло бути збережене до появи «Оновлень»: додаємо пункт після «Новин», якщо його ще немає
-  function withUpdates(nav) {
-    var has = nav.some(function (s) { return (s.items || []).some(function (it) { return it && it.id === "updates"; }); });
-    if (has) return nav;
-    var done = false;
-    var out = nav.map(function (s) {
-      if (done || !Array.isArray(s.items)) return s;
-      var i = s.items.findIndex(function (it) { return it && it.id === "news"; });
-      if (i < 0) return s;
-      done = true;
-      var items = s.items.slice();
-      items.splice(i + 1, 0, { id: "updates", label: "Оновлення", file: "updates", icon: "updates" });
-      return Object.assign({}, s, { items: items });
-    });
-    return out;
-  }
 
   var BADGE_IDS = {
     tests: "nb-t", attempts: "nb-a", links: "nb-l",
@@ -323,7 +306,7 @@
   // Малює (або перемальовує) меню. Лічильники й скрол переносяться зі старого.
   function render(nav, opts) {
     opts = opts || {};
-    nav = Array.isArray(nav) && nav.length ? withUpdates(nav) : DEFAULT_NAV;
+    nav = Array.isArray(nav) && nav.length ? nav : DEFAULT_NAV;
     state.nav = nav;
     var old = document.getElementById("sidebar");
     var badges = {}, scroll = 0;
